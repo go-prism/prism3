@@ -6,6 +6,7 @@ import (
 )
 
 type Refraction struct {
+	name    string
 	remotes []remote.Remote
-	rp      sync.Pool
+	rp      *sync.Pool
 }

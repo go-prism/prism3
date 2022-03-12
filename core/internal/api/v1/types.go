@@ -6,11 +6,6 @@ import (
 )
 
 type Gateway struct {
-	resolver resolver.Resolver
-	pool     sync.Pool
-}
-
-type Request struct {
-	bucket string
-	path   string
+	resolver *resolver.Resolver
+	pool     *sync.Pool
 }

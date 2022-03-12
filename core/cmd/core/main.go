@@ -5,6 +5,8 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
+	v1 "gitlab.com/go-prism/prism3/core/internal/api/v1"
+	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"net/http"
 )
 
@@ -19,11 +21,16 @@ func main() {
 		return
 	}
 
+	h := v1.NewGateway(resolver.NewResolver())
+
 	// configure routing
 	router := mux.NewRouter()
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
+	router.PathPrefix("/api/v1/{bucket}/").
+		Handler(h).
+		Methods(http.MethodGet)
 
 	// start serving
 	serverless.NewBuilder(router).

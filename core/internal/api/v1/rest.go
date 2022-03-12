@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
+	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"io"
 	"net/http"
 	"strings"
@@ -10,7 +11,7 @@ import (
 func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	bucket := mux.Vars(r)["bucket"]
 	path := strings.SplitN(r.URL.Path, "/-/", 2)[1]
-	req := g.pool.Get().(*Request)
+	req := g.pool.Get().(*resolver.Request)
 	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve

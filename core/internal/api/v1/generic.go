@@ -7,30 +7,17 @@ import (
 	"sync"
 )
 
-func NewGateway(r resolver.Resolver) *Gateway {
+func NewGateway(r *resolver.Resolver) *Gateway {
 	return &Gateway{
 		resolver: r,
-		pool: sync.Pool{
+		pool: &sync.Pool{
 			New: func() interface{} {
-				return new(Request)
+				return new(resolver.Request)
 			},
 		},
 	}
 }
 
-func (r *Request) New(bucket, path string) {
-	r.bucket = bucket
-	r.path = path
-}
-
-func (g *Gateway) Serve(ctx context.Context, r *Request) (io.Reader, error) {
-	// figure out what file we want
-	// 		run through middleware (e.g. helm)
-	uri, err := g.resolver.GetURI(ctx, r.bucket, r.path)
-	if err != nil {
-		return nil, err
-	}
-
-	// get the file
-	return g.resolver.GetFile(ctx, uri)
+func (g *Gateway) Serve(ctx context.Context, r *resolver.Request) (io.Reader, error) {
+	return g.resolver.Resolve(ctx, r)
 }
