@@ -3,6 +3,8 @@ directive @goTag(
   value: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
+scalar Strings
+
 enum Archetype {
   GENERIC
   MAVEN
@@ -27,6 +29,7 @@ type Remote {
   createdAt: Int!
   updatedAt: Int!
   name: String! @goTag(key: "gorm", value: "unique")
+  uri: String!
   archetype: Archetype! @goTag(key: "gorm", value: "index")
   enabled: Boolean! @goTag(key: "gorm", value: "index")
   securityID: ID!
@@ -37,9 +40,9 @@ type Remote {
 
 type RemoteSecurity {
   id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
-  allowed: [String!]!
-  blocked: [String!]!
-  authHeaders: [String!]!
+  allowed: Strings!
+  blocked: Strings!
+  authHeaders: Strings!
 }
 
 type TransportSecurity {
@@ -61,7 +64,14 @@ type Query {
   getRefraction(id: ID!): Refraction!
 }
 
+input NewRemote {
+  name: String!
+  uri: String!
+  archetype: Archetype!
+}
+
 type Mutation {
+  createRemote(input: NewRemote!): Remote!
   deleteRemote(id: ID!): Boolean!
 
   deleteRefraction(id: ID!): Boolean!

@@ -1,0 +1,53 @@
+image:
+  pullPolicy: Never
+podAnnotations:
+  app.kubernetes.io/name: core
+  app.kubernetes.io/part-of: prism3
+env:
+  PRISM_DB_DSN: "user=prism password=password dbname=prism host=db3-postgresql port=5432 sslmode=disable"
+security:
+  podContext:
+    fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+  containerContext:
+    runAsNonRoot: true
+    runAsGroup: 1001
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+hpa:
+  enabled: false
+service:
+  externalPort: 8080
+  internalPort: 8080
+  url: https://prism3.devel
+ingress:
+  enabled: true
+  path: /api
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "root-ca-issuer"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
+  tls:
+    enabled: true
+    secretName: tls-prism3-core
+prometheus:
+  metrics: false
+livenessProbe:
+  path: "/healthz"
+  port: 8080
+readinessProbe:
+  path: "/healthz"
+  port: 8080
+resources:
+  requests:
+    cpu: 100m
+    memory: 100Mi
+  limits:
+    memory: 200Mi

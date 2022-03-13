@@ -6,12 +6,20 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"gitlab.com/go-prism/prism3/core/internal/db/datatypes"
 )
+
+type NewRemote struct {
+	Name      string    `json:"name"`
+	URI       string    `json:"uri"`
+	Archetype Archetype `json:"archetype"`
+}
 
 type Refraction struct {
 	ID        string    `json:"id" gorm:"primaryKey;type:uuid;not null"`
-	CreatedAt int       `json:"createdAt"`
-	UpdatedAt int       `json:"updatedAt"`
+	CreatedAt int64     `json:"createdAt"`
+	UpdatedAt int64     `json:"updatedAt"`
 	Name      string    `json:"name" gorm:"unique"`
 	Archetype Archetype `json:"archetype"`
 	Remotes   []*Remote `json:"remotes" gorm:"many2many:ref_remotes;"`
@@ -19,9 +27,10 @@ type Refraction struct {
 
 type Remote struct {
 	ID          string             `json:"id" gorm:"primaryKey;type:uuid;not null"`
-	CreatedAt   int                `json:"createdAt"`
-	UpdatedAt   int                `json:"updatedAt"`
+	CreatedAt   int64              `json:"createdAt"`
+	UpdatedAt   int64              `json:"updatedAt"`
 	Name        string             `json:"name" gorm:"unique"`
+	URI         string             `json:"uri"`
 	Archetype   Archetype          `json:"archetype" gorm:"index"`
 	Enabled     bool               `json:"enabled" gorm:"index"`
 	SecurityID  string             `json:"securityID"`
@@ -31,10 +40,10 @@ type Remote struct {
 }
 
 type RemoteSecurity struct {
-	ID          string   `json:"id" gorm:"primaryKey;not null"`
-	Allowed     []string `json:"allowed"`
-	Blocked     []string `json:"blocked"`
-	AuthHeaders []string `json:"authHeaders"`
+	ID          string              `json:"id" gorm:"primaryKey;not null"`
+	Allowed     datatypes.JSONArray `json:"allowed"`
+	Blocked     datatypes.JSONArray `json:"blocked"`
+	AuthHeaders datatypes.JSONArray `json:"authHeaders"`
 }
 
 type TransportSecurity struct {

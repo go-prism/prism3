@@ -1,0 +1,37 @@
+apiVersion: skaffold/v2beta15
+kind: Config
+metadata:
+  name: prism3
+build:
+  artifacts:
+    - image: dev.local/prism3/core
+      buildpacks:
+        builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
+        runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+        dependencies:
+          paths:
+            - cmd/core/**
+            - internal/**
+  local:
+    push: false
+deploy:
+  helm:
+    releases:
+      - name: core3
+        namespace: prism
+        remoteChart: https://av1o.gitlab.io/charts/auto-deploy-app-0.15.3.tgz
+        skipBuildDependencies: true
+        upgradeOnChange: true
+        artifactOverrides:
+          image: dev.local/prism3/core
+        valuesFiles:
+          - deployments/values.yaml
+        imageStrategy:
+          helm: {}
+      - name: db3
+        namespace: prism
+        remoteChart: https://charts.bitnami.com/bitnami/postgresql-11.1.6.tgz
+        skipBuildDependencies: true
+        upgradeOnChange: true
+        valuesFiles:
+          - deployments/postgresql.yaml

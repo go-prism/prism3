@@ -11,6 +11,10 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 )
 
+func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
+	return r.repos.RemoteRepo.CreateRemote(ctx, &input)
+}
+
 func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -20,11 +24,11 @@ func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (boo
 }
 
 func (r *queryResolver) ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.repos.RemoteRepo.ListRemotes(ctx, model.Archetype(arch))
 }
 
 func (r *queryResolver) GetRemote(ctx context.Context, id string) (*model.Remote, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.repos.RemoteRepo.GetRemote(ctx, id)
 }
 
 func (r *queryResolver) ListRefractions(ctx context.Context) ([]*model.Refraction, error) {

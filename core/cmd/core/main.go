@@ -10,6 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
 	v1 "gitlab.com/go-prism/prism3/core/internal/api/v1"
+	"gitlab.com/go-prism/prism3/core/internal/db"
+	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/graph"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
@@ -19,6 +21,10 @@ import (
 
 type environment struct {
 	Port int `envconfig:"PORT" default:"8080"`
+
+	DB struct {
+		DSN string `split_words:"true" required:"true"`
+	}
 }
 
 func main() {
@@ -28,8 +34,21 @@ func main() {
 		return
 	}
 
+	// configure database
+	database, err := db.NewDatabase(e.DB.DSN)
+	if err != nil {
+		log.WithError(err).Fatal("failed to setup database layer")
+		return
+	}
+	if err := database.Init(); err != nil {
+		log.WithError(err).Fatal("failed to initialise database")
+		return
+	}
+	repos := repo.NewRepos(database.DB())
+
+	// configure graphql
 	h := v1.NewGateway(resolver.NewResolver())
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
