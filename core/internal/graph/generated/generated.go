@@ -45,6 +45,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
+		CreateRefraction func(childComplexity int, input model.NewRefract) int
 		CreateRemote     func(childComplexity int, input model.NewRemote) int
 		DeleteRefraction func(childComplexity int, id string) int
 		DeleteRemote     func(childComplexity int, id string) int
@@ -102,6 +103,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error)
 	DeleteRemote(ctx context.Context, id string) (bool, error)
+	CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error)
 	DeleteRefraction(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
@@ -125,6 +127,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Mutation.createRefraction":
+		if e.complexity.Mutation.CreateRefraction == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createRefraction_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateRefraction(childComplexity, args["input"].(model.NewRefract)), true
 
 	case "Mutation.createRemote":
 		if e.complexity.Mutation.CreateRemote == nil {
@@ -544,10 +558,17 @@ input NewRemote {
   archetype: Archetype!
 }
 
+input NewRefract {
+  name: String!
+  archetype: Archetype!
+  remotes: [String!]!
+}
+
 type Mutation {
   createRemote(input: NewRemote!): Remote!
   deleteRemote(id: ID!): Boolean!
 
+  createRefraction(input: NewRefract!): Refraction!
   deleteRefraction(id: ID!): Boolean!
 }
 `, BuiltIn: false},
@@ -557,6 +578,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createRefraction_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NewRefract
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNewRefract2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRefract(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createRemote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -783,6 +819,48 @@ func (ec *executionContext) _Mutation_deleteRemote(ctx context.Context, field gr
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createRefraction(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createRefraction_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateRefraction(rctx, args["input"].(model.NewRefract))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Refraction)
+	fc.Result = res
+	return ec.marshalNRefraction2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRefraction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteRefraction(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3260,6 +3338,45 @@ func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field gr
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputNewRefract(ctx context.Context, obj interface{}) (model.NewRefract, error) {
+	var it model.NewRefract
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "archetype":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("archetype"))
+			it.Archetype, err = ec.unmarshalNArchetype2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐArchetype(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "remotes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remotes"))
+			it.Remotes, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewRemote(ctx context.Context, obj interface{}) (model.NewRemote, error) {
 	var it model.NewRemote
 	asMap := map[string]interface{}{}
@@ -3339,6 +3456,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteRemote":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteRemote(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createRefraction":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createRefraction(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -4355,6 +4482,11 @@ func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNNewRefract2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRefract(ctx context.Context, v interface{}) (model.NewRefract, error) {
+	res, err := ec.unmarshalInputNewRefract(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNNewRemote2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRemote(ctx context.Context, v interface{}) (model.NewRemote, error) {
 	res, err := ec.unmarshalInputNewRemote(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4499,6 +4631,38 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, v interface{}) (datatypes.JSONArray, error) {

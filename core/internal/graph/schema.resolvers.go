@@ -19,6 +19,10 @@ func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, e
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error) {
+	return r.repos.RefractRepo.CreateRefraction(ctx, &input)
+}
+
 func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -36,7 +40,7 @@ func (r *queryResolver) ListRefractions(ctx context.Context) ([]*model.Refractio
 }
 
 func (r *queryResolver) GetRefraction(ctx context.Context, id string) (*model.Refraction, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.repos.RefractRepo.GetRefraction(ctx, id)
 }
 
 // Mutation returns generated.MutationResolver implementation.

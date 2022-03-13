@@ -1,6 +1,6 @@
-.PHONY: gql
-gql:
-	cd internal; go run github.com/99designs/gqlgen generate
+.PHONY: generate
+generate:
+	go generate ./...
 
 .PHONY: run
 run:

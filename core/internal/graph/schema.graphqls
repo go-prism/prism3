@@ -70,9 +70,16 @@ input NewRemote {
   archetype: Archetype!
 }
 
+input NewRefract {
+  name: String!
+  archetype: Archetype!
+  remotes: [String!]!
+}
+
 type Mutation {
   createRemote(input: NewRemote!): Remote!
   deleteRemote(id: ID!): Boolean!
 
+  createRefraction(input: NewRefract!): Refraction!
   deleteRefraction(id: ID!): Boolean!
 }

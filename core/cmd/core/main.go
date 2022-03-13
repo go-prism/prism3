@@ -47,7 +47,7 @@ func main() {
 	repos := repo.NewRepos(database.DB())
 
 	// configure graphql
-	h := v1.NewGateway(resolver.NewResolver())
+	h := v1.NewGateway(resolver.NewResolver(repos))
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{

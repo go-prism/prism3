@@ -3,9 +3,13 @@ package resolver
 import (
 	"context"
 	"errors"
+	"github.com/bluele/gcache"
+	log "github.com/sirupsen/logrus"
+	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
-	"gitlab.com/go-prism/prism3/core/internal/remote"
 	"io"
+	"time"
 )
 
 func (r *Request) New(bucket, path string) {
@@ -13,32 +17,29 @@ func (r *Request) New(bucket, path string) {
 	r.path = path
 }
 
-func NewResolver() *Resolver {
-	return &Resolver{
-		refractions: []*refract.Refraction{
-			refract.NewSimple("alpine", []remote.Remote{
-				remote.NewEphemeralRemote("https://mirror.aarnet.edu.au/pub/alpine"),
-				remote.NewEphemeralRemote("https://alpine.global.ssl.fastly.net/alpine"),
-				remote.NewEphemeralRemote("https://dl-4.alpinelinux.org/alpine"),
-			}),
-		},
-	}
+func NewResolver(repos *repo.Repos) *Resolver {
+	r := new(Resolver)
+	r.repos = repos
+	r.cache = gcache.New(1000).ARC().Expiration(time.Minute * 5).LoaderFunc(r.getRefraction).Build()
+	return r
 }
 
 func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {
 	// todo any middleware (e.g. helm)
-	ref, ok := r.getRefraction(req.bucket)
-	if !ok {
-		return nil, errors.New("refraction not found")
+	ref, err := r.cache.Get(req.bucket)
+	if err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
+		return nil, err
 	}
-	return ref.Download(ctx, req.path)
+	refraction := refract.NewBackedRefraction(ref.(*model.Refraction))
+	return refraction.Download(ctx, req.path)
 }
 
-func (r *Resolver) getRefraction(name string) (*refract.Refraction, bool) {
-	for _, ref := range r.refractions {
-		if ref.String() == name {
-			return ref, true
-		}
+func (r *Resolver) getRefraction(v interface{}) (interface{}, error) {
+	name, ok := v.(string)
+	if !ok {
+		return nil, errors.New("expected string")
 	}
-	return nil, false
+	log.Infof("fetching remote from database: %s", name)
+	return r.repos.RefractRepo.GetRefractionByName(context.TODO(), name)
 }

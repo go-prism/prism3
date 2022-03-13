@@ -10,6 +10,12 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/db/datatypes"
 )
 
+type NewRefract struct {
+	Name      string    `json:"name"`
+	Archetype Archetype `json:"archetype"`
+	Remotes   []string  `json:"remotes"`
+}
+
 type NewRemote struct {
 	Name      string    `json:"name"`
 	URI       string    `json:"uri"`
