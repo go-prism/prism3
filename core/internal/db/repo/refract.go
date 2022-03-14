@@ -63,3 +63,12 @@ func (r *RefractRepo) GetRefraction(ctx context.Context, id string) (*model.Refr
 	}
 	return &result, nil
 }
+
+func (r *RefractRepo) ListRefractions(ctx context.Context) ([]*model.Refraction, error) {
+	var result []*model.Refraction
+	if err := r.db.Preload("Remotes").Find(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to list refractions")
+		return nil, err
+	}
+	return result, nil
+}

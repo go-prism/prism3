@@ -36,7 +36,7 @@ func (r *queryResolver) GetRemote(ctx context.Context, id string) (*model.Remote
 }
 
 func (r *queryResolver) ListRefractions(ctx context.Context) ([]*model.Refraction, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.repos.RefractRepo.ListRefractions(ctx)
 }
 
 func (r *queryResolver) GetRefraction(ctx context.Context, id string) (*model.Refraction, error) {

@@ -2,3 +2,6 @@
 .vscode
 *.iml
 .terraform
+node_modules/
+dist/
+build/

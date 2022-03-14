@@ -87,7 +87,7 @@ func (m *JSONArray) UnmarshalGQL(v interface{}) error {
 // MarshalGQL implements the graphql.Marshaler interface
 func (m JSONArray) MarshalGQL(w io.Writer) {
 	if m == nil {
-		_, _ = w.Write([]byte("null"))
+		_, _ = w.Write([]byte("[]"))
 		return
 	}
 	t := ([]string)(m)
