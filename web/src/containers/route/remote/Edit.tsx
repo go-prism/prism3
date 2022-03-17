@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {
 	Button,
-	Chip,
+	Chip, Collapse,
 	FormControlLabel,
 	FormGroup,
 	FormLabel,
@@ -20,10 +20,8 @@ import {useTheme} from "@material-ui/core/styles";
 import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert, Skeleton} from "@material-ui/lab";
-import {UpdateProfileRequest} from "@prism/prism-rpc/build/gen/service/api/remote_pb";
 import {useParams} from "react-router";
 import {formatDistanceToNow} from "date-fns";
-import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
@@ -34,7 +32,7 @@ import {Archetype} from "../../../graph/types";
 import {getRemoteIcon} from "../../../utils/remote";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
-import {CLIENT_PROFILE_DEFAULT} from "./options/ClientConfig";
+import ClientConfig from "./options/ClientConfig";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -192,7 +190,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 	}
 
 	const getOptions = () => {
-		const data = [
+		const items = [
 			{
 				id: "firewall-rules",
 				primary: "Firewall rules",
@@ -223,10 +221,13 @@ const EditRemote: React.FC = (): JSX.Element => {
 				id: "transport",
 				primary: "HTTP/TLS/Proxy options",
 				secondary: "Configure how Prism communicates with remotes.",
-				children: <div/>
+				children: data?.getRemote == null ? "" : <ClientConfig
+					profile={data.getRemote.transport}
+					setProfile={() => {}}
+				/>
 			}
 		];
-		return data.map(d => <ExpandableListItem
+		return items.map(d => <ExpandableListItem
 			key={d.id}
 			primary={d.primary}
 			secondary={d.secondary}
@@ -239,137 +240,135 @@ const EditRemote: React.FC = (): JSX.Element => {
 	};
 
 	return (
-		<StandardLayout>
-			<div>
+		<div>
+			{error != null && <Alert
+				severity="error">
+					Failed to fetch Remote.
+				<br/>
+				<Code>
+					{getGraphErrorMessage(error)}
+				</Code>
+			</Alert>}
+			{success && <Alert
+				severity="success">
+					Remote updated successfully
+			</Alert>}
+			<ListItem>
+				<ListItemIcon>
+					{loading ? <Skeleton variant="circle" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRemote?.archetype || Archetype.NONE)}
+				</ListItemIcon>
+				<ListItemText
+					disableTypography
+					secondary={<Typography
+						color="textSecondary">
+						{loading ? <Skeleton animation="wave" width="15%"/> : `Remote ID: ${data?.getRemote?.id}`}
+					</Typography>}>
+					<Typography
+						className={classes.title}
+						color="textPrimary"
+						variant="h4">
+						{loading ? <Skeleton animation="wave" width="25%" height={64}/> : data?.getRemote?.name}
+					</Typography>
+				</ListItemText>
+			</ListItem>
+			<FormGroup
+				className={classes.form}>
+				<div>
+					{loading ? <Skeleton
+						animation="wave"
+						width="35%"
+						height={32}
+					/> : chips}
+				</div>
+				<FormLabel
+					className={classes.formItem}
+					component="legend">
+					General
+				</FormLabel>
+				{!loading && readOnly && <Alert
+					severity="warning">
+					This Remote is read-only and cannot be modified.
+				</Alert>}
+				<ValidatedTextField
+					data={name}
+					setData={setName}
+					invalidLabel="Must be at least 3 characters."
+					fieldProps={{
+						className: classes.formItem,
+						required: true,
+						label: "Remote name",
+						variant: "filled",
+						id: "txt-name",
+						disabled: loading || readOnly
+					}}
+				/>
+				<ValidatedTextField
+					data={url}
+					setData={setURL}
+					invalidLabel="Must be a valid URL."
+					fieldProps={{
+						className: classes.formItem,
+						required: true,
+						label: "Remote URL",
+						variant: "filled",
+						id: "txt-url",
+						disabled: loading || readOnly
+					}}
+				/>
+				<Collapse
+					in={data?.getRemote != null && !enabled && enabled !== data.getRemote?.enabled}>
+					<Alert
+						className={classes.formItem}
+						severity="warning">
+						Disabling a remote stops new data from being fetched from it.
+						Data that has already been downloaded and cached will still be available.
+					</Alert>
+				</Collapse>
+				<FormControlLabel
+					className={classes.formItem}
+					control={<Switch
+						color="primary"
+						checked={enabled}
+						disabled={readOnly}
+						onChange={(_, checked) => setEnabled(checked)}
+					/>}
+					label="Enabled"
+				/>
+				<List>
+					{getOptions()}
+				</List>
 				{error != null && <Alert
 					severity="error">
-					Failed to fetch Remote.
+						Failed to update Remote.
 					<br/>
 					<Code>
-						{getGraphErrorMessage(error)}
+						{getErrorMessage(error)}
 					</Code>
 				</Alert>}
-				{success && <Alert
-					severity="success">
-					Remote updated successfully
-				</Alert>}
-				<ListItem>
-					<ListItemIcon>
-						{loading ? <Skeleton variant="circle" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRemote?.archetype || Archetype.NONE)}
-					</ListItemIcon>
-					<ListItemText
-						disableTypography
-						secondary={<Typography
-							color="textSecondary">
-							{loading ? <Skeleton animation="wave" width="15%"/> : `Remote ID: ${data?.getRemote?.id}`}
-						</Typography>}>
-						<Typography
-							className={classes.title}
-							color="textPrimary"
-							variant="h4">
-							{loading ? <Skeleton animation="wave" width="25%" height={64}/> : data?.getRemote?.name}
-						</Typography>
-					</ListItemText>
-				</ListItem>
-				<FormGroup
-					className={classes.form}>
-					<div>
-						{loading ? <Skeleton
-							animation="wave"
-							width="35%"
-							height={32}
-						/> : chips}
-					</div>
-					<FormLabel
-						className={classes.formItem}
-						component="legend">
-						General
-					</FormLabel>
-					{!loading && readOnly && <Alert
-						severity="warning">
-						This Remote is read-only and cannot be modified.
-					</Alert>}
-					<ValidatedTextField
-						data={name}
-						setData={setName}
-						invalidLabel="Must be at least 3 characters."
-						fieldProps={{
-							className: classes.formItem,
-							required: true,
-							label: "Remote name",
-							variant: "outlined",
-							id: "txt-name",
-							disabled: loading || readOnly
-						}}
-					/>
-					<ValidatedTextField
-						data={url}
-						setData={setURL}
-						invalidLabel="Must be a valid URL."
-						fieldProps={{
-							className: classes.formItem,
-							required: true,
-							label: "Remote URL",
-							variant: "outlined",
-							id: "txt-url",
-							disabled: loading || readOnly
-						}}
-					/>
-					{/*<Collapse*/}
-					{/*	in={remote != null && !enabled && enabled !== remote?.enabled}>*/}
-					{/*	<Alert*/}
-					{/*		className={classes.formItem}*/}
-					{/*		severity="warning">*/}
-					{/*		Disabling a remote stops new data from being fetched from it.*/}
-					{/*		Data that has already been downloaded and cached will still be available.*/}
-					{/*	</Alert>*/}
-					{/*</Collapse>*/}
-					<FormControlLabel
-						className={classes.formItem}
-						control={<Switch
-							color="primary"
-							checked={enabled}
-							disabled={readOnly}
-							onChange={(_, checked) => setEnabled(checked)}
-						/>}
-						label="Enabled"
-					/>
-					<List>
-						{getOptions()}
-					</List>
-					{error != null && <Alert
-						severity="error">
-						Failed to update Remote.
-						<br/>
-						<Code>
-							{getErrorMessage(error)}
-						</Code>
-					</Alert>}
-					<div
-						className={`${classes.formItem} ${classes.flex}`}>
-						<Button
-							className={classes.button}
-							component={Link}
-							to="/settings/remotes"
-							variant="outlined">
+				<div
+					className={`${classes.formItem} ${classes.flex}`}>
+					<Button
+						className={classes.button}
+						component={Link}
+						to="/settings/remotes"
+						variant="outlined">
 							Cancel
-						</Button>
-						<div className={classes.grow}/>
-						<Button
-							className={classes.button}
-							color="primary"
-							classes={{
-								disabled: classes.buttonDisabled
-							}}
-							disabled={!DataIsValid(url) || !DataIsValid(name) || loading || !hasChanged() || readOnly}
-							onClick={handleUpdate}
-							variant="contained">
+					</Button>
+					<div className={classes.grow}/>
+					<Button
+						className={classes.button}
+						color="primary"
+						classes={{
+							disabled: classes.buttonDisabled
+						}}
+						disabled={!DataIsValid(url) || !DataIsValid(name) || loading || !hasChanged() || readOnly}
+						onClick={handleUpdate}
+						variant="contained">
 							Save changes
-						</Button>
-					</div>
-				</FormGroup>
-			</div>
-		</StandardLayout>
+					</Button>
+				</div>
+			</FormGroup>
+		</div>
 	);
 }
 export default EditRemote;

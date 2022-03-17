@@ -15,6 +15,16 @@ enum Archetype {
   RUST
 }
 
+type Artifact {
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  createdAt: Int!
+  updatedAt: Int!
+  uri: String!
+  downloads: Int!
+  remoteID: ID! @goTag(key: "gorm", value: "index")
+  slices: Strings!
+}
+
 type Refraction {
   id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
   createdAt: Int!
@@ -47,6 +57,7 @@ type RemoteSecurity {
 
 type TransportSecurity {
   id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+  name: String! @goTag(key: "gorm", value: "unique")
   ca: String!
   cert: String!
   key: String!
@@ -62,12 +73,18 @@ type Query {
 
   listRefractions: [Refraction!]!
   getRefraction(id: ID!): Refraction!
+
+  listTransports: [TransportSecurity!]!
+
+  listArtifacts(remote: ID!): [Artifact!]!
+  listCombinedArtifacts(refract: ID!): [Artifact!]!
 }
 
 input NewRemote {
   name: String!
   uri: String!
   archetype: Archetype!
+  transport: ID!
 }
 
 input NewRefract {

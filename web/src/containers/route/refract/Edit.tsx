@@ -18,15 +18,16 @@ import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert, Skeleton} from "@material-ui/lab";
 import Icon from "@mdi/react";
 import {useParams} from "react-router";
-import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
-import useLoading from "../../../hooks/useLoading";
-import useErrors from "../../../hooks/useErrors";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
-import {MetadataChip, RefractionV1} from "../../../config/types";
+import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
+import useGetRefraction from "../../../graph/actions/remote/useGetRefraction";
+import {Archetype, Remote} from "../../../graph/types";
+import {getRemoteIcon} from "../../../utils/remote";
 import Setup from "./setup/Setup";
+import RemoteSelect from "./RemoteSelect";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -72,32 +73,36 @@ const EditRefract: React.FC = (): JSX.Element => {
 	const {id} = useParams<IDParams>();
 
 	// global state
-	const loading = useLoading([]);
-	const error = useErrors([]);
-	let refraction: RefractionV1 | null = null;
+	const [getRefraction, {data, loading, error}] = useGetRefraction();
 	let refractInfo: object | null = null;
 
 
 	// local state
 	const [name, setName] = useState<ValidatedData>(initialName);
-	const [remotes, setRemotes] = useState<string[]>([]);
+	const [remotes, setRemotes] = useState<Remote[]>([]);
 	const [success, setSuccess] = useState<boolean>(false);
 	const [readOnly, setReadOnly] = useState<boolean>(false);
 
 	const open = useMemo(() => {
 		return history.location.hash.replace("#", "");
 	}, [history.location.hash]);
+
+	useEffect(() => {
+		void getRefraction({variables: {id: id}});
+	}, [id]);
 	
 	useEffect(() => {
-		if (refraction == null) return;
-		setName({...name, value: refraction.name});
-		setRemotes(refraction.remotesList);
+		if (data?.getRefraction == null)
+			return;
+		setName({...name, value: data.getRefraction.name});
+		setRemotes(data.getRefraction.remotes);
 		// go refractions are system-managed
-		setReadOnly(refraction.archetype === "golang");
-	}, [refraction]);
+		setReadOnly(data.getRefraction.archetype === Archetype.GO);
+	}, [data?.getRefraction]);
 
 	const handleUpdate = (): void => {
-		if (refraction == null) return;
+		if (data?.getRefraction == null)
+			return;
 		setSuccess(false);
 		// dispatch(updateRefract(id, {
 		// 	archetype: refraction.archetype,
@@ -146,16 +151,16 @@ const EditRefract: React.FC = (): JSX.Element => {
 	}
 
 	const options = useMemo(() => {
-		const data = [
+		const items = [
 			{
 				id: "getting-setup",
 				primary: "Getting setup",
 				secondary: "Application-specific setup information.",
-				children: refraction && <Setup refract={refraction}/>,
-				disabled: refraction == null
+				children: data?.getRefraction && <Setup refract={data.getRefraction}/>,
+				disabled: data?.getRefraction == null
 			}
 		];
-		return data.map(d => <ExpandableListItem
+		return items.map(d => <ExpandableListItem
 			key={d.id}
 			primary={d.primary}
 			secondary={d.secondary}
@@ -164,103 +169,94 @@ const EditRefract: React.FC = (): JSX.Element => {
 			setOpen={o => handleOpen(o ? d.id : "")}>
 			{d.children}
 		</ExpandableListItem>);
-	}, [open, refraction]);
+	}, [open, data?.getRefraction]);
 
 	return (
-		<StandardLayout>
-			<div>
-				{success && <Alert
-					severity="success">
+		<div>
+			{success && <Alert
+				severity="success">
 					Refraction updated successfully
-				</Alert>}
-				<ListItem>
-					<ListItemIcon>
-						{/*{loading ? <Skeleton variant="circle" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, refraction?.archetype || "")}*/}
-					</ListItemIcon>
-					<ListItemText
-						disableTypography
-						secondary={<Typography
-							color="textSecondary">
-							{/*{loading ? <Skeleton animation="wave" width="15%"/> : `Refraction ID: ${refraction?.id}`}*/}
-						</Typography>}>
-						<Typography
-							className={classes.title}
-							color="textPrimary"
-							variant="h4">
-							{/*{loading ? <Skeleton animation="wave" width="25%" height={64}/> : refraction?.name}*/}
-						</Typography>
-					</ListItemText>
-				</ListItem>
-				<FormGroup
-					className={classes.form}>
-					<div>
-						{loading ? <Skeleton
-							animation="wave"
-							width="35%"
-							height={32}
-						/> : chips}
-					</div>
-					<FormLabel
-						className={classes.formItem}
-						component="legend">
+			</Alert>}
+			<ListItem>
+				<ListItemIcon>
+					{loading ? <Skeleton variant="circle" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRefraction?.archetype || Archetype.NONE)}
+				</ListItemIcon>
+				<ListItemText
+					disableTypography
+					secondary={<Typography
+						color="textSecondary">
+						{loading ? <Skeleton animation="wave" width="15%"/> : `Refraction ID: ${data?.getRefraction?.id}`}
+					</Typography>}>
+					<Typography
+						className={classes.title}
+						color="textPrimary"
+						variant="h4">
+						{loading ? <Skeleton animation="wave" width="25%" height={64}/> : data?.getRefraction?.name}
+					</Typography>
+				</ListItemText>
+			</ListItem>
+			<FormGroup
+				className={classes.form}>
+				<div>
+					{loading ? <Skeleton
+						animation="wave"
+						width="35%"
+						height={32}
+					/> : chips}
+				</div>
+				<FormLabel
+					className={classes.formItem}
+					component="legend">
 						General
-					</FormLabel>
-					{!loading && readOnly && <Alert
-						severity="warning">
+				</FormLabel>
+				{!loading && readOnly && <Alert
+					severity="warning">
 						This Refraction is read-only and cannot be modified.
-					</Alert>}
-					<ValidatedTextField
-						data={name}
-						setData={setName}
-						invalidLabel="Must be at least 3 characters."
-						fieldProps={{
-							className: classes.formItem,
-							required: true,
-							label: "Refraction name",
-							variant: "outlined",
-							id: "txt-name",
-							disabled: loading || readOnly
-						}}
-					/>
-					{/*{refraction && <RemoteSelect*/}
-					{/*	arch={refraction.archetype}*/}
-					{/*	setRemotes={setRemotes}*/}
-					{/*	defaultRemotes={refraction.remotesList}*/}
-					{/*	disabled={readOnly}*/}
-					{/*/>}*/}
-					<List>
-						{options}
-					</List>
-					{error != null && <Alert
-						severity="error">
+				</Alert>}
+				<ValidatedTextField
+					data={name}
+					setData={setName}
+					invalidLabel="Must be at least 3 characters."
+					fieldProps={{
+						className: classes.formItem,
+						required: true,
+						label: "Refraction name",
+						variant: "filled",
+						id: "txt-name",
+						disabled: loading || readOnly
+					}}
+				/>
+				{data?.getRefraction && <RemoteSelect
+					arch={data.getRefraction.archetype}
+					setRemotes={setRemotes}
+					defaultRemotes={data.getRefraction.remotes}
+					disabled={readOnly}
+				/>}
+				<List>
+					{options}
+				</List>
+				{error != null && <Alert
+					severity="error">
 						Failed to update Refraction.
-						<br/>
-						<Code>
-							{getErrorMessage(error)}
-						</Code>
-					</Alert>}
-					<div
-						className={`${classes.formItem} ${classes.flex}`}>
-						<Button
-							className={classes.button}
-							component={Link}
-							to="/settings/refract"
-							variant="outlined">
-							Cancel
-						</Button>
-						<div className={classes.grow}/>
-						<Button
-							className={classes.button}
-							style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
-							disabled={!DataIsValid(name) || loading || readOnly}
-							onClick={handleUpdate}
-							variant="contained">
-							Save changes
-						</Button>
-					</div>
-				</FormGroup>
-			</div>
-		</StandardLayout>
+					<br/>
+					<Code>
+						{getErrorMessage(error)}
+					</Code>
+				</Alert>}
+				<div
+					className={`${classes.formItem} ${classes.flex}`}>
+					<div className={classes.grow}/>
+					<Button
+						className={classes.button}
+						style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
+						disabled={!DataIsValid(name) || loading || readOnly}
+						onClick={handleUpdate}
+						variant="contained">
+						Save changes
+					</Button>
+				</div>
+			</FormGroup>
+		</div>
 	);
 }
 export default EditRefract;

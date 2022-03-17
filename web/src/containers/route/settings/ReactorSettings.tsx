@@ -54,78 +54,76 @@ const ReactorSettings: React.FC = (): JSX.Element => {
 	const error = useErrors([]);
 
 	return (
-		<StandardLayout>
-			<div
+		<div
+			className={classes.card}>
+			<Card
 				className={classes.card}>
-				<Card
-					className={classes.card}>
-					<div>
-						<IconButton
-							className={classes.icon}
-							component={Link}
-							to="/settings">
-							<Icon
-								path={mdiArrowLeft}
-								size={0.8}
-								color={theme.palette.text.secondary}
+				<div>
+					<IconButton
+						className={classes.icon}
+						component={Link}
+						to="/settings">
+						<Icon
+							path={mdiArrowLeft}
+							size={0.8}
+							color={theme.palette.text.secondary}
 						    />
-						</IconButton>
+					</IconButton>
 						Reactor status
-					</div>
-					<ListItem>
-						<ListItemText
-							secondary="The Reactor is the workhorse that fetches requested data and stores it safely and securely.
+				</div>
+				<ListItem>
+					<ListItemText
+						secondary="The Reactor is the workhorse that fetches requested data and stores it safely and securely.
 							Data is not stored in the Reactor, so it can be discarded safely (e.g. in a Kubernetes environment).
 							You should run more than one instance to ensure system continuity and stability.">
 							Reactors
-						</ListItemText>
-					</ListItem>
-					<Divider/>
-					{loading && <div>
-						<ListItemSkeleton/>
-						<ListItemSkeleton invertLengths/>
-						<ListItemSkeleton/>
-						<ListItemSkeleton/>
-					</div>}
-					{!loading && error != null && <Alert
-						severity="error">
+					</ListItemText>
+				</ListItem>
+				<Divider/>
+				{loading && <div>
+					<ListItemSkeleton/>
+					<ListItemSkeleton invertLengths/>
+					<ListItemSkeleton/>
+					<ListItemSkeleton/>
+				</div>}
+				{!loading && error != null && <Alert
+					severity="error">
 						An error occurred attempting to load Reactors: "{getErrorMessage(error)}"
-					</Alert>}
-					{/*{!loading && error == null && reactorStatus?.statusesList?.length === 0 && <Typography*/}
-					{/*	className={classes.text}*/}
-					{/*	align="center"*/}
-					{/*	color="textSecondary">*/}
-					{/*	No Reactors could be found. Prism will be unable to retrieve or save data.*/}
-					{/*</Typography>}*/}
-					{/*{!loading && error == null && reactorStatus != null && <List>*/}
-					{/*	{reactorStatus?.statusesList.map(r => {*/}
-					{/*		const dx = (Date.now() / 1000) - r.time;*/}
-					{/*		let stale = false;*/}
-					{/*		if (dx > 300) {*/}
-					{/*			stale = true;*/}
-					{/*		}*/}
-					{/*		return <ListItem*/}
-					{/*			dense*/}
-					{/*			key={r.id}>*/}
-					{/*			<ListItemIcon>*/}
-					{/*				<Icon*/}
-					{/*					path={mdiCircle}*/}
-					{/*					size={1}*/}
-					{/*					color={stale ? theme.palette.text.secondary : theme.palette.success.main}*/}
-					{/*				/>*/}
-					{/*			</ListItemIcon>*/}
-					{/*			<ListItemText*/}
-					{/*				secondary={<>*/}
-					{/*					Last seen <Moment fromNow unix>{r.time}</Moment>*/}
-					{/*				</>}>*/}
-					{/*				{r.name}*/}
-					{/*			</ListItemText>*/}
-					{/*		</ListItem>*/}
-					{/*	})}*/}
-					{/*</List>}*/}
-				</Card>
-			</div>
-		</StandardLayout>
+				</Alert>}
+				{/*{!loading && error == null && reactorStatus?.statusesList?.length === 0 && <Typography*/}
+				{/*	className={classes.text}*/}
+				{/*	align="center"*/}
+				{/*	color="textSecondary">*/}
+				{/*	No Reactors could be found. Prism will be unable to retrieve or save data.*/}
+				{/*</Typography>}*/}
+				{/*{!loading && error == null && reactorStatus != null && <List>*/}
+				{/*	{reactorStatus?.statusesList.map(r => {*/}
+				{/*		const dx = (Date.now() / 1000) - r.time;*/}
+				{/*		let stale = false;*/}
+				{/*		if (dx > 300) {*/}
+				{/*			stale = true;*/}
+				{/*		}*/}
+				{/*		return <ListItem*/}
+				{/*			dense*/}
+				{/*			key={r.id}>*/}
+				{/*			<ListItemIcon>*/}
+				{/*				<Icon*/}
+				{/*					path={mdiCircle}*/}
+				{/*					size={1}*/}
+				{/*					color={stale ? theme.palette.text.secondary : theme.palette.success.main}*/}
+				{/*				/>*/}
+				{/*			</ListItemIcon>*/}
+				{/*			<ListItemText*/}
+				{/*				secondary={<>*/}
+				{/*					Last seen <Moment fromNow unix>{r.time}</Moment>*/}
+				{/*				</>}>*/}
+				{/*				{r.name}*/}
+				{/*			</ListItemText>*/}
+				{/*		</ListItem>*/}
+				{/*	})}*/}
+				{/*</List>}*/}
+			</Card>
+		</div>
 	);
 }
 export default ReactorSettings;

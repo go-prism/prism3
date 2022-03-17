@@ -20,12 +20,12 @@ import {Typography} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import {API_URL} from "../../../../../config";
 import {parseMavenPackage} from "../../../../../utils/parse";
-import {RefractionV1} from "../../../../../config/types";
 import LanguageInstall from "./index";
+import {Refraction} from "../../../../../graph/types";
 
 interface JavaInstallProps {
 	uri: string;
-	refraction: RefractionV1;
+	refraction: Refraction;
 }
 
 const TYPE_MAVEN_XML = "maven-xml";

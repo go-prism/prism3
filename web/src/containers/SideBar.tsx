@@ -1,132 +1,70 @@
-import clsx from "clsx";
-import {
-	createStyles,
-	Divider,
-	Drawer,
-	fade,
-	IconButton,
-	List,
-	ListItem,
-	ListItemIcon,
-	ListItemText,
-	makeStyles,
-	Theme
-} from "@material-ui/core";
+import {createStyles, Divider, Drawer, IconButton, makeStyles, Theme, Tooltip} from "@material-ui/core";
 import React from "react";
-import Icon from "@mdi/react";
-import {useTheme} from "@material-ui/core/styles";
-import {
-	mdiAccountMultipleOutline,
-	mdiAccountOutline,
-	mdiCallSplit,
-	mdiChevronLeft,
-	mdiChevronRight,
-	mdiCogOutline,
-	mdiServer,
-	mdiViewDashboardOutline
-} from "@mdi/js";
 import {Link, useLocation} from "react-router-dom";
-
-const drawerWidth = 240;
+import {ArrowsRight, ArrowsSplit, Home, Icon, Settings, User} from "tabler-icons-react";
+import {useTheme} from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
 	drawer: {
-		width: drawerWidth,
+		backgroundColor: theme.palette.primary.main,
+		width: 64,
 		flexShrink: 0,
 		whiteSpace: "nowrap",
 	},
-	drawerOpen: {
-		width: drawerWidth,
-		transition: theme.transitions.create("width", {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.enteringScreen,
-		}),
+	paper: {
+		backgroundColor: theme.palette.primary.main,
+		width: 64,
 	},
-	drawerClose: {
-		transition: theme.transitions.create("width", {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.leavingScreen,
-		}),
-		overflowX: "hidden",
-		width: theme.spacing(7) + 1,
-		[theme.breakpoints.up("sm")]: {
-			width: theme.spacing(9) + 1,
-		},
-	},
-	toolbar: {
+	items: {
 		display: "flex",
-		alignItems: "center",
-		justifyContent: "flex-end",
-		padding: theme.spacing(0, 1),
-		// necessary for content to be below app bar
-		...theme.mixins.toolbar,
+		flexDirection: "column",
+		justifyItems: "center",
+		padding: theme.spacing(1)
 	},
 	item: {
-		paddingLeft: theme.spacing(3),
-		borderRadius: theme.spacing(theme.spacing(0.5), 0, 0, theme.spacing(0.5)),
-		"&.Mui-selected": {
-			color: theme.palette.primary.main,
-			backgroundColor: fade(theme.palette.primary.light, 0.16)
-		},
-	},
-	title: {
-		fontFamily: "Manrope",
-		fontWeight: 600,
-		fontSize: 14
+		width: 48,
+		height: 48,
 	}
 }));
 
-interface SideBarProps {
-	open: boolean;
-	onClose: () => void;
-}
-
 interface MenuOption {
 	name: string;
-	icon: string;
+	icon: Icon;
 	path: string;
 }
 
 const generalOptions: MenuOption[] = [
 	{
 		name: "Overview",
-		icon: mdiViewDashboardOutline,
+		icon: Home,
 		path: "/"
-	}
-];
-
-const refOptions: MenuOption[] = [
+	},
 	{
 		name: "Remotes",
-		icon: mdiServer,
+		icon: ArrowsRight,
 		path: "/settings/remotes"
 	},
 	{
 		name: "Refractions",
-		icon: mdiCallSplit,
+		icon: ArrowsSplit,
 		path: "/settings/refract"
 	}
 ];
 
 const settingOptions: MenuOption[] = [
 	{
-		name: "Access control",
-		icon: mdiAccountMultipleOutline,
-		path: "/settings/acl"
-	},
-	{
 		name: "User profile",
-		icon: mdiAccountOutline,
+		icon: User,
 		path: "/profile"
 	},
 	{
 		name: "Settings",
-		icon: mdiCogOutline,
+		icon: Settings,
 		path: "/settings"
 	}
 ]
 
-const SideBar: React.FC<SideBarProps> = ({open, onClose}): JSX.Element => {
+const SideBar: React.FC = (): JSX.Element => {
 	// hooks
 	const classes = useStyles();
 	const theme = useTheme();
@@ -134,62 +72,35 @@ const SideBar: React.FC<SideBarProps> = ({open, onClose}): JSX.Element => {
 
 	const getListItem = (opt: MenuOption): JSX.Element => {
 		return (
-			<ListItem
-				className={classes.item}
-				button
-				selected={location.pathname === opt.path}
-				component={Link}
-				to={opt.path}
-				key={opt.name}>
-				<ListItemIcon>
-					<Icon
-						path={opt.icon}
-						size={1}
-						color={theme.palette.text.secondary}
-					/>
-				</ListItemIcon>
-				<ListItemText
-					primaryTypographyProps={{className: classes.title}}>
-					{opt.name}
-				</ListItemText>
-			</ListItem>
+			<Tooltip
+				title={opt.name}
+				placement="right">
+				<IconButton
+					className={classes.item}
+					component={Link}
+					to={opt.path}
+					color="secondary"
+					centerRipple={false}>
+					<opt.icon color={theme.palette.primary.contrastText}/>
+				</IconButton>
+			</Tooltip>
 		)
 	}
 
 	return (
 		<Drawer
 			variant="permanent"
-			className={clsx(classes.drawer, {
-				[classes.drawerOpen]: open,
-				[classes.drawerClose]: !open,
-			})}
-			classes={{
-				paper: clsx({
-					[classes.drawerOpen]: open,
-					[classes.drawerClose]: !open,
-				}),
-			}}>
-			<div className={classes.toolbar}>
-				<IconButton onClick={onClose}>
-					<Icon
-						path={theme.direction === "rtl" ? mdiChevronRight : mdiChevronLeft}
-						size={1}
-						color={theme.palette.text.secondary}
-					/>
-				</IconButton>
+			className={classes.drawer}
+			classes={{paper: classes.paper}}>
+			<div style={{display: "flex", flexDirection: "column", height: "100%"}}>
+				<div className={classes.items}>
+					{generalOptions.map((opt) => getListItem(opt))}
+				</div>
+				<div style={{flex: 1}}/>
+				<div className={classes.items}>
+					{settingOptions.map((opt) => getListItem(opt))}
+				</div>
 			</div>
-			<Divider/>
-			<List>
-				{generalOptions.map((opt) => getListItem(opt))}
-			</List>
-			<Divider/>
-			<List>
-				{refOptions.map((opt) => getListItem(opt))}
-			</List>
-			<Divider/>
-			<List>
-				{settingOptions.map((opt) => getListItem(opt))}
-			</List>
 		</Drawer>
 	);
 }

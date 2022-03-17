@@ -15,20 +15,32 @@
  *
  */
 
-import React, {useEffect} from "react";
+import React, {ReactNode, useEffect, useState} from "react";
 import {Avatar, makeStyles, Paper, Theme, Typography} from "@material-ui/core";
 import Center from "react-center";
-import StandardLayout from "../../layout/StandardLayout";
+import {Settings as SettingsIcon} from "tabler-icons-react";
+import SidebarLayout from "../../layout/SidebarLayout";
+import AccessControlSettings from "../acl";
+import SimpleSidebar from "../../layout/SimpleSidebar";
 import Info from "./Info";
-import GoLang from "./GoLang";
-import Reactor from "./Reactor";
-import Roles from "./Roles";
+import GoLangSettings from "./GoLangSettings";
+import ReactorSettings from "./ReactorSettings";
+import Transports from "./Transports";
 
 export interface IDParams {
 	id: string;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
+	title: {
+		color: theme.palette.grey["700"],
+		fontWeight: 500,
+		fontSize: 15
+	},
+	item: {
+		borderRadius: theme.spacing(1),
+		color: theme.palette.primary.main
+	},
 	name: {
 		fontFamily: "Manrope",
 		fontWeight: 500,
@@ -45,17 +57,57 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 }));
 
-
 const Settings: React.FC = (): JSX.Element => {
 	// hooks
 	const classes = useStyles();
+	const [selected, setSelected] = useState<ReactNode | null>(null);
 
 	useEffect(() => {
 		window.document.title = "Settings";
 	}, []);
 
+	const content = new Map<string, ReactNode>([
+		["transport", <Transports key="transport"/>],
+		["about", <Info key="about"/>],
+		["go", <GoLangSettings key="go"/>],
+		["reactor", <ReactorSettings key="reactor"/>],
+		["acl", <AccessControlSettings key="acl"/>]
+	]);
+
+	const settings = [
+		{
+			id: "transport",
+			label: "Transport profiles"
+		},
+		{
+			id: "go",
+			label: "GoProxy"
+		},
+		{
+			id: "reactor",
+			label: "System",
+		},
+		{
+			id: "acl",
+			label: "Permissions"
+		},
+		{
+			id: "about",
+			label: "About"
+		},
+	]
+
 	return (
-		<StandardLayout>
+		<SidebarLayout
+			sidebarWidth={2}
+			sidebar={<div>
+				<SimpleSidebar
+					items={settings}
+					header="Settings"
+					icon={SettingsIcon}
+					onSelection={val => setSelected(content.get(val.id))}
+				/>
+			</div>}>
 			<Center>
 				<Avatar
 					className={classes.avatar}
@@ -70,11 +122,8 @@ const Settings: React.FC = (): JSX.Element => {
 				align="center">
 				Settings
 			</Typography>
-			<GoLang/>
-			<Reactor/>
-			<Roles/>
-			<Info/>
-		</StandardLayout>
+			{selected}
+		</SidebarLayout>
 	);
 }
 export default Settings;

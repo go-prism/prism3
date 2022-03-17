@@ -20,6 +20,17 @@ export const useGetRemote = (): QueryTuple<Data, Vars> => {
 				uri
 				archetype
 				enabled
+				transport {
+					id
+					name
+					cert
+					key
+					ca
+					skipTLSVerify
+					httpProxy
+					httpsProxy
+					noProxy
+                }
 			}
 		}
 	`);

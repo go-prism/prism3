@@ -44,6 +44,16 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Artifact struct {
+		CreatedAt func(childComplexity int) int
+		Downloads func(childComplexity int) int
+		ID        func(childComplexity int) int
+		RemoteID  func(childComplexity int) int
+		Slices    func(childComplexity int) int
+		URI       func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateRefraction func(childComplexity int, input model.NewRefract) int
 		CreateRemote     func(childComplexity int, input model.NewRemote) int
@@ -52,10 +62,13 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetRefraction   func(childComplexity int, id string) int
-		GetRemote       func(childComplexity int, id string) int
-		ListRefractions func(childComplexity int) int
-		ListRemotes     func(childComplexity int, arch string) int
+		GetRefraction         func(childComplexity int, id string) int
+		GetRemote             func(childComplexity int, id string) int
+		ListArtifacts         func(childComplexity int, remote string) int
+		ListCombinedArtifacts func(childComplexity int, refract string) int
+		ListRefractions       func(childComplexity int) int
+		ListRemotes           func(childComplexity int, arch string) int
+		ListTransports        func(childComplexity int) int
 	}
 
 	Refraction struct {
@@ -95,6 +108,7 @@ type ComplexityRoot struct {
 		HTTPSProxy    func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Key           func(childComplexity int) int
+		Name          func(childComplexity int) int
 		NoProxy       func(childComplexity int) int
 		SkipTLSVerify func(childComplexity int) int
 	}
@@ -111,6 +125,9 @@ type QueryResolver interface {
 	GetRemote(ctx context.Context, id string) (*model.Remote, error)
 	ListRefractions(ctx context.Context) ([]*model.Refraction, error)
 	GetRefraction(ctx context.Context, id string) (*model.Refraction, error)
+	ListTransports(ctx context.Context) ([]*model.TransportSecurity, error)
+	ListArtifacts(ctx context.Context, remote string) ([]*model.Artifact, error)
+	ListCombinedArtifacts(ctx context.Context, refract string) ([]*model.Artifact, error)
 }
 
 type executableSchema struct {
@@ -127,6 +144,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Artifact.createdAt":
+		if e.complexity.Artifact.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Artifact.CreatedAt(childComplexity), true
+
+	case "Artifact.downloads":
+		if e.complexity.Artifact.Downloads == nil {
+			break
+		}
+
+		return e.complexity.Artifact.Downloads(childComplexity), true
+
+	case "Artifact.id":
+		if e.complexity.Artifact.ID == nil {
+			break
+		}
+
+		return e.complexity.Artifact.ID(childComplexity), true
+
+	case "Artifact.remoteID":
+		if e.complexity.Artifact.RemoteID == nil {
+			break
+		}
+
+		return e.complexity.Artifact.RemoteID(childComplexity), true
+
+	case "Artifact.slices":
+		if e.complexity.Artifact.Slices == nil {
+			break
+		}
+
+		return e.complexity.Artifact.Slices(childComplexity), true
+
+	case "Artifact.uri":
+		if e.complexity.Artifact.URI == nil {
+			break
+		}
+
+		return e.complexity.Artifact.URI(childComplexity), true
+
+	case "Artifact.updatedAt":
+		if e.complexity.Artifact.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Artifact.UpdatedAt(childComplexity), true
 
 	case "Mutation.createRefraction":
 		if e.complexity.Mutation.CreateRefraction == nil {
@@ -200,6 +266,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetRemote(childComplexity, args["id"].(string)), true
 
+	case "Query.listArtifacts":
+		if e.complexity.Query.ListArtifacts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_listArtifacts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ListArtifacts(childComplexity, args["remote"].(string)), true
+
+	case "Query.listCombinedArtifacts":
+		if e.complexity.Query.ListCombinedArtifacts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_listCombinedArtifacts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ListCombinedArtifacts(childComplexity, args["refract"].(string)), true
+
 	case "Query.listRefractions":
 		if e.complexity.Query.ListRefractions == nil {
 			break
@@ -218,6 +308,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ListRemotes(childComplexity, args["arch"].(string)), true
+
+	case "Query.listTransports":
+		if e.complexity.Query.ListTransports == nil {
+			break
+		}
+
+		return e.complexity.Query.ListTransports(childComplexity), true
 
 	case "Refraction.archetype":
 		if e.complexity.Refraction.Archetype == nil {
@@ -408,6 +505,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TransportSecurity.Key(childComplexity), true
 
+	case "TransportSecurity.name":
+		if e.complexity.TransportSecurity.Name == nil {
+			break
+		}
+
+		return e.complexity.TransportSecurity.Name(childComplexity), true
+
 	case "TransportSecurity.noProxy":
 		if e.complexity.TransportSecurity.NoProxy == nil {
 			break
@@ -503,6 +607,16 @@ enum Archetype {
   RUST
 }
 
+type Artifact {
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  createdAt: Int!
+  updatedAt: Int!
+  uri: String!
+  downloads: Int!
+  remoteID: ID! @goTag(key: "gorm", value: "index")
+  slices: Strings!
+}
+
 type Refraction {
   id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
   createdAt: Int!
@@ -535,6 +649,7 @@ type RemoteSecurity {
 
 type TransportSecurity {
   id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+  name: String! @goTag(key: "gorm", value: "unique")
   ca: String!
   cert: String!
   key: String!
@@ -550,12 +665,18 @@ type Query {
 
   listRefractions: [Refraction!]!
   getRefraction(id: ID!): Refraction!
+
+  listTransports: [TransportSecurity!]!
+
+  listArtifacts(remote: ID!): [Artifact!]!
+  listCombinedArtifacts(refract: ID!): [Artifact!]!
 }
 
 input NewRemote {
   name: String!
   uri: String!
   archetype: Archetype!
+  transport: ID!
 }
 
 input NewRefract {
@@ -684,6 +805,36 @@ func (ec *executionContext) field_Query_getRemote_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_listArtifacts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["remote"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remote"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["remote"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_listCombinedArtifacts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["refract"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("refract"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["refract"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_listRemotes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -736,6 +887,251 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Artifact_id(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Artifact_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Artifact_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Artifact_uri(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URI, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Artifact_downloads(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Downloads, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Artifact_remoteID(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RemoteID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Artifact_slices(ctx context.Context, field graphql.CollectedField, obj *model.Artifact) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Artifact",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Slices, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(datatypes.JSONArray)
+	fc.Result = res
+	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Mutation_createRemote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
@@ -1064,6 +1460,125 @@ func (ec *executionContext) _Query_getRefraction(ctx context.Context, field grap
 	res := resTmp.(*model.Refraction)
 	fc.Result = res
 	return ec.marshalNRefraction2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRefraction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_listTransports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListTransports(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TransportSecurity)
+	fc.Result = res
+	return ec.marshalNTransportSecurity2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurityᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_listArtifacts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_listArtifacts_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListArtifacts(rctx, args["remote"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Artifact)
+	fc.Result = res
+	return ec.marshalNArtifact2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐArtifactᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_listCombinedArtifacts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_listCombinedArtifacts_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListCombinedArtifacts(rctx, args["refract"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Artifact)
+	fc.Result = res
+	return ec.marshalNArtifact2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐArtifactᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1905,6 +2420,41 @@ func (ec *executionContext) _TransportSecurity_id(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _TransportSecurity_name(ctx context.Context, field graphql.CollectedField, obj *model.TransportSecurity) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TransportSecurity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TransportSecurity_ca(ctx context.Context, field graphql.CollectedField, obj *model.TransportSecurity) (ret graphql.Marshaler) {
@@ -3410,6 +3960,14 @@ func (ec *executionContext) unmarshalInputNewRemote(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "transport":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transport"))
+			it.Transport, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -3423,6 +3981,97 @@ func (ec *executionContext) unmarshalInputNewRemote(ctx context.Context, obj int
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var artifactImplementors = []string{"Artifact"}
+
+func (ec *executionContext) _Artifact(ctx context.Context, sel ast.SelectionSet, obj *model.Artifact) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, artifactImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Artifact")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_createdAt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatedAt":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_updatedAt(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "uri":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_uri(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "downloads":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_downloads(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "remoteID":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_remoteID(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "slices":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Artifact_slices(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var mutationImplementors = []string{"Mutation"}
 
@@ -3592,6 +4241,75 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getRefraction(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "listTransports":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listTransports(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "listArtifacts":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listArtifacts(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "listCombinedArtifacts":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listCombinedArtifacts(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3916,6 +4634,16 @@ func (ec *executionContext) _TransportSecurity(ctx context.Context, sel ast.Sele
 		case "id":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._TransportSecurity_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._TransportSecurity_name(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4437,6 +5165,60 @@ func (ec *executionContext) marshalNArchetype2gitlabᚗcomᚋgoᚑprismᚋprism3
 	return v
 }
 
+func (ec *executionContext) marshalNArtifact2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐArtifactᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Artifact) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNArtifact2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐArtifact(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNArtifact2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐArtifact(ctx context.Context, sel ast.SelectionSet, v *model.Artifact) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Artifact(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4679,6 +5461,50 @@ func (ec *executionContext) marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3�
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalNTransportSecurity2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurityᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TransportSecurity) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTransportSecurity2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurity(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNTransportSecurity2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurity(ctx context.Context, sel ast.SelectionSet, v *model.TransportSecurity) graphql.Marshaler {

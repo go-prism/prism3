@@ -43,6 +43,27 @@ func (r *queryResolver) GetRefraction(ctx context.Context, id string) (*model.Re
 	return r.repos.RefractRepo.GetRefraction(ctx, id)
 }
 
+func (r *queryResolver) ListTransports(ctx context.Context) ([]*model.TransportSecurity, error) {
+	return r.repos.TransportRepo.ListTransports(ctx)
+}
+
+func (r *queryResolver) ListArtifacts(ctx context.Context, remote string) ([]*model.Artifact, error) {
+	return r.repos.ArtifactRepo.ListArtifacts(ctx, []string{remote})
+}
+
+func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract string) ([]*model.Artifact, error) {
+	// collect a list of remotes
+	ref, err := r.repos.RefractRepo.GetRefraction(ctx, refract)
+	if err != nil {
+		return nil, err
+	}
+	remotes := make([]string, len(ref.Remotes))
+	for i := range remotes {
+		remotes[i] = ref.Remotes[i].ID
+	}
+	return r.repos.ArtifactRepo.ListArtifacts(ctx, remotes)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

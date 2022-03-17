@@ -1,20 +1,26 @@
-import {Box, Grid} from "@material-ui/core";
+import {Box, Grid, GridSize} from "@material-ui/core";
 import React, {ReactNode} from "react";
 import {ErrorBoundary} from "react-error-boundary";
+import {useTheme} from "@material-ui/core/styles";
 import Error from "../alert/Error";
 
 interface SidebarLayoutProps {
 	sidebar: JSX.Element;
 	children: ReactNode;
+	sidebarWidth?: GridSize;
 }
 
-const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, children}): JSX.Element => {
+const DEFAULT_WIDTH = 2;
+
+const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, sidebarWidth = DEFAULT_WIDTH, children}): JSX.Element => {
+	const theme = useTheme();
 	return (
 		<Grid
 			container>
 			<Grid
+				style={{backgroundColor: theme.palette.grey["200"], height: "calc(100vh - 68px)", padding: theme.spacing(1)}}
 				item
-				xs={3}>
+				xs={sidebarWidth || DEFAULT_WIDTH}>
 				<ErrorBoundary
 					fallbackRender={p => <Error props={p}/>}>
 					<Box
@@ -24,6 +30,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, children}): JSX.E
 				</ErrorBoundary>
 			</Grid>
 			<Grid
+				style={{margin: theme.spacing(2)}}
 				item
 				xs={9}
 				sm={8}

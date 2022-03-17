@@ -19,11 +19,10 @@ import React, {useState} from "react";
 import {AppBar, Avatar, IconButton, makeStyles, Popover, Theme, Toolbar, Typography} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import Icon from "@mdi/react";
-import {mdiAccountCircleOutline, mdiHelpCircleOutline, mdiMenu} from "@mdi/js";
+import {mdiAccountCircleOutline, mdiHelpCircleOutline} from "@mdi/js";
 import {useTheme} from "@material-ui/core/styles";
-import clsx from "clsx";
 
-const drawerWidth = 240;
+const drawerWidth = 64;
 
 const useStyles = makeStyles((theme: Theme) => ({
 	grow: {
@@ -65,21 +64,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 		padding: 6,
 		backgroundColor: theme.palette.background.default
 	},
-	appBar: {
-		zIndex: theme.zIndex.drawer + 1,
-		transition: theme.transitions.create(["width", "margin"], {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.leavingScreen,
-		}),
-		color: theme.palette.background.default
-	},
 	appBarShift: {
 		marginLeft: drawerWidth,
 		width: `calc(100% - ${drawerWidth}px)`,
-		transition: theme.transitions.create(["width", "margin"], {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.enteringScreen,
-		}),
 	},
 	menuButton: {
 		marginRight: 36,
@@ -100,11 +87,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 interface NavProps {
 	loading?: boolean;
-	open: boolean;
-	onOpen: () => void;
 }
 
-const Nav: React.FC<NavProps> = ({loading = false, open, onOpen}: NavProps): JSX.Element => {
+const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	// hooks
 	const classes = useStyles();
 	const theme = useTheme();
@@ -122,27 +107,12 @@ const Nav: React.FC<NavProps> = ({loading = false, open, onOpen}: NavProps): JSX
 	return (
 		<div>
 			<AppBar
+				variant="outlined"
 				position="fixed"
 				color="inherit"
-				className={clsx(classes.appBar, {
-					[classes.appBarShift]: open,
-				})}>
+				className={classes.appBarShift}>
 				<Toolbar
 					className={classes.toolbar}>
-					<IconButton
-						color="inherit"
-						aria-label="open drawer"
-						onClick={onOpen}
-						edge="start"
-						className={clsx(classes.menuButton, {
-							[classes.hide]: open,
-						})}>
-						<Icon
-							path={mdiMenu}
-							size={1}
-							color={theme.palette.text.secondary}
-						/>
-					</IconButton>
 					<Avatar
 						className={classes.avatar}
 						src="/favicon.png"

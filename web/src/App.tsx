@@ -1,5 +1,5 @@
 import {createMuiTheme, createStyles, CssBaseline, makeStyles, MuiThemeProvider, Theme} from "@material-ui/core";
-import React, {useState} from "react";
+import React from "react";
 import {Route, Switch} from "react-router";
 import {light} from "./style/palette";
 import Nav from "./containers/Nav";
@@ -34,8 +34,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 		...theme.mixins.toolbar,
 	},
 	content: {
-		flexGrow: 1,
-		padding: theme.spacing(3),
+		flexGrow: 1
 	},
 }),
 );
@@ -56,31 +55,14 @@ const App: React.FC = (): JSX.Element => {
 		}
 	});
 
-	// local state
-	const [open, setOpen] = useState<boolean>(false);
-
-	const handleClose = (): void => {
-		setOpen(false);
-	}
-
-	const handleOpen = (): void => {
-		setOpen(true);
-	}
-
 	return (
 		<div>
 			<MuiThemeProvider theme={theme}>
 				<div
 					className={classes.root}>
 					<CssBaseline/>
-					<Nav
-						open={open}
-						onOpen={handleOpen}
-					/>
-					<SideBar
-						open={open}
-						onClose={handleClose}
-					/>
+					<Nav/>
+					<SideBar/>
 					<main className={classes.content}>
 						<div className={classes.toolbar}/>
 						<Switch>
@@ -100,8 +82,16 @@ const App: React.FC = (): JSX.Element => {
 								component={Remotes}
 							/>
 							<Route
+								path="/settings/remotes/:id/-/edit"
+								component={Remotes}
+							/>
+							<Route
 								path="/settings/refract"
 								exact
+								component={Refractions}
+							/>
+							<Route
+								path="/settings/refract/:id/-/edit"
 								component={Refractions}
 							/>
 							<Route
@@ -136,14 +126,6 @@ const App: React.FC = (): JSX.Element => {
 								path="/settings/core/reactor"
 								component={ReactorSettings}
 								exact
-							/>
-							<Route
-								path="/settings/remotes/:id/-/edit"
-								component={EditRemote}
-							/>
-							<Route
-								path="/settings/refract/:id/-/edit"
-								component={EditRefract}
 							/>
 							<Route
 								path="/profile"

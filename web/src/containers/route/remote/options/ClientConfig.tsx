@@ -28,7 +28,7 @@ import {
 	Theme
 } from "@material-ui/core";
 import {Alert} from "@material-ui/lab";
-import {UpdateProfileRequest} from "@prism/prism-rpc/build/gen/service/api/remote_pb";
+import {TransportSecurity} from "../../../../graph/types";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	text: {
@@ -40,19 +40,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 	}
 }));
 
-export const CLIENT_PROFILE_DEFAULT: UpdateProfileRequest.AsObject = {
-	ca: "",
-	cert: "",
-	key: "",
-	skiptls: false,
-	httpproxy: "",
-	httpsproxy: "",
-	noproxy: ""
-};
-
 interface ClientConfigProps {
-	profile: UpdateProfileRequest.AsObject;
-	setProfile: (p: UpdateProfileRequest.AsObject) => void;
+	profile: TransportSecurity;
+	setProfile: (p: TransportSecurity) => void;
 	loading?: boolean;
 	disabled?: boolean;
 }
@@ -62,14 +52,14 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 	const classes = useStyles();
 
 	// local state
-	const [skipTLS, setSkipTLS] = useState<boolean>(profile.skiptls);
+	const [skipTLS, setSkipTLS] = useState<boolean>(profile.skipTLSVerify);
 	const [ca, setCA] = useState<string>(profile.ca);
 	const [cert, setCert] = useState<string>(profile.cert);
 	const [key, setKey] = useState<string>(profile.key);
 
-	const [httpProxy, setHttpProxy] = useState<string>(profile.httpproxy);
-	const [httpsProxy, setHttpsProxy] = useState<string>(profile.httpsproxy);
-	const [noProxy, setNoProxy] = useState<string>(profile.noproxy);
+	const [httpProxy, setHttpProxy] = useState<string>(profile.httpProxy);
+	const [httpsProxy, setHttpsProxy] = useState<string>(profile.httpsProxy);
+	const [noProxy, setNoProxy] = useState<string>(profile.noProxy);
 
 	const defaultProps = {
 		className: classes.text,
@@ -80,24 +70,24 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 	};
 
 	useEffect(() => {
-		setHttpProxy(profile.httpproxy);
-		setHttpsProxy(profile.httpsproxy);
-		setNoProxy(profile.noproxy);
-		setSkipTLS(profile.skiptls);
+		setHttpProxy(profile.httpProxy);
+		setHttpsProxy(profile.httpsProxy);
+		setNoProxy(profile.noProxy);
+		setSkipTLS(profile.skipTLSVerify);
 		setCA(profile.ca);
 		setCert(profile.cert);
 		setKey(profile.key);
 	}, [profile]);
 
 	useEffect(() => {
-		const p = profile;
+		const p = JSON.parse(JSON.stringify(profile));
 		p.ca = ca;
 		p.cert = cert;
 		p.key = key;
-		p.skiptls = skipTLS;
-		p.httpproxy = httpProxy;
-		p.httpsproxy = httpsProxy;
-		p.noproxy = noProxy;
+		p.skipTLSVerify = skipTLS;
+		p.httpProxy = httpProxy;
+		p.httpsProxy = httpsProxy;
+		p.noProxy = noProxy;
 		setProfile(p);
 	}, [skipTLS, ca, cert, key, httpProxy, httpsProxy, noProxy]);
 
@@ -107,7 +97,7 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-ca"
-				variant="outlined"
+				variant="filled"
 				placeholder="Enter one or more pem-encoded certificates..."
 				value={ca}
 				disabled={loading || disabled}
@@ -117,7 +107,7 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-cert"
-				variant="outlined"
+				variant="filled"
 				label="Certificate"
 				placeholder="Enter a pem-encoded certificate..."
 				value={cert}
@@ -127,22 +117,13 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-key"
-				variant="outlined"
+				variant="filled"
 				label="Key"
 				placeholder="Enter a decrypted key..."
 				value={key}
 				disabled={loading || disabled}
 				onChange={e => setKey(e.target.value)}
 			/>
-			<Collapse
-				in={skipTLS}>
-				<Alert
-					severity="warning">
-					Skipping TLS verification undermines the basic principles that define
-					Public Key Infrastructure and opens you up to security vulnerabilities
-					such as MitM attacks.
-				</Alert>
-			</Collapse>
 			<ListItem>
 				<ListItemIcon>
 					<Switch
@@ -157,11 +138,20 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 					secondary="Prism will not verify the authenticity of remote certificates (not recommended)."
 				/>
 			</ListItem>
+			<Collapse
+				in={skipTLS}>
+				<Alert
+					severity="warning">
+					Skipping TLS verification undermines the basic principles that define
+					Public Key Infrastructure and opens you up to security vulnerabilities
+					such as MitM attacks.
+				</Alert>
+			</Collapse>
 			<ListSubheader>HTTP Proxy</ListSubheader>
 			<TextField
 				{...defaultProps}
 				id="textfield-http-proxy"
-				variant="outlined"
+				variant="filled"
 				label="HTTP Proxy URL"
 				placeholder="Enter a URL..."
 				value={httpProxy}
@@ -171,7 +161,7 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-https-proxy"
-				variant="outlined"
+				variant="filled"
 				label="HTTPS Proxy URL"
 				placeholder="Enter a URL..."
 				value={httpsProxy}
@@ -181,7 +171,7 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-no-proxy"
-				variant="outlined"
+				variant="filled"
 				label="No Proxy"
 				placeholder="Enter a comma separated list of host names..."
 				value={noProxy}

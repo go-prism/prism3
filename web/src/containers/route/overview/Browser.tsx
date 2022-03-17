@@ -25,12 +25,13 @@ import LZString from "lz-string";
 import {IconButton, makeStyles, Theme} from "@material-ui/core";
 import Icon from "@mdi/react";
 import {mdiArrowLeft} from "@mdi/js";
+import {gql, useQuery} from "@apollo/client";
+import AutoSizer from "react-virtualized-auto-sizer";
+import {FixedSizeList} from "react-window";
 import FolderTreeItem, {TreeNode} from "../../list/FolderTreeItem";
 import {Node} from "../Overview";
-import useLoading from "../../../hooks/useLoading";
-import useErrors from "../../../hooks/useErrors";
-import {CacheEntryV1, RefractionV1} from "../../../config/types";
 import SidebarLayout from "../../layout/SidebarLayout";
+import {Artifact, Refraction} from "../../../graph/types";
 import ObjectInfo from "./ObjectInfo";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -44,6 +45,15 @@ interface OverviewParams {
 	ref?: string;
 }
 
+interface QueryData {
+	listRefractions: Refraction[];
+	listCombinedArtifacts: Artifact[];
+}
+
+interface QueryVars {
+	refract: string;
+}
+
 const Browser: React.FC = (): JSX.Element => {
 	// hooks
 	const theme = useTheme();
@@ -51,19 +61,28 @@ const Browser: React.FC = (): JSX.Element => {
 	const {ref} = useParams<OverviewParams>();
 	const classes = useStyles();
 
-	// global state
-	const refractions: RefractionV1[] = [];
-	const cacheEntries: CacheEntryV1[] = [];
-	
-	const loadingEntries = useLoading([]);
-	const errorEntries = useErrors([]);
-
-	const loadingRefracts = useLoading([]);
-	const errorRefracts = useErrors([]);
-
 	// local state
-	const [open, setOpen] = useState<RefractionV1 | null>(null);
+	const [open, setOpen] = useState<Refraction | null>(null);
 	const [selected, setSelected] = useState<string>("");
+
+	const {data, loading, error} = useQuery<QueryData, QueryVars>(gql`
+        query overview($refract: ID!) {
+            listRefractions {
+                id
+                name
+                createdAt
+                updatedAt
+                archetype
+            }
+            listCombinedArtifacts(refract: $refract) {
+                id
+                uri
+                updatedAt
+                createdAt
+                downloads
+            }
+        }
+	`, {variables: {refract: ref || ""}});
 
 	const expanded: string[] = useMemo(() => {
 		return LZString.decompressFromEncodedURIComponent(history.location.hash.replace("#", ""))?.split("/") || [];
@@ -78,45 +97,35 @@ const Browser: React.FC = (): JSX.Element => {
 	}, [open]);
 
 	const selectedItem = useMemo(() => {
-		for (const e of cacheEntries) {
+		if (data?.listCombinedArtifacts == null)
+			return null;
+		for (const e of data.listCombinedArtifacts) {
 			if (e.id === selected)
 				return e;
 		}
 		return null;
-	}, [cacheEntries, selected]);
+	}, [data?.listCombinedArtifacts, selected]);
 
 	useEffect(() => {
 		if (ref == null) {
-			// dispatch(resetAction(RESET_CACHES));
 			setOpen(null);
 			return;
 		}
-		for (const r of refractions) {
+		if (data?.listRefractions == null)
+			return;
+		for (const r of data.listRefractions) {
 			if (r.id === ref) {
 				setOpen(r);
-				onLoadData(r.id);
 				return;
 			}
 		}
 		setOpen(null);
-		// dispatch(resetAction(RESET_CACHES));
-	}, [refractions, ref]);
+	}, [data, ref]);
 
-	// useEffect(() => {
-	// 	dispatch(listRefracts());
-	// 	return () => {
-	// 		dispatch(resetAction(REFRACT_LIST));
-	// 		dispatch(resetAction(CACHE_LIST));
-	// 	}
-	// }, []);
-
-	const onLoadData = (id: string): void => {
-		// dispatch(resetAction(RESET_CACHES));
-		// dispatch(listCacheByRefract(id));
-	}
-
-	const data = useMemo(() => {
-		return cacheEntries.reduce((r: TreeNode[], p) => {
+	const items = useMemo(() => {
+		if (data?.listCombinedArtifacts == null)
+			return [];
+		return data.listCombinedArtifacts.reduce((r: TreeNode[], p) => {
 			const names = p.uri.split("/").map(n => ({first: n, second: p}));
 			names.reduce((q, value) => {
 				let temp = q.find(o => o.name === value.first);
@@ -127,7 +136,7 @@ const Browser: React.FC = (): JSX.Element => {
 			}, r);
 			return r;
 		}, []);
-	}, [cacheEntries]);
+	}, [data?.listCombinedArtifacts]);
 
 	const onNodeToggle = (ids: string[]): void => {
 		history.push({
@@ -147,7 +156,7 @@ const Browser: React.FC = (): JSX.Element => {
 	
 	const flattenOpened = (): Node[] => {
 		const result: Node[] = [];
-		for (const datum of data) {
+		for (const datum of items) {
 			flattenNode(datum, 1, result);
 		}
 		return result;
@@ -186,26 +195,26 @@ const Browser: React.FC = (): JSX.Element => {
 		<SidebarLayout
 			sidebar={<div
 				style={{height: "calc(100vh - 112px)", maxHeight: "calc(100vh - 112px)"}}>
-				{loadingEntries && <ListItemSkeleton icon/>}
-				{!loadingEntries && errorEntries != null && <Alert
+				{loading && <ListItemSkeleton icon/>}
+				{!loading && error != null && <Alert
 					severity="error">
 					Failed to load data.
 				</Alert>}
-				{!loadingEntries && errorEntries == null && flattenedData.length === 0 && <Alert
+				{!loading && error == null && flattenedData.length === 0 && <Alert
 					severity="info">
 					No data could be found.
 				</Alert>}
-				{/*{!loadingEntries && errorEntries == null && flattenedData.length > 0 && <AutoSizer>*/}
-				{/*	{({height, width}) => (*/}
-				{/*		<FixedSizeList*/}
-				{/*			itemCount={flattenedData.length}*/}
-				{/*			itemSize={36}*/}
-				{/*			width={width}*/}
-				{/*			height={height}*/}
-				{/*			itemKey={i => flattenedData[i].node.id}>*/}
-				{/*			{Row}*/}
-				{/*		</FixedSizeList>)}*/}
-				{/*</AutoSizer>}*/}
+				{!loading && error == null && flattenedData.length > 0 && <AutoSizer>
+					{({height, width}) => (
+						<FixedSizeList
+							itemCount={flattenedData.length}
+							itemSize={36}
+							width={width}
+							height={height}
+							itemKey={i => flattenedData[i].node.id}>
+							{Row}
+						</FixedSizeList>)}
+				</AutoSizer>}
 			</div>}>
 			<div
 				style={{margin: theme.spacing(1)}}>
@@ -222,11 +231,11 @@ const Browser: React.FC = (): JSX.Element => {
 					</IconButton>
 					Back
 				</div>
-				{selectedItem == null && errorRefracts == null && <Alert
+				{selectedItem == null && error == null && <Alert
 					severity="info">
 					Nothing has been selected
 				</Alert>}
-				{!loadingRefracts && errorRefracts != null && <Alert
+				{!loading && error != null && <Alert
 					severity="error">
 					Failed to load refractions.
 				</Alert>}

@@ -4,6 +4,7 @@ import (
 	"context"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/go-prism/prism3/core/internal/db"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gorm.io/gorm"
 	"time"
@@ -16,6 +17,14 @@ func NewRemoteRepo(db *gorm.DB) *RemoteRepo {
 }
 
 func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*model.Remote, error) {
+	var transport model.TransportSecurity
+	if in.Transport == "" {
+		// use the default transport
+		r.db.Where("id = ?", db.TransportProfileDefault).First(&transport)
+	} else if err := r.db.Where("id = ?", in.Transport).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to find transport")
+		return nil, err
+	}
 	result := model.Remote{
 		ID:        uuid.NewV4().String(),
 		CreatedAt: time.Now().Unix(),
@@ -30,16 +39,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 			Blocked:     nil,
 			AuthHeaders: nil,
 		},
-		Transport: &model.TransportSecurity{
-			ID:            uuid.NewV4().String(),
-			Ca:            "",
-			Cert:          "",
-			Key:           "",
-			SkipTLSVerify: false,
-			HTTPProxy:     "",
-			HTTPSProxy:    "",
-			NoProxy:       "",
-		},
+		Transport: &transport,
 	}
 	if err := r.db.Create(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to create remote")

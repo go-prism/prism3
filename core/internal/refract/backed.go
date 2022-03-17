@@ -2,6 +2,7 @@ package refract
 
 import (
 	"context"
+	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
 	"io"
@@ -12,10 +13,10 @@ type BackedRefraction struct {
 	rf  *Refraction
 }
 
-func NewBackedRefraction(mod *model.Refraction) *BackedRefraction {
+func NewBackedRefraction(mod *model.Refraction, onCreate repo.CreateArtifactFunc) *BackedRefraction {
 	remotes := make([]remote.Remote, len(mod.Remotes))
 	for i := range mod.Remotes {
-		remotes[i] = remote.NewBackedRemote(mod.Remotes[i])
+		remotes[i] = remote.NewBackedRemote(mod.Remotes[i], onCreate)
 	}
 	return &BackedRefraction{
 		mod: mod,

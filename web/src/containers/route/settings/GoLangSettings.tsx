@@ -66,80 +66,78 @@ const GoLangSettings: React.FC = (): JSX.Element => {
 	const error = useErrors([]);
 
 	return (
-		<StandardLayout>
-			<div
+		<div
+			className={classes.card}>
+			<Card
 				className={classes.card}>
-				<Card
-					className={classes.card}>
-					<div>
-						<IconButton
-							className={classes.icon}
-							component={Link}
-							to="/settings">
-							<Icon
-								path={mdiArrowLeft}
-								size={0.8}
-								color={theme.palette.text.secondary}
+				<div>
+					<IconButton
+						className={classes.icon}
+						component={Link}
+						to="/settings">
+						<Icon
+							path={mdiArrowLeft}
+							size={0.8}
+							color={theme.palette.text.secondary}
 						    />
-						</IconButton>
+					</IconButton>
 						GoLang integration
-					</div>
-					<ListItem
-						disabled>
-						<ListItemText
-							secondary="Enables or disables the GoProxy API. Cached data will remain available but will not be retrievable by Go until turned back on.">
+				</div>
+				<ListItem
+					disabled>
+					<ListItemText
+						secondary="Enables or disables the GoProxy API. Cached data will remain available but will not be retrievable by Go until turned back on.">
 							Enabled
-						</ListItemText>
-						<ListItemSecondaryAction>
-							<Switch
-								disabled
-								checked
-							/>
-						</ListItemSecondaryAction>
-					</ListItem>
-					<ListItem>
-						<ListItemText
-							secondary="Rewrite hosts as they are requested (e.g. github.com -> git.mycorp.local)">
+					</ListItemText>
+					<ListItemSecondaryAction>
+						<Switch
+							disabled
+							checked
+						/>
+					</ListItemSecondaryAction>
+				</ListItem>
+				<ListItem>
+					<ListItemText
+						secondary="Rewrite hosts as they are requested (e.g. github.com -> git.mycorp.local)">
 							Host rewrite rules
-						</ListItemText>
-						<ListItemSecondaryAction>
-							<GenericIconButton
-								title="Add (disabled)"
-								icon={mdiPlus}
-								colour={theme.palette.text.secondary}
-								disabled
-							/>
-						</ListItemSecondaryAction>
-					</ListItem>
-					<Divider/>
-					{loading && <div>
-						<ListItemSkeleton/>
-						<ListItemSkeleton invertLengths/>
-						<ListItemSkeleton/>
-						<ListItemSkeleton/>
-					</div>}
-					{!loading && error != null && <Alert
-						severity="error">
+					</ListItemText>
+					<ListItemSecondaryAction>
+						<GenericIconButton
+							title="Add (disabled)"
+							icon={mdiPlus}
+							colour={theme.palette.text.secondary}
+							disabled
+						/>
+					</ListItemSecondaryAction>
+				</ListItem>
+				<Divider/>
+				{loading && <div>
+					<ListItemSkeleton/>
+					<ListItemSkeleton invertLengths/>
+					<ListItemSkeleton/>
+					<ListItemSkeleton/>
+				</div>}
+				{!loading && error != null && <Alert
+					severity="error">
 						An error occurred attempting to load rules: "{getErrorMessage(error)}"
-					</Alert>}
-					{!loading && error == null && rules.length === 0 && <Typography
-						className={classes.text}
-						align="center"
-						color="textSecondary">
+				</Alert>}
+				{!loading && error == null && rules.length === 0 && <Typography
+					className={classes.text}
+					align="center"
+					color="textSecondary">
 						No rules could be found.
-					</Typography>}
-					{!loading && error == null && rules.length > 0 && <List>
-						{rules.map(r => <ListItem
-							dense
-							key={r.id}>
-							<ListItemText>
-								{r.source} --&gt; {r.destination}
-							</ListItemText>
-						</ListItem>)}
-					</List>}
-				</Card>
-			</div>
-		</StandardLayout>
+				</Typography>}
+				{!loading && error == null && rules.length > 0 && <List>
+					{rules.map(r => <ListItem
+						dense
+						key={r.id}>
+						<ListItemText>
+							{r.source} --&gt; {r.destination}
+						</ListItemText>
+					</ListItem>)}
+				</List>}
+			</Card>
+		</div>
 	);
 }
 export default GoLangSettings;

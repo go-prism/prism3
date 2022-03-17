@@ -31,7 +31,7 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error)
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
 		return nil, err
 	}
-	refraction := refract.NewBackedRefraction(ref.(*model.Refraction))
+	refraction := refract.NewBackedRefraction(ref.(*model.Refraction), r.repos.ArtifactRepo.CreateArtifact)
 	return refraction.Download(ctx, req.path)
 }
 

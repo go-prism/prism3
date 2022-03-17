@@ -17,7 +17,7 @@
 
 import React, {useEffect, useState} from "react";
 import {
-	Button,
+	Button, Card,
 	Checkbox,
 	createStyles,
 	Grid,
@@ -29,7 +29,7 @@ import {
 	Paper,
 	Theme
 } from "@material-ui/core";
-import {Remotes, RemoteV1} from "../../../config/types";
+import {ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight} from "tabler-icons-react";
 import useListRemotes from "../../../graph/actions/remote/useListRemotes";
 import {Archetype, Remote} from "../../../graph/types";
 
@@ -52,8 +52,8 @@ const not = (a: Remote[], b: Remote[]) => {
 	return a.filter((value) => bid.indexOf(value.id) === -1);
 }
 
-const notID = (a: Remote[], b: string[]) => {
-	return a.filter((value) => b.indexOf(value.id.toString()) === -1);
+const notID = (a: Remote[], b: Remote[]) => {
+	return a.filter((value) => b.find(i => i.id === value.id) == null);
 }
 
 const intersection = (a: Remote[], b: Remote[]) => {
@@ -61,14 +61,14 @@ const intersection = (a: Remote[], b: Remote[]) => {
 	return a.filter((value) => bid.indexOf(value.id) !== -1);
 }
 
-const intersectionID = (a: Remote[], b: string[]) => {
-	return a.filter((value) => b.indexOf(value.id.toString()) !== -1);
+const intersectionID = (a: Remote[], b: Remote[]) => {
+	return a.filter((value) => b.find(i => i.id === value.id) != null);
 }
 
 interface RemoteSelectProps {
 	arch: Archetype;
-	setRemotes: (remotes: string[]) => void;
-	defaultRemotes?: string[];
+	setRemotes: (remotes: Remote[]) => void;
+	defaultRemotes?: Remote[];
 	disabled?: boolean;
 }
 
@@ -97,7 +97,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 	}, [data?.listRemotes]);
 
 	useEffect(() => {
-		setRemotes(left.map(r => r.id.toString()));
+		setRemotes(left);
 	}, [left]);
 
 	const handleToggle = (value: Remote) => () => {
@@ -135,7 +135,9 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 	};
 
 	const customList = (items: Remote[]) => (
-		<Paper className={classes.paper}>
+		<Card
+			className={classes.paper}
+			variant="outlined">
 			<List dense component="div" role="list">
 				{items.map((value: Remote) => {
 					const labelId = `transfer-list-item-${value}-label`;
@@ -153,6 +155,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 									disableRipple
 									inputProps={{"aria-labelledby": labelId}}
 									disabled={disabled}
+									color="primary"
 								/>
 							</ListItemIcon>
 							<ListItemText
@@ -164,7 +167,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 				})}
 				<ListItem/>
 			</List>
-		</Paper>
+		</Card>
 	);
 
 	return (
@@ -181,7 +184,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 						onClick={handleAllRight}
 						disabled={left.length === 0 || disabled}
 						aria-label="move all right">
-						≫
+						<ChevronsRight/>
 					</Button>
 					<Button
 						variant="outlined"
@@ -190,7 +193,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 						onClick={handleCheckedRight}
 						disabled={leftChecked.length === 0 || disabled}
 						aria-label="move selected right">
-						&gt;
+						<ChevronRight/>
 					</Button>
 					<Button
 						variant="outlined"
@@ -199,7 +202,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 						onClick={handleCheckedLeft}
 						disabled={rightChecked.length === 0 || disabled}
 						aria-label="move selected left">
-						&lt;
+						<ChevronLeft/>
 					</Button>
 					<Button
 						variant="outlined"
@@ -208,7 +211,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 						onClick={handleAllLeft}
 						disabled={right.length === 0 || disabled}
 						aria-label="move all left">
-						≪
+						<ChevronsLeft/>
 					</Button>
 				</Grid>
 			</Grid>

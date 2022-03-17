@@ -25,6 +25,7 @@ import {TreeNode} from "../list/FolderTreeItem";
 import {getRemoteIcon} from "../../utils/remote";
 import StandardLayout from "../layout/StandardLayout";
 import {RefractionV1} from "../../config/types";
+import useListRefractions from "../../graph/actions/remote/useListRefractions";
 
 export interface Node {
 	node: TreeNode;
@@ -50,7 +51,7 @@ const Overview: React.FC = (): JSX.Element => {
 	const classes = useStyles();
 
 	// global state
-	const refractions: RefractionV1[] = [];
+	const {data, loading, error} = useListRefractions();
 
 	useEffect(() => {
 		window.document.title = "Prism";
@@ -59,7 +60,7 @@ const Overview: React.FC = (): JSX.Element => {
 	return (
 		<StandardLayout>
 			<List>
-				{ref == null && refractions.length === 0 && <Alert
+				{ref == null && data?.listRefractions.length === 0 && <Alert
 					action={<Button
 						component={Link}
 						to="/refract/new"
@@ -70,7 +71,7 @@ const Overview: React.FC = (): JSX.Element => {
 					severity="info">
 					There are no refractions.
 				</Alert>}
-				{ref == null && refractions.map(r => <ListItem
+				{ref == null && data?.listRefractions.map(r => <ListItem
 					key={r.id}
 					classes={{
 						root: classes.root

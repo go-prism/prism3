@@ -33,8 +33,8 @@ import {Alert, TabContext, TabPanel} from "@material-ui/lab";
 import {mdiDownload, mdiPencilOutline, mdiPlusCircleOutline} from "@mdi/js";
 import Icon from "@mdi/react";
 import {formatDistanceToNow} from "date-fns";
-import {CacheEntryV1, MetadataChip, RefractionV1} from "../../../config/types";
-import {ARCH_HELM} from "../../../config/constants";
+import {MetadataChip} from "../../../config/types";
+import {Archetype, Artifact, Refraction} from "../../../graph/types";
 import GoLangInstall from "./info/setup/GoLangInstall";
 import FilePreview from "./info/FilePreview";
 import DefaultInstall from "./info/setup/DefaultInstall";
@@ -65,8 +65,8 @@ const StyledTab = withStyles(() => createStyles({
 }))((props: TabProps) => <Tab disableRipple {...props}/>);
 
 interface ObjectInfoProps {
-	item: CacheEntryV1;
-	refraction: RefractionV1;
+	item: Artifact;
+	refraction: Refraction;
 }
 
 const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element => {
@@ -80,15 +80,15 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 	const chips = useMemo(() => {
 		const chipData: MetadataChip[] = [
 			{
-				label: formatDistanceToNow(new Date(item.createdAt)),
+				label: formatDistanceToNow(new Date(item.createdAt * 1000), {addSuffix: true}),
 				icon: mdiPlusCircleOutline
 			},
 			{
-				label: formatDistanceToNow(new Date(item.updatedAt)),
+				label: formatDistanceToNow(new Date(item.updatedAt * 1000), {addSuffix: true}),
 				icon: mdiPencilOutline
 			},
 			{
-				label: item.downloadcount,
+				label: item.downloads,
 				icon: mdiDownload
 			}
 		];
@@ -115,7 +115,7 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				return <GoLangInstall uri={item.uri}/>;
 			case item.uri.endsWith(".apk"):
 				return <AlpineInstall uri={item.uri} refraction={refraction.name}/>;
-			case item.uri.endsWith(".tgz") && refraction.archetype === ARCH_HELM:
+			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.HELM:
 				return <HelmInstall uri={item.uri} refraction={refraction.name}/>;
 			default:
 				return <DefaultInstall uri={item.uri}/>;

@@ -18,25 +18,23 @@
 
 import React, {useMemo} from "react";
 import {ErrorBoundary} from "react-error-boundary";
-import {RefractionV1} from "../../../../config/types";
 import {API_URL} from "../../../../config";
 import Error from "../../../alert/Error";
-import {ARCH_ALPINE, ARCH_DEBIAN, ARCH_GO, ARCH_HELM, ARCH_MAVEN, ARCH_NODE} from "../../../../config/constants";
+import {Archetype, Refraction} from "../../../../graph/types";
 
 interface SetupProps {
-	refract: RefractionV1;
+	refract: Refraction;
 }
 
 const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	// local state
 	const language = useMemo(() => {
 		switch (refract.archetype) {
-			case ARCH_MAVEN:
+			case Archetype.MAVEN:
 				return "xml";
-			case ARCH_HELM:
-			case ARCH_GO:
-			case ARCH_ALPINE:
-			case ARCH_DEBIAN:
+			case Archetype.HELM:
+			case Archetype.GO:
+			case Archetype.ALPINE:
 				return "shell";
 			default:
 				return "text";
@@ -46,7 +44,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	const text = useMemo(() => {
 		const url = `${API_URL}/api/-/${refract.name.toLocaleLowerCase()}`;
 		switch(refract.archetype) {
-			case ARCH_MAVEN:
+			case Archetype.MAVEN:
 				return `<settings xmlns="https://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="https://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
@@ -67,15 +65,15 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
         <profiles/>
         <activeProfiles/>
 </settings>`;
-			case ARCH_GO:
+			case Archetype.GO:
 				return `# use Prism as a module proxy
 export GOPROXY="${API_URL}/api/plugin/-/mod/-/"`;
-			case ARCH_NODE:
+			case Archetype.NPM:
 				return `# automatically using the npm cli
 npm config set registry "${url}"
 # manually
 echo "registry=${url}" >> ~/.npmrc`;
-			case ARCH_ALPINE:
+			case Archetype.ALPINE:
 				return `# replace "latest-stable" with the target version (e.g. 3.12, 3.12)
 # replace "main" with the target repository (e.g. main, community, edge)
 #
@@ -88,7 +86,7 @@ echo "${url}/latest-stable/main" > /etc/apk/repositories
 apk add somepackage \\
 	-X ${url}/latest-stable/main \\
 	-X ${url}/latest-stable/community`;
-			case ARCH_DEBIAN:
+			case Archetype.RUST:
 				return `# replace "buster" with the target distribution (e.g. buster, jessie, stretch)
 # replace "main" with the target components (e.g. main, security)
 #
@@ -96,7 +94,7 @@ apk add somepackage \\
 echo "deb ${url} buster main" >> /etc/apt/sources.list
 # to use only Prism
 echo "deb ${url} buster main" > /etc/apt/sources.list`;
-			case ARCH_HELM:
+			case Archetype.HELM:
 				return `helm repo add prism-${refract.name.toLocaleLowerCase()} ${url}
 helm repo update`;
 			default:
@@ -115,6 +113,9 @@ helm repo update`;
 				{/*	theme={dracula}*/}
 				{/*	codeBlock*/}
 				{/*/>*/}
+				<p>
+					Under construction.
+				</p>
 			</ErrorBoundary>
 		</div>
 	);

@@ -92,69 +92,67 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 	}
 
 	return (
-		<StandardLayout>
-			<Card>
-				<div style={{display: "flex", alignItems: "center"}}>
-					<IconButton
-						className={classes.icon}
-						component={Link}
-						to="/settings">
-						<Icon
-							path={mdiArrowLeft}
-							size={0.8}
-							color={theme.palette.text.secondary}
-						/>
-					</IconButton>
+		<Card>
+			<div style={{display: "flex", alignItems: "center"}}>
+				<IconButton
+					className={classes.icon}
+					component={Link}
+					to="/settings">
+					<Icon
+						path={mdiArrowLeft}
+						size={0.8}
+						color={theme.palette.text.secondary}
+					/>
+				</IconButton>
 					Access control
-					<div style={{flexGrow: 1}}/>
-					<IconButton
-						className={classes.icon}
-						component={Link}
-						to="/settings/acl/new">
-						<Icon
-							path={mdiPlus}
-							size={0.8}
-							color={theme.palette.text.secondary}
-						/>
-					</IconButton>
-				</div>
-				<TableContainer>
-					<Table>
-						<TableHead>
-							<TableRow>
-								<TableCell>Name</TableCell>
-								<TableCell>Subject</TableCell>
-								<TableCell>User</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{!loading && error && <TableRow>
-								<TableCell colSpan={3}>
-									<Alert severity="error">
-										{getErrorMessage(error)}
-									</Alert>
-								</TableCell>
-							</TableRow>}
-							{loading && loadingItems()}
-							{!loading && roles.length === 0 && <TableRow>
-								<TableCell colSpan={3}>
-									<Alert
-										severity="info">
+				<div style={{flexGrow: 1}}/>
+				<IconButton
+					className={classes.icon}
+					component={Link}
+					to="/settings/acl/new">
+					<Icon
+						path={mdiPlus}
+						size={0.8}
+						color={theme.palette.text.secondary}
+					/>
+				</IconButton>
+			</div>
+			<TableContainer>
+				<Table>
+					<TableHead>
+						<TableRow>
+							<TableCell>Name</TableCell>
+							<TableCell>Subject</TableCell>
+							<TableCell>User</TableCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{!loading && error && <TableRow>
+							<TableCell colSpan={3}>
+								<Alert severity="error">
+									{getErrorMessage(error)}
+								</Alert>
+							</TableCell>
+						</TableRow>}
+						{loading && loadingItems()}
+						{!loading && roles.length === 0 && <TableRow>
+							<TableCell colSpan={3}>
+								<Alert
+									severity="info">
 										There are no roles.
-									</Alert>
-								</TableCell>
-							</TableRow>}
-							{!loading && roles.map(r => <TableRow
-								key={r.id}>
-								<TableCell>{r.name}</TableCell>
-								<TableCell>{r.subject || "All resources"}</TableCell>
-								<TableCell>{parseUsername(r.username)}</TableCell>
-							</TableRow>)}
-						</TableBody>
-					</Table>
-				</TableContainer>
-			</Card>
-		</StandardLayout>
+								</Alert>
+							</TableCell>
+						</TableRow>}
+						{!loading && roles.map(r => <TableRow
+							key={r.id}>
+							<TableCell>{r.name}</TableCell>
+							<TableCell>{r.subject || "All resources"}</TableCell>
+							<TableCell>{parseUsername(r.username)}</TableCell>
+						</TableRow>)}
+					</TableBody>
+				</Table>
+			</TableContainer>
+		</Card>
 	);
 }
 export default AccessControlSettings;

@@ -31,9 +31,22 @@ func (db *Database) Init() error {
 		&model.Refraction{},
 		&model.RemoteSecurity{},
 		&model.TransportSecurity{},
+		&model.Artifact{},
 	)
 	if err != nil {
 		log.WithError(err).Error("failed to run auto-migration")
+		return err
+	}
+	if err := db.defaults(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *Database) defaults() error {
+	// create the default transport profile
+	if err := db.db.Save(&model.TransportSecurity{ID: TransportProfileDefault, Name: "default"}).Error; err != nil {
+		log.WithError(err).Error("failed to create default transport profile")
 		return err
 	}
 	return nil

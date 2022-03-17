@@ -1,53 +1,24 @@
-import React, {useEffect, useMemo} from "react";
-import {
-	Button,
-	Divider,
-	List,
-	ListItem,
-	ListItemIcon,
-	ListItemSecondaryAction,
-	ListItemText,
-	makeStyles,
-	Theme,
-	Tooltip,
-	Typography
-} from "@material-ui/core";
-import {Link} from "react-router-dom";
-import Icon from "@mdi/react";
-import {mdiCheckCircle, mdiCircle} from "@mdi/js";
-import {useTheme} from "@material-ui/core/styles";
+import React, {useEffect, useMemo, useState} from "react";
 import {Alert} from "@material-ui/lab";
-import {ListItemSkeleton} from "jmp-coreui";
-import StandardLayout from "../../layout/StandardLayout";
-import {getRemoteIcon} from "../../../utils/remote";
+import {ArrowsRight} from "tabler-icons-react";
+import {useTheme} from "@material-ui/core";
+import {useParams} from "react-router";
 import useListRemotes from "../../../graph/actions/remote/useListRemotes";
 import {Archetype} from "../../../graph/types";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
-
-const useStyles = makeStyles((theme: Theme) => ({
-	header: {
-		display: "flex",
-		marginBottom: theme.spacing(1)
-	},
-	grow: {
-		flexGrow: 1
-	},
-	button: {
-		fontFamily: "Manrope",
-		fontWeight: 600,
-		fontSize: 13,
-		textTransform: "none",
-		height: 36
-	}
-}));
+import SidebarLayout from "../../layout/SidebarLayout";
+import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
+import {getRemoteIcon} from "../../../utils/remote";
+import EditRemote from "../remote/Edit";
+import {IDParams} from "./index";
 
 const Remotes: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
 	const theme = useTheme();
 
 	// global state
 	const [listRemotes, {data, loading, error}] = useListRemotes();
+	const {id} = useParams<IDParams>();
 
 	useEffect(() => {
 		window.document.title = "Remotes";
@@ -55,74 +26,37 @@ const Remotes: React.FC = (): JSX.Element => {
 	}, []);
 
 	// local state
-	const items = useMemo(() => {
+	const items: SidebarItem[] = useMemo(() => {
 		if (data?.listRemotes == null)
 			return [];
-		return data.listRemotes.map(r => (<ListItem
-			button
-			component={Link}
-			to={`/settings/remotes/${r.id}/-/edit`}
-			key={r.id}>
-			<ListItemIcon>
-				{getRemoteIcon(theme, r.archetype)}
-			</ListItemIcon>
-			<ListItemText
-				secondary={r.uri}>
-				{r.name}
-			</ListItemText>
-			<ListItemSecondaryAction>
-				<Tooltip
-					title={r.enabled ? "This remote is enabled" : "This remote is disabled"}>
-					<Icon
-						path={r.enabled ? mdiCheckCircle : mdiCircle}
-						size={1}
-						color={r.enabled ? theme.palette.success.main : theme.palette.text.secondary}
-					/>
-				</Tooltip>
-			</ListItemSecondaryAction>
-		</ListItem>))
+		return data.listRemotes.map(r => ({
+			label: r.name,
+			id: r.id,
+			to: `/settings/remotes/${r.id}/-/edit`,
+			icon: getRemoteIcon(theme, r.archetype)
+		}));
 	}, [data?.listRemotes]);
 
 	return (
-		<StandardLayout>
-			<div
-				className={classes.header}>
-				<Typography
-					variant="h4"
-					color="textPrimary">
-					Remotes
-				</Typography>
-				<div className={classes.grow}/>
-				<Button
-					className={classes.button}
-					component={Link}
-					disabled={error != null}
-					to="/remotes/new"
-					color="primary"
-					variant="contained">
-					New remote
-				</Button>
-			</div>
-			<Divider/>
-			<List>
-				{loading && <div>
-					<ListItemSkeleton icon/>
-					<ListItemSkeleton icon/>
-					<ListItemSkeleton icon/>
-					<ListItemSkeleton icon/>
-				</div>}
-				{!loading && error != null && <Alert
-					severity="error">
+		<SidebarLayout
+			sidebarWidth={2}
+			sidebar={<SimpleSidebar
+				items={items}
+				header="Remotes"
+				icon={ArrowsRight}
+				loading={loading}
+			/>}>
+			{!loading && error != null && <Alert
+				severity="error">
 					Failed to load remotes.<br/>
-					{getGraphErrorMessage(error)}
-				</Alert>}
-				{!loading && error == null && items.length === 0 && <Alert
-					severity="info">
+				{getGraphErrorMessage(error)}
+			</Alert>}
+			{!loading && error == null && items.length === 0 && <Alert
+				severity="info">
 					No remotes
-				</Alert>}
-				{items}
-			</List>
-		</StandardLayout>
+			</Alert>}
+			{id && <EditRemote/>}
+		</SidebarLayout>
 	);
 }
 export default Remotes;

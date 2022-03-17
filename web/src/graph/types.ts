@@ -9,8 +9,19 @@ export enum Archetype {
 	NONE = ""
 }
 
+export interface Artifact {
+	id: string;
+	createdAt: number;
+	updatedAt: number;
+	uri: string;
+	downloads: number;
+	remoteID: string;
+	slices: string[];
+}
+
 export interface TransportSecurity {
 	id: string;
+	name: string;
 	ca: string;
 	cert: string;
 	key: string;

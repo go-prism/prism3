@@ -10,6 +10,16 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/db/datatypes"
 )
 
+type Artifact struct {
+	ID        string              `json:"id" gorm:"primaryKey;type:uuid;not null"`
+	CreatedAt int64               `json:"createdAt"`
+	UpdatedAt int64               `json:"updatedAt"`
+	URI       string              `json:"uri"`
+	Downloads int64               `json:"downloads"`
+	RemoteID  string              `json:"remoteID" gorm:"index"`
+	Slices    datatypes.JSONArray `json:"slices"`
+}
+
 type NewRefract struct {
 	Name      string    `json:"name"`
 	Archetype Archetype `json:"archetype"`
@@ -20,6 +30,7 @@ type NewRemote struct {
 	Name      string    `json:"name"`
 	URI       string    `json:"uri"`
 	Archetype Archetype `json:"archetype"`
+	Transport string    `json:"transport"`
 }
 
 type Refraction struct {
@@ -54,6 +65,7 @@ type RemoteSecurity struct {
 
 type TransportSecurity struct {
 	ID            string `json:"id" gorm:"primaryKey;not null"`
+	Name          string `json:"name" gorm:"unique"`
 	Ca            string `json:"ca"`
 	Cert          string `json:"cert"`
 	Key           string `json:"key"`

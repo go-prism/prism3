@@ -34,6 +34,7 @@ import {ListItem, ListItemIcon, ListItemText, makeStyles, Theme} from "@material
 import {CacheEntryV1} from "../../config/types";
 import {unescapeString} from "../../utils/encode";
 import {Node} from "../route/Overview";
+import {Artifact} from "../../graph/types";
 
 interface StyleProps {
 	primary: string;
@@ -51,7 +52,7 @@ const useStyles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
 export interface TreeNode {
 	id: string;
 	name: string;
-	item: CacheEntryV1;
+	item: Artifact;
 	children: TreeNode[];
 }
 
