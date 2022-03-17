@@ -16,7 +16,8 @@
  */
 
 import React, {useMemo} from "react";
-import {Card} from "@material-ui/core";
+import CodeBlock from "../../../../widgets/CodeBlock";
+import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
 interface AlpineInstallProps {
@@ -36,49 +37,33 @@ const AlpineInstall: React.FC<AlpineInstallProps> = ({uri, refraction}): JSX.Ele
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`apk add ${pkgName}=${pkgVersion}`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
-				config: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`echo "${API_URL}/api/-/${refraction.toLocaleLowerCase()}/${path}" >> /etc/apk/repositories\napk update`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
+				install: <div>
+					<CodeBlock
+						code={`apk add ${pkgName}=${pkgVersion}`}
+						language="bash"
+					/>
+				</div>,
+				config: <div>
+					<CodeBlock
+						code={`echo "${API_URL}/api/-/${refraction.toLocaleLowerCase()}/${path}" >> /etc/apk/repositories\napk update`}
+						language="bash"
+					/>
+				</div>,
 				name: "Permanent"
 			},
 			{
-				install: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`apk add ${pkgName}=${pkgVersion} \\\n\t-X ${API_URL}/api/-/${refraction.toLocaleLowerCase()}/${path}`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
-				config: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text="N/A"*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
+				install: <div>
+					<CodeBlock
+						code={`apk add ${pkgName}=${pkgVersion} \\\n\t-X ${API_URL}/api/-/${refraction.toLocaleLowerCase()}/${path}`}
+						language="bash"
+					/>
+				</div>,
+				config: <div>
+					<CodeBlock
+						code="N/A"
+						language="bash"
+					/>
+				</div>,
 				name: "Temporary"
 			}]}
 		/>

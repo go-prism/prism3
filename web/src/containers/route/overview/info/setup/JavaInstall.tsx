@@ -20,8 +20,9 @@ import {Typography} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import {API_URL} from "../../../../../config";
 import {parseMavenPackage} from "../../../../../utils/parse";
-import LanguageInstall from "./index";
 import {Refraction} from "../../../../../graph/types";
+import CodeBlock from "../../../../widgets/CodeBlock";
+import LanguageInstall from "./index";
 
 interface JavaInstallProps {
 	uri: string;
@@ -76,12 +77,10 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 		<LanguageInstall
 			variants={[{
 				install: <div>
-					{/*<CopyBlock*/}
-					{/*	text={getInstall(TYPE_MAVEN_XML)}*/}
-					{/*	language="xml"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
+					<CodeBlock
+						code={getInstall(TYPE_MAVEN_XML)}
+						language="clike"
+					/>
 				</div>,
 				config: <div>
 					<Typography
@@ -89,54 +88,40 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 						color="textSecondary">
 						You can also set this Refraction globally by following the guide <Link to={`/settings/refract/${refraction.id}/-/edit#getting-setup`}>here</Link>.
 					</Typography>
-					{/*<CopyBlock*/}
-					{/*	text={getConfig(TYPE_MAVEN_XML)}*/}
-					{/*	language="xml"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
+					<CodeBlock
+						code={getConfig(TYPE_MAVEN_XML)}
+						language="clike"
+					/>
 				</div>,
 				name: "Maven XML"
 			},
 			{
 				install: <div>
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={getInstall(TYPE_GRADLE_KT)}*/}
-					{/*	language="kotlin"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
+					<CodeBlock
+						code={getInstall(TYPE_GRADLE_KT)}
+						language="clike"
+					/>
 				</div>,
 				config: <div>
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={getConfig(TYPE_GRADLE_KT)}*/}
-					{/*	language="kotlin"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
+					<CodeBlock
+						code={getConfig(TYPE_GRADLE_KT)}
+						language="clike"
+					/>
 				</div>,
 				name: "Gradle Kotlin DSL"
 			},
 			{
 				install: <div>
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={getInstall(TYPE_GRADLE_GROOVY)}*/}
-					{/*	language="groovy"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
+					<CodeBlock
+						code={getInstall(TYPE_GRADLE_GROOVY)}
+						language="clike"
+					/>
 				</div>,
 				config: <div>
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={getConfig(TYPE_GRADLE_GROOVY)}*/}
-					{/*	language="groovy"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
+					<CodeBlock
+						code={getConfig(TYPE_GRADLE_GROOVY)}
+						language="clike"
+					/>
 				</div>,
 				name: "Gradle Groovy DSL"
 			}

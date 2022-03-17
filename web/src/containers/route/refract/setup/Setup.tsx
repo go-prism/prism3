@@ -18,9 +18,11 @@
 
 import React, {useMemo} from "react";
 import {ErrorBoundary} from "react-error-boundary";
+import {Language} from "prism-react-renderer";
 import {API_URL} from "../../../../config";
 import Error from "../../../alert/Error";
 import {Archetype, Refraction} from "../../../../graph/types";
+import CodeBlock from "../../../widgets/CodeBlock";
 
 interface SetupProps {
 	refract: Refraction;
@@ -28,16 +30,16 @@ interface SetupProps {
 
 const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	// local state
-	const language = useMemo(() => {
+	const language: Language = useMemo(() => {
 		switch (refract.archetype) {
 			case Archetype.MAVEN:
-				return "xml";
+				return "clike";
 			case Archetype.HELM:
 			case Archetype.GO:
 			case Archetype.ALPINE:
-				return "shell";
+				return "bash";
 			default:
-				return "text";
+				return "markdown";
 		}
 	}, [refract]);
 
@@ -76,12 +78,14 @@ echo "registry=${url}" >> ~/.npmrc`;
 			case Archetype.ALPINE:
 				return `# replace "latest-stable" with the target version (e.g. 3.12, 3.12)
 # replace "main" with the target repository (e.g. main, community, edge)
-#
+
 # to use Prism and original repositories
-echo "${url}/latest-stable/main" >> /etc/apk/repositories
+echo "${url}/v3.15/main" >> /etc/apk/repositories
+echo "${url}/v3.15/community" >> /etc/apk/repositories
 # to use only Prism
 echo "${url}/latest-stable/main" > /etc/apk/repositories
-#
+echo "${url}/latest-stable/community" >> /etc/apk/repositories
+
 # to use Prism without changing existing repositories
 apk add somepackage \\
 	-X ${url}/latest-stable/main \\
@@ -106,16 +110,10 @@ helm repo update`;
 		<div>
 			<ErrorBoundary
 				fallbackRender={p => <Error props={p}/>}>
-				{/*<CopyBlock*/}
-				{/*	text={text}*/}
-				{/*	language={language}*/}
-				{/*	showLineNumbers*/}
-				{/*	theme={dracula}*/}
-				{/*	codeBlock*/}
-				{/*/>*/}
-				<p>
-					Under construction.
-				</p>
+				<CodeBlock
+					code={text}
+					language={language}
+				/>
 			</ErrorBoundary>
 		</div>
 	);

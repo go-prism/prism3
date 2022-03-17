@@ -16,7 +16,8 @@
  */
 
 import React, {useMemo} from "react";
-import {Card} from "@material-ui/core";
+import CodeBlock from "../../../../widgets/CodeBlock";
+import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
 interface HelmInstallProps {
@@ -37,49 +38,33 @@ const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`helm install my-app prism-helm/${pkgName} --version=${pkgVersion}`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
-				config: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`helm repo add prism-helm ${API_URL}/api/-/${refraction}\nhelm repo update`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
+				install: <div>
+					<CodeBlock
+						code={`helm install my-app prism-helm/${pkgName} --version=${pkgVersion}`}
+						language="bash"
+					/>
+				</div>,
+				config: <div>
+					<CodeBlock
+						code={`helm repo add prism-helm ${API_URL}/api/-/${refraction}\nhelm repo update`}
+						language="bash"
+					/>
+				</div>,
 				name: "Permanent"
 			},
 			{
-				install: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`helm install my-app ${API_URL}/api/-/${refraction}/${uri}`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
-				config: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text="N/A"*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
+				install: <div>
+					<CodeBlock
+						code={`helm install my-app ${API_URL}/api/-/${refraction}/${uri}`}
+						language="bash"
+					/>
+				</div>,
+				config: <div>
+					<CodeBlock
+						code="N/A"
+						language="bash"
+					/>
+				</div>,
 				name: "Temporary"
 			}]}
 		/>

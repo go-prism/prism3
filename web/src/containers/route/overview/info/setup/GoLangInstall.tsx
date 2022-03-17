@@ -16,7 +16,9 @@
  */
 
 import React from "react";
-import {Card} from "@material-ui/core";
+import CodeBlock from "../../../../widgets/CodeBlock";
+import {unescapeString} from "../../../../../utils/encode";
+import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
 interface GoLangInstallProps {
@@ -27,27 +29,19 @@ const GoLangInstall: React.FC<GoLangInstallProps> = ({uri}): JSX.Element => {
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <Card
-					variant="outlined">
-					{/*<CopyBlock*/}
-					{/*	showLineNumbers={false}*/}
-					{/*	text={`go get -d ${unescapeString(uri.replace("/@v/", "@").replace(".mod", "").replace(".info", ""))}`}*/}
-					{/*	language="bash"*/}
-					{/*	theme={dracula}*/}
-					{/*	codeBlock*/}
-					{/*/>*/}
-				</Card>,
-				config: <Card
-					variant="outlined">
-					{/*					<CopyBlock*/}
-					{/*						showLineNumbers={false}*/}
-					{/*						text={`echo 'export GOPROXY="${API_URL}/api/plugin/-/mod/-/"' >> ~/.bashrc*/}
-					{/*source ~/.bashrc`}*/}
-					{/*						language="bash"*/}
-					{/*						theme={dracula}*/}
-					{/*						codeBlock*/}
-					{/*					/>*/}
-				</Card>,
+				install: <div>
+					<CodeBlock
+						code={`go get -d ${unescapeString(uri.replace("/@v/", "@").replace(".mod", "").replace(".info", ""))}`}
+						language="bash"
+					/>
+				</div>,
+				config: <div>
+					<CodeBlock
+						code={`echo 'export GOPROXY="${API_URL}/api/plugin/-/mod/-/"' >> ~/.bashrc
+					source ~/.bashrc`}
+						language="bash"
+					/>
+				</div>,
 				name: "Go Modules"
 			}]}
 		/>
