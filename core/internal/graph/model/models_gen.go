@@ -85,6 +85,7 @@ const (
 	ArchetypeAlpine  Archetype = "ALPINE"
 	ArchetypeHelm    Archetype = "HELM"
 	ArchetypeRust    Archetype = "RUST"
+	ArchetypeDebian  Archetype = "DEBIAN"
 )
 
 var AllArchetype = []Archetype{
@@ -95,11 +96,12 @@ var AllArchetype = []Archetype{
 	ArchetypeAlpine,
 	ArchetypeHelm,
 	ArchetypeRust,
+	ArchetypeDebian,
 }
 
 func (e Archetype) IsValid() bool {
 	switch e {
-	case ArchetypeGeneric, ArchetypeMaven, ArchetypeGo, ArchetypeNpm, ArchetypeAlpine, ArchetypeHelm, ArchetypeRust:
+	case ArchetypeGeneric, ArchetypeMaven, ArchetypeGo, ArchetypeNpm, ArchetypeAlpine, ArchetypeHelm, ArchetypeRust, ArchetypeDebian:
 		return true
 	}
 	return false

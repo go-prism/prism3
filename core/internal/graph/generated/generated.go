@@ -605,6 +605,7 @@ enum Archetype {
   ALPINE
   HELM
   RUST
+  DEBIAN
 }
 
 type Artifact {
