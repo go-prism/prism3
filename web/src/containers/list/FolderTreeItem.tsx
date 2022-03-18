@@ -15,7 +15,6 @@
  *
  */
 
-import Icon from "@mdi/react";
 import React, {CSSProperties, useMemo} from "react";
 import {useTheme} from "@material-ui/core/styles";
 import {ListItem, ListItemIcon, ListItemText, makeStyles, Theme} from "@material-ui/core";
@@ -23,7 +22,7 @@ import {
 	BrandDebian,
 	Certificate,
 	Database,
-	File, FileCode,
+	FileCode,
 	FileInvoice,
 	FileZip,
 	Folder,
@@ -41,8 +40,7 @@ interface StyleProps {
 
 const useStyles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
 	root: props => ({
-		borderBottomLeftRadius: theme.spacing(4),
-		borderTopLeftRadius: theme.spacing(4),
+		borderRadius: theme.spacing(4),
 		color: props.primary,
 	}),
 	row: {

@@ -174,6 +174,7 @@ const Browser: React.FC = (): JSX.Element => {
 		if (collapsed) {
 			return;
 		}
+		node.children.sort((a, b) => a.name.localeCompare(b.name));
 		for (const child of node.children) {
 			flattenNode(child, depth + 1, result);
 		}
