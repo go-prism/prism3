@@ -21,7 +21,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 	if in.Transport == "" {
 		// use the default transport
 		r.db.Where("id = ?", db.TransportProfileDefault).First(&transport)
-	} else if err := r.db.Where("id = ?", in.Transport).Error; err != nil {
+	} else if err := r.db.Where("id = ?", in.Transport).First(&transport).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find transport")
 		return nil, err
 	}

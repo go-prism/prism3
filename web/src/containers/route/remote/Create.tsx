@@ -15,15 +15,16 @@ import {
 import Icon from "@mdi/react";
 import {mdiInformationOutline} from "@mdi/js";
 import {useTheme} from "@material-ui/core/styles";
-import {Link} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert} from "@material-ui/lab";
 import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
-import useLoading from "../../../hooks/useLoading";
-import useErrors from "../../../hooks/useErrors";
-import getErrorMessage from "../../../selectors/getErrorMessage";
+import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
+import useCreateRemote from "../../../graph/actions/remote/useCreateRemote";
+import {Archetype, TransportSecurity} from "../../../graph/types";
+import TransportOpts from "./options/TransportOpts";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -68,36 +69,33 @@ const CreateRemote: React.FC = (): JSX.Element => {
 	// hooks
 	const classes = useStyles();
 	const theme = useTheme();
+	const history = useHistory();
 
 	// global state
-	const loading = useLoading([]);
-	const error = useErrors([]);
+	const [createRemote, {loading, error}] = useCreateRemote();
 
 
 	// local state
-	const [arch, setArch] = useState<string>("generic");
+	const [arch, setArch] = useState<Archetype>(Archetype.GENERIC);
 	const [url, setURL] = useState<ValidatedData>(initialURL);
 	const [name, setName] = useState<ValidatedData>(initialName);
+	const [transport, setTransport] = useState<TransportSecurity | null>(null);
 
 	const handleArchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-		setArch((e.target as HTMLInputElement).value);
+		setArch((e.target as HTMLInputElement).value as Archetype);
 	};
 
 	const handleCreate = (): void => {
-		// dispatch(createRemote({
-		// 	allowlistList: [],
-		// 	blocklistList: [],
-		// 	archetype: arch,
-		// 	name: name.value,
-		// 	uri: url.value,
-		// 	enabled: true,
-		// 	striprestricted: false,
-		// 	restrictedheadersList: []
-		// })).then((action) => {
-		// 	// only change the url if there was a success
-		// 	if(action.error !== true)
-		// 		history.push("/settings/remotes");
-		// });
+		createRemote({variables: {
+			name: name.value,
+			uri: url.value,
+			archetype: arch,
+			transport: transport!.id
+		}}).then(r => {
+			if (!r.errors) {
+				history.push(`/remote/${r.data?.createRemote.id}/-/edit`);
+			}
+		});
 	}
 
 	return (
@@ -124,7 +122,7 @@ const CreateRemote: React.FC = (): JSX.Element => {
 							className: classes.formItem,
 							required: true,
 							label: "Remote name",
-							variant: "outlined",
+							variant: "filled",
 							id: "txt-name"
 						}}
 					/>
@@ -136,9 +134,13 @@ const CreateRemote: React.FC = (): JSX.Element => {
 							className: classes.formItem,
 							required: true,
 							label: "Remote URL",
-							variant: "outlined",
+							variant: "filled",
 							id: "txt-url"
 						}}
+					/>
+					<TransportOpts
+						selected={transport}
+						onSelect={setTransport}
 					/>
 					<FormLabel
 						className={classes.formItem}
@@ -176,7 +178,7 @@ const CreateRemote: React.FC = (): JSX.Element => {
 								color="primary">
 								{a.name}
 							</Badge>}
-							value={a.name.toLocaleLowerCase()}
+							value={a.value}
 						/>)}
 					</RadioGroup>
 					{error != null && <Alert
@@ -184,7 +186,7 @@ const CreateRemote: React.FC = (): JSX.Element => {
 						Failed to create Remote.
 						<br/>
 						<Code>
-							{getErrorMessage(error)}
+							{getGraphErrorMessage(error)}
 						</Code>
 					</Alert>}
 					<div
@@ -192,7 +194,7 @@ const CreateRemote: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							component={Link}
-							to="/settings/remotes"
+							to="/remotes"
 							variant="outlined">
 							Cancel
 						</Button>
@@ -200,7 +202,7 @@ const CreateRemote: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
-							disabled={!DataIsValid(url) || !DataIsValid(name) || loading}
+							disabled={!DataIsValid(url) || !DataIsValid(name) || loading || transport == null}
 							onClick={handleCreate}
 							variant="contained">
 							Create

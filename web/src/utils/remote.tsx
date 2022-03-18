@@ -1,7 +1,6 @@
 import React, {ReactNode} from "react";
-import Icon from "@mdi/react";
-import {mdiServer} from "@mdi/js";
 import {Theme} from "@material-ui/core";
+import {Files} from "tabler-icons-react";
 import {Archetype} from "../graph/types";
 
 export const getRemoteIcon = (theme: Theme, type: Archetype): ReactNode => {
@@ -18,10 +17,8 @@ export const getRemoteIcon = (theme: Theme, type: Archetype): ReactNode => {
 				height={24}
 			/>
 		default:
-			return <Icon
-				path={mdiServer}
+			return <Files
 				color={theme.palette.text.secondary}
-				size={1}
 			/>
 	}
 }

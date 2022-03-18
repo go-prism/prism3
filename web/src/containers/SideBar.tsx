@@ -42,12 +42,12 @@ const generalOptions: MenuOption[] = [
 	{
 		name: "Remotes",
 		icon: ArrowsRight,
-		path: "/settings/remotes"
+		path: "/remotes"
 	},
 	{
 		name: "Refractions",
 		icon: ArrowsSplit,
-		path: "/settings/refract"
+		path: "/refract"
 	}
 ];
 
@@ -68,7 +68,6 @@ const SideBar: React.FC = (): JSX.Element => {
 	// hooks
 	const classes = useStyles();
 	const theme = useTheme();
-	const location = useLocation();
 
 	const getListItem = (opt: MenuOption): JSX.Element => {
 		return (

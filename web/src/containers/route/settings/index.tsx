@@ -16,12 +16,11 @@
  */
 
 import React, {ReactNode, useEffect, useState} from "react";
-import {Avatar, makeStyles, Paper, Theme, Typography} from "@material-ui/core";
-import Center from "react-center";
 import {Settings as SettingsIcon} from "tabler-icons-react";
+import {Route, Switch} from "react-router";
 import SidebarLayout from "../../layout/SidebarLayout";
 import AccessControlSettings from "../acl";
-import SimpleSidebar from "../../layout/SimpleSidebar";
+import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
 import Info from "./Info";
 import GoLangSettings from "./GoLangSettings";
 import ReactorSettings from "./ReactorSettings";
@@ -31,69 +30,51 @@ export interface IDParams {
 	id: string;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
-	title: {
-		color: theme.palette.grey["700"],
-		fontWeight: 500,
-		fontSize: 15
-	},
-	item: {
-		borderRadius: theme.spacing(1),
-		color: theme.palette.primary.main
-	},
-	name: {
-		fontFamily: "Manrope",
-		fontWeight: 500,
-		color: theme.palette.secondary.main,
-		margin: theme.spacing(2)
-	},
-	avatar: {
-		width: 56,
-		height: 56,
-		borderRadius: 100,
-		margin: 24,
-		padding: 6,
-		backgroundColor: theme.palette.background.default
-	},
-}));
-
 const Settings: React.FC = (): JSX.Element => {
-	// hooks
-	const classes = useStyles();
-	const [selected, setSelected] = useState<ReactNode | null>(null);
-
 	useEffect(() => {
 		window.document.title = "Settings";
 	}, []);
 
-	const content = new Map<string, ReactNode>([
-		["transport", <Transports key="transport"/>],
-		["about", <Info key="about"/>],
-		["go", <GoLangSettings key="go"/>],
-		["reactor", <ReactorSettings key="reactor"/>],
-		["acl", <AccessControlSettings key="acl"/>]
-	]);
-
-	const settings = [
+	const settings: SidebarItem[] = [
+		{
+			id: "div-sec",
+			label: "Security",
+			type: "header"
+		},
 		{
 			id: "transport",
-			label: "Transport profiles"
+			label: "Transport profiles",
+			to: "/settings/security/transport"
+		},
+		{
+			id: "div-lang",
+			label: "Framework",
+			type: "header"
 		},
 		{
 			id: "go",
-			label: "GoProxy"
+			label: "GoProxy",
+			to: "/settings/fwk/go"
+		},
+		{
+			id: "div-sys",
+			label: "System",
+			type: "header"
 		},
 		{
 			id: "reactor",
-			label: "System",
+			label: "Reactor",
+			to: "/settings/sys/reactor"
 		},
 		{
 			id: "acl",
-			label: "Permissions"
+			label: "Permissions",
+			to: "/settings/sys/acl"
 		},
 		{
 			id: "about",
-			label: "About"
+			label: "About",
+			to: "/settings/sys/about"
 		},
 	]
 
@@ -105,24 +86,30 @@ const Settings: React.FC = (): JSX.Element => {
 					items={settings}
 					header="Settings"
 					icon={SettingsIcon}
-					onSelection={val => setSelected(content.get(val.id))}
 				/>
 			</div>}>
-			<Center>
-				<Avatar
-					className={classes.avatar}
-					component={Paper}
-					src="/favicon.png"
-					alt="App icon"
+			<Switch>
+				<Route
+					path="/settings/security/transport"
+					component={Transports}
 				/>
-			</Center>
-			<Typography
-				className={classes.name}
-				variant="h4"
-				align="center">
-				Settings
-			</Typography>
-			{selected}
+				<Route
+					path="/settings/fwk/go"
+					component={GoLangSettings}
+				/>
+				<Route
+					path="/settings/sys/about"
+					component={Info}
+				/>
+				<Route
+					path="/settings/sys/reactor"
+					component={ReactorSettings}
+				/>
+				<Route
+					path="/settings/sys/acl"
+					component={AccessControlSettings}
+				/>
+			</Switch>
 		</SidebarLayout>
 	);
 }

@@ -33,6 +33,7 @@ import {Alert, TabContext, TabPanel} from "@material-ui/lab";
 import {mdiDownload, mdiPencilOutline, mdiPlusCircleOutline} from "@mdi/js";
 import Icon from "@mdi/react";
 import {formatDistanceToNow} from "date-fns";
+import {CirclePlus, Edit, FileDownload} from "tabler-icons-react";
 import {MetadataChip} from "../../../config/types";
 import {Archetype, Artifact, Refraction} from "../../../graph/types";
 import GoLangInstall from "./info/setup/GoLangInstall";
@@ -81,26 +82,22 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 		const chipData: MetadataChip[] = [
 			{
 				label: formatDistanceToNow(new Date(item.createdAt * 1000), {addSuffix: true}),
-				icon: mdiPlusCircleOutline
+				icon: CirclePlus
 			},
 			{
 				label: formatDistanceToNow(new Date(item.updatedAt * 1000), {addSuffix: true}),
-				icon: mdiPencilOutline
+				icon: Edit
 			},
 			{
 				label: item.downloads,
-				icon: mdiDownload
+				icon: FileDownload
 			}
 		];
 		return chipData.map(c => <Chip
 			className={classes.chip}
-			key={c.icon}
+			key={c.icon.name}
 			label={c.label}
-			icon={<Icon
-				path={c.icon}
-				size={0.75}
-				color={theme.palette.text.secondary}
-			/>}
+			icon={<c.icon color={theme.palette.text.secondary}/>}
 			size="small"
 		/>);
 	}, [item]);

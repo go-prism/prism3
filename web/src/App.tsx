@@ -77,30 +77,25 @@ const App: React.FC = (): JSX.Element => {
 								component={Browser}
 							/>
 							<Route
-								path="/settings/remotes"
+								path="/remotes"
 								exact
 								component={Remotes}
 							/>
 							<Route
-								path="/settings/remotes/:id/-/edit"
+								path="/remote/:id/-/edit"
 								component={Remotes}
 							/>
 							<Route
-								path="/settings/refract"
+								path="/refract"
 								exact
 								component={Refractions}
 							/>
 							<Route
-								path="/settings/refract/:id/-/edit"
+								path="/refract/:id/-/edit"
 								component={Refractions}
 							/>
 							<Route
-								path="/settings/acl"
-								exact
-								component={AccessControlSettings}
-							/>
-							<Route
-								path="/settings/acl/new"
+								path="/acl/new"
 								exact
 								component={CreateRoleBinding}
 							/>
@@ -115,17 +110,6 @@ const App: React.FC = (): JSX.Element => {
 							<Route
 								path="/settings"
 								component={Settings}
-								exact
-							/>
-							<Route
-								path="/settings/plugin/golang"
-								component={GoLangSettings}
-								exact
-							/>
-							<Route
-								path="/settings/core/reactor"
-								component={ReactorSettings}
-								exact
 							/>
 							<Route
 								path="/profile"

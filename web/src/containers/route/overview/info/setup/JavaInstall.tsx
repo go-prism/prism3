@@ -86,7 +86,7 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 					<Typography
 						style={{marginBottom: 4}}
 						color="textSecondary">
-						You can also set this Refraction globally by following the guide <Link to={`/settings/refract/${refraction.id}/-/edit#getting-setup`}>here</Link>.
+						You can also set this Refraction globally by following the guide <Link to={`/refract/${refraction.id}/-/edit#getting-setup`}>here</Link>.
 					</Typography>
 					<CodeBlock
 						code={getConfig(TYPE_MAVEN_XML)}

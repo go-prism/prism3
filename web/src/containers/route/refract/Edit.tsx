@@ -132,13 +132,9 @@ const EditRefract: React.FC = (): JSX.Element => {
 		];
 		return chipData.map(c => <Chip
 			className={classes.chip}
-			key={c.icon}
+			key={c.icon.name}
 			label={c.label}
-			icon={<Icon
-				path={c.icon}
-				size={0.75}
-				color={theme.palette.text.secondary}
-			/>}
+			icon={<c.icon color={theme.palette.text.secondary}/>}
 			size="small"
 		/>);
 	}, [refractInfo]);

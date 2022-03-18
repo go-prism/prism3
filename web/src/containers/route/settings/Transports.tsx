@@ -15,51 +15,103 @@
  *
  */
 
-import React from "react";
+import React, {useState} from "react";
 import {
+	Button,
 	Card,
-	Divider,
+	Collapse,
+	IconButton,
 	List,
 	ListItem,
 	ListItemSecondaryAction,
 	ListItemText,
-	makeStyles,
-	Switch,
-	Theme,
-	useTheme
+	makeStyles, Theme
 } from "@material-ui/core";
-import {mdiPlus} from "@mdi/js";
-import {GenericIconButton, ListItemSkeleton} from "jmp-coreui";
+import {ListItemSkeleton} from "jmp-coreui";
 import {Alert} from "@material-ui/lab";
-import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
+import {ChevronDown, ChevronUp} from "tabler-icons-react";
+import {useHistory, useLocation} from "react-router-dom";
+import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import useListTransports from "../../../graph/actions/remote/useListTransports";
+import {TransportSecurity} from "../../../graph/types";
+import ClientConfig from "../remote/options/ClientConfig";
+import Header from "../../layout/Header";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	card: {
 		minHeight: "100%"
 	},
-	icon: {
-		margin: theme.spacing(1),
-		marginRight: theme.spacing(2)
-	},
-	text: {
-		margin: theme.spacing(1),
-		fontSize: 14
+	button: {
+		margin: theme.spacing(1)
 	}
 }));
+
+interface TransportItemProps {
+	item: TransportSecurity;
+	selected: string;
+	setSelected: (val: string) => void;
+}
+
+const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelected}): JSX.Element => {
+	const open = selected === item.id;
+	return <div>
+		<ListItem
+			selected={open}
+			button
+			onClick={() => setSelected(open ? "" : item.id)}
+			dense>
+			<ListItemText>
+				{item.name || "-"}
+			</ListItemText>
+			<ListItemSecondaryAction>
+				<IconButton
+					size="small"
+					centerRipple={false}>
+					{open ? <ChevronUp/> : <ChevronDown/>}
+				</IconButton>
+			</ListItemSecondaryAction>
+		</ListItem>
+		<Collapse in={open}>
+			<ClientConfig
+				profile={item}
+				setProfile={() => {}}
+				disabled={item.name === "default"}
+			/>
+		</Collapse>
+	</div>
+}
 
 const Transports: React.FC = (): JSX.Element => {
 	// hooks
 	const classes = useStyles();
+	const location = useLocation();
+	const history = useHistory();
 
 	// global state
+	const selected = location.hash.replace("#", "");
 	const {data, loading, error} = useListTransports();
+
+	const setSelected = (val: string): void => {
+		history.push({...location, hash: `#${val}`});
+	}
 
 	return (
 		<div
 			className={classes.card}>
 			<Card
 				className={classes.card}>
+				<Header
+					title="Transports"
+					counter={data?.listTransports.length || 0}
+					actions={<div>
+						<Button
+							className={classes.button}
+							variant="contained"
+							color="primary">
+							New
+						</Button>
+					</div>}
+				/>
 				{loading && <div>
 					<ListItemSkeleton/>
 					<ListItemSkeleton invertLengths/>
@@ -71,13 +123,12 @@ const Transports: React.FC = (): JSX.Element => {
 					An error occurred attempting to load transports: "{getGraphErrorMessage(error)}"
 				</Alert>}
 				{!loading && error == null && data?.listTransports && <List>
-					{data?.listTransports.map(r => <ListItem
-						dense
-						key={r.id}>
-						<ListItemText>
-							{r.name}
-						</ListItemText>
-					</ListItem>)}
+					{data?.listTransports.map(r => <TransportItem
+						item={r}
+						key={r.id}
+						selected={selected}
+						setSelected={setSelected}
+					/>)}
 				</List>}
 			</Card>
 		</div>

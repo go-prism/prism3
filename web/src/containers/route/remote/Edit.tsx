@@ -22,6 +22,7 @@ import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert, Skeleton} from "@material-ui/lab";
 import {useParams} from "react-router";
 import {formatDistanceToNow} from "date-fns";
+import {Apps, CirclePlus, Edit} from "tabler-icons-react";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
@@ -33,6 +34,7 @@ import {getRemoteIcon} from "../../../utils/remote";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import ClientConfig from "./options/ClientConfig";
+import TransportOpts from "./options/TransportOpts";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -112,27 +114,23 @@ const EditRemote: React.FC = (): JSX.Element => {
 	const chips = useMemo(() => {
 		const chipData: MetadataChip[] = [
 			{
-				label: data?.getRemote?.archetype || Archetype.NONE,
-				icon: mdiShapeOutline
+				label: data?.getRemote?.archetype?.toLocaleLowerCase() || Archetype.NONE,
+				icon: Apps
 			},
 			{
 				label: formatDistanceToNow(new Date((data?.getRemote?.createdAt || 0) * 1000), {addSuffix: true}),
-				icon: mdiPlusCircleOutline
+				icon: CirclePlus
 			},
 			{
 				label: formatDistanceToNow(new Date((data?.getRemote?.updatedAt || 0) * 1000), {addSuffix: true}),
-				icon: mdiPencilOutline
+				icon: Edit
 			},
 		];
 		return chipData.map(c => <Chip
 			className={classes.chip}
-			key={c.icon}
+			key={c.icon.name}
 			label={c.label}
-			icon={<Icon
-				path={c.icon}
-				size={0.75}
-				color={theme.palette.text.secondary}
-			/>}
+			icon={<c.icon color={theme.palette.text.secondary}/>}
 			size="small"
 		/>);
 	}, [data?.getRemote]);
@@ -221,9 +219,8 @@ const EditRemote: React.FC = (): JSX.Element => {
 				id: "transport",
 				primary: "HTTP/TLS/Proxy options",
 				secondary: "Configure how Prism communicates with remotes.",
-				children: data?.getRemote == null ? "" : <ClientConfig
-					profile={data.getRemote.transport}
-					setProfile={() => {}}
+				children: data?.getRemote == null ? "" : <TransportOpts
+					selected={data.getRemote.transport}
 				/>
 			}
 		];
@@ -315,15 +312,6 @@ const EditRemote: React.FC = (): JSX.Element => {
 						disabled: loading || readOnly
 					}}
 				/>
-				<Collapse
-					in={data?.getRemote != null && !enabled && enabled !== data.getRemote?.enabled}>
-					<Alert
-						className={classes.formItem}
-						severity="warning">
-						Disabling a remote stops new data from being fetched from it.
-						Data that has already been downloaded and cached will still be available.
-					</Alert>
-				</Collapse>
 				<FormControlLabel
 					className={classes.formItem}
 					control={<Switch
@@ -334,6 +322,15 @@ const EditRemote: React.FC = (): JSX.Element => {
 					/>}
 					label="Enabled"
 				/>
+				<Collapse
+					in={data?.getRemote != null && !enabled && enabled !== data.getRemote?.enabled}>
+					<Alert
+						className={classes.formItem}
+						severity="warning">
+						Disabling a remote stops new data from being fetched from it.
+						Data that has already been downloaded and cached will still be available.
+					</Alert>
+				</Collapse>
 				<List>
 					{getOptions()}
 				</List>
@@ -347,13 +344,6 @@ const EditRemote: React.FC = (): JSX.Element => {
 				</Alert>}
 				<div
 					className={`${classes.formItem} ${classes.flex}`}>
-					<Button
-						className={classes.button}
-						component={Link}
-						to="/settings/remotes"
-						variant="outlined">
-							Cancel
-					</Button>
 					<div className={classes.grow}/>
 					<Button
 						className={classes.button}
@@ -364,7 +354,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 						disabled={!DataIsValid(url) || !DataIsValid(name) || loading || !hasChanged() || readOnly}
 						onClick={handleUpdate}
 						variant="contained">
-							Save changes
+						Save changes
 					</Button>
 				</div>
 			</FormGroup>

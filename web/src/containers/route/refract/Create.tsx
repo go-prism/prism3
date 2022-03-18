@@ -23,7 +23,7 @@ import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
-import {Archetype} from "../../../graph/types";
+import {Archetype, Remote} from "../../../graph/types";
 import RemoteSelect from "./RemoteSelect";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -71,7 +71,7 @@ const CreateRefract: React.FC = (): JSX.Element => {
 	// local state
 	const [arch, setArch] = useState<Archetype>(Archetype.GENERIC);
 	const [name, setName] = useState<ValidatedData>(initialName);
-	const [remotes, setRemotes] = useState<string[]>([]);
+	const [remotes, setRemotes] = useState<Remote[]>([]);
 
 	const handleArchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setArch((event.target as HTMLInputElement).value as Archetype);
@@ -173,7 +173,7 @@ const CreateRefract: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							component={Link}
-							to="/settings/refract"
+							to="/refract"
 							variant="outlined">
 							Cancel
 						</Button>
