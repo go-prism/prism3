@@ -181,7 +181,9 @@ const EditRefract: React.FC = (): JSX.Element => {
 					disableTypography
 					secondary={<Typography
 						color="textSecondary">
-						{loading ? <Skeleton animation="wave" width="15%"/> : `Refraction ID: ${data?.getRefraction?.id}`}
+						{loading ? <Skeleton animation="wave" width="15%"/> : <span>
+							Refraction ID: <code>{data?.getRefraction?.id}</code>
+						</span>}
 					</Typography>}>
 					<Typography
 						className={classes.title}

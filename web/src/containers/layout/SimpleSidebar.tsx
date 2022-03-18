@@ -103,7 +103,7 @@ const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header
 			{s.icon}
 		</ListItemIcon>}
 		<ListItemText
-			primary={`• ${s.label}`}
+			primary={`${s.icon ? "" : "• "}${s.label}`}
 			primaryTypographyProps={{className: classes.title}}
 		/>
 	</ListItem>

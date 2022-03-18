@@ -24,6 +24,7 @@ import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
 import {Archetype, Remote} from "../../../graph/types";
+import useCreateRefract from "../../../graph/actions/remote/useCreateRefract";
 import RemoteSelect from "./RemoteSelect";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -65,8 +66,7 @@ const CreateRefract: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 	const history = useHistory();
 
-	let loading = false;
-	let error: ApolloError | null = null;
+	const [createRefract, {loading, error}] = useCreateRefract();
 
 	// local state
 	const [arch, setArch] = useState<Archetype>(Archetype.GENERIC);
@@ -78,15 +78,15 @@ const CreateRefract: React.FC = (): JSX.Element => {
 	};
 
 	const handleCreate = (): void => {
-		// dispatch(createRefract({
-		// 	archetype: arch,
-		// 	name: name.value,
-		// 	remotesList: remotes || []
-		// })).then((action) => {
-		// 	// only change the url if there was a success
-		// 	if(action.error !== true)
-		// 		history.push("/settings/refract");
-		// });
+		createRefract({variables: {
+			name: name.value,
+			archetype: arch,
+			remotes: remotes.map(r => r.id)
+		}}).then(r => {
+			if (!r.errors) {
+				history.push(`/refract/${r.data?.createRefraction.id}/-/edit`);
+			}
+		});
 	}
 
 	return (
