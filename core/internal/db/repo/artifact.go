@@ -51,7 +51,7 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 
 func (r *ArtifactRepo) ListArtifacts(ctx context.Context, remotes []string) ([]*model.Artifact, error) {
 	var result []*model.Artifact
-	if err := r.db.Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Find(&result).Error; err != nil {
+	if err := r.db.Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Order("uri asc").Find(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to list artifacts")
 		return nil, err
 	}

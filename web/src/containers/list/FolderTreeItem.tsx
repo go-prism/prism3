@@ -16,22 +16,20 @@
  */
 
 import Icon from "@mdi/react";
-import {
-	mdiCpu64Bit,
-	mdiDatabase,
-	mdiDebian,
-	mdiFolder,
-	mdiFolderZipOutline,
-	mdiHexagonSlice6,
-	mdiLanguageJava,
-	mdiSignatureFreehand,
-	mdiXml,
-	mdiZipBox
-} from "@mdi/js";
 import React, {CSSProperties, useMemo} from "react";
 import {useTheme} from "@material-ui/core/styles";
 import {ListItem, ListItemIcon, ListItemText, makeStyles, Theme} from "@material-ui/core";
-import {CacheEntryV1} from "../../config/types";
+import {
+	BrandDebian,
+	Certificate,
+	Database,
+	File, FileCode,
+	FileInvoice,
+	FileZip,
+	Folder,
+	Hexagon,
+	Package
+} from "tabler-icons-react";
 import {unescapeString} from "../../utils/encode";
 import {Node} from "../route/Overview";
 import {Artifact} from "../../graph/types";
@@ -46,7 +44,12 @@ const useStyles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
 		borderBottomLeftRadius: theme.spacing(4),
 		borderTopLeftRadius: theme.spacing(4),
 		color: props.primary,
-	})
+	}),
+	row: {
+		textOverflow: "ellipsis",
+		overflow: "hidden",
+		whiteSpace: "nowrap"
+	}
 }));
 
 export interface TreeNode {
@@ -69,30 +72,27 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 
 	const {node, depth} = item;
 
-	const icon = useMemo(() => {
+	const Icon = useMemo(() => {
 		switch (true) {
-			case node.name === "x86_64":
-				return mdiCpu64Bit;
 			case node.name === "APKINDEX.tar.gz":
-				return mdiDatabase;
+				return Database;
 			case node.name.endsWith(".pom"):
-				return mdiXml;
+				return FileInvoice;
 			case node.name.endsWith(".sha1"):
-				return mdiSignatureFreehand;
+				return Certificate;
 			case node.name.endsWith(".jar"):
-				return mdiLanguageJava;
 			case node.name.endsWith(".tgz"):
 			case node.name.endsWith(".tar.gz"):
 			case node.name.endsWith(".apk"):
-				return mdiZipBox;
+				return Package;
 			case node.name.endsWith(".deb"):
-				return mdiDebian;
+				return BrandDebian;
 			case node.name.endsWith(".zip"):
-				return mdiFolderZipOutline;
+				return FileZip;
 			case node.name.endsWith(".mod"):
-				return mdiHexagonSlice6;
+				return Hexagon;
 			default:
-				return mdiFolder;
+				return node.children.length === 0 ? FileCode : Folder;
 		}
 	}, [node.name]);
 
@@ -139,13 +139,10 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 					width: `calc(100% - ${left}px)`
 				}}>
 				<ListItemIcon>
-					<Icon
-						path={icon}
-						size={1}
-						color={colours[0]}
-					/>
+					<Icon color={colours[0]}/>
 				</ListItemIcon>
-				<ListItemText>
+				<ListItemText
+					primaryTypographyProps={{className: classes.row}}>
 					{unescapeString(node.name)}
 				</ListItemText>
 			</ListItem>

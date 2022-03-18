@@ -15,17 +15,14 @@
  *
  */
 
-import React, {useEffect} from "react";
-import {Button, List, ListItem, ListItemIcon, ListItemText, makeStyles, Theme} from "@material-ui/core";
+import React, {useEffect, useMemo} from "react";
 import {useTheme} from "@material-ui/core/styles";
-import {useParams} from "react-router";
-import {Link} from "react-router-dom";
-import {Alert} from "@material-ui/lab";
+import {Apps} from "tabler-icons-react";
 import {TreeNode} from "../list/FolderTreeItem";
 import {getRemoteIcon} from "../../utils/remote";
-import StandardLayout from "../layout/StandardLayout";
-import {RefractionV1} from "../../config/types";
 import useListRefractions from "../../graph/actions/remote/useListRefractions";
+import SidebarLayout from "../layout/SidebarLayout";
+import SimpleSidebar, {SidebarItem} from "../layout/SimpleSidebar";
 
 export interface Node {
 	node: TreeNode;
@@ -34,60 +31,38 @@ export interface Node {
 	collapsed: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
-	root: {
-		borderRadius: theme.spacing(4)
-	}
-}));
-
-interface OverviewParams {
-	ref?: string;
-}
-
 const Overview: React.FC = (): JSX.Element => {
 	// hooks
 	const theme = useTheme();
-	const {ref} = useParams<OverviewParams>();
-	const classes = useStyles();
 
 	// global state
-	const {data, loading, error} = useListRefractions();
+	const {data, loading} = useListRefractions();
 
 	useEffect(() => {
 		window.document.title = "Prism";
 	}, []);
+
+	const items: SidebarItem[] = useMemo(() => {
+		if (data?.listRefractions == null)
+			return [];
+		return data.listRefractions.map(r => ({
+			id: r.id,
+			label: r.name,
+			icon: getRemoteIcon(theme, r.archetype),
+			to: `/-/${r.id}`
+		}));
+	}, [data?.listRefractions]);
 	
 	return (
-		<StandardLayout>
-			<List>
-				{ref == null && data?.listRefractions.length === 0 && <Alert
-					action={<Button
-						component={Link}
-						to="/refract/new"
-						color="inherit"
-						size="small">
-						Create
-					</Button>}
-					severity="info">
-					There are no refractions.
-				</Alert>}
-				{ref == null && data?.listRefractions.map(r => <ListItem
-					key={r.id}
-					classes={{
-						root: classes.root
-					}}
-					button
-					component={Link}
-					to={`/-/${r.id}`}>
-					<ListItemIcon>
-						{getRemoteIcon(theme, r.archetype)}
-					</ListItemIcon>
-					<ListItemText>
-						{r.name}
-					</ListItemText>
-				</ListItem>)}
-			</List>
-		</StandardLayout>
+		<SidebarLayout
+			sidebar={<SimpleSidebar
+				items={items}
+				header="Artifacts"
+				icon={Apps}
+				loading={loading}
+			/>}>
+			Test
+		</SidebarLayout>
 	);
 }
 export default Overview;

@@ -44,7 +44,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	}, [refract]);
 
 	const text = useMemo(() => {
-		const url = `${API_URL}/api/-/${refract.name.toLocaleLowerCase()}`;
+		const url = `${API_URL}/api/v1/${refract.name.toLocaleLowerCase()}/-`;
 		switch(refract.archetype) {
 			case Archetype.MAVEN:
 				return `<settings xmlns="https://maven.apache.org/SETTINGS/1.0.0"

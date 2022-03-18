@@ -30,8 +30,6 @@ import {
 	withStyles
 } from "@material-ui/core";
 import {Alert, TabContext, TabPanel} from "@material-ui/lab";
-import {mdiDownload, mdiPencilOutline, mdiPlusCircleOutline} from "@mdi/js";
-import Icon from "@mdi/react";
 import {formatDistanceToNow} from "date-fns";
 import {CirclePlus, Edit, FileDownload} from "tabler-icons-react";
 import {MetadataChip} from "../../../config/types";
@@ -42,6 +40,7 @@ import DefaultInstall from "./info/setup/DefaultInstall";
 import JavaInstall from "./info/setup/JavaInstall";
 import AlpineInstall from "./info/setup/AlpineInstall";
 import HelmInstall from "./info/setup/HelmInstall";
+import NpmInstall from "./info/setup/NpmInstall";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -114,6 +113,8 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				return <AlpineInstall uri={item.uri} refraction={refraction.name}/>;
 			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.HELM:
 				return <HelmInstall uri={item.uri} refraction={refraction.name}/>;
+			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.NPM:
+				return <NpmInstall uri={item.uri} refraction={refraction.name}/>;
 			default:
 				return <DefaultInstall uri={item.uri}/>;
 		}

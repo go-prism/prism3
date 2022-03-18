@@ -135,7 +135,7 @@ const Browser: React.FC = (): JSX.Element => {
 				return temp.children;
 			}, r);
 			return r;
-		}, []);
+		}, []).sort((a, b) => a.name.localeCompare(b.name));
 	}, [data?.listCombinedArtifacts]);
 
 	const onNodeToggle = (ids: string[]): void => {
