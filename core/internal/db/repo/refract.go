@@ -48,7 +48,7 @@ func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract
 
 func (r *RefractRepo) GetRefractionByName(ctx context.Context, name string) (*model.Refraction, error) {
 	var result model.Refraction
-	if err := r.db.Preload("Remotes").Where("name = ?", name).First(&result).Error; err != nil {
+	if err := r.db.Preload("Remotes").Preload("Remotes.Security").Preload("Remotes.Transport").Where("name = ?", name).First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to get refraction")
 		return nil, err
 	}

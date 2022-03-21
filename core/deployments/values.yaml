@@ -5,6 +5,13 @@ podAnnotations:
   app.kubernetes.io/part-of: prism3
 env:
   PRISM_DB_DSN: "user=prism password=password dbname=prism host=db3-postgresql port=5432 sslmode=disable"
+  PRISM_S3_REGION: "us-east-1"
+  PRISM_S3_PATH_STYLE: "true"
+  PRISM_S3_ENDPOINT: http://minio3:9000
+  PRISM_S3_BUCKET: prism
+  PRISM_LOG_DEBUG: "true"
+  AWS_ACCESS_KEY_ID: admin
+  AWS_SECRET_ACCESS_KEY: password
 security:
   podContext:
     fsGroup: 1001

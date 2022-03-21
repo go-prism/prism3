@@ -9,6 +9,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -56,7 +57,10 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string) (string, erro
 }
 
 func (r *EphemeralRemote) Download(ctx context.Context, path string) (io.Reader, error) {
-	target := fmt.Sprintf("%s/%s", r.root, path)
+	target := path
+	if !strings.HasPrefix(path, "https://") {
+		target = fmt.Sprintf("%s/%s", r.root, path)
+	}
 	log.WithContext(ctx).WithFields(log.Fields{
 		"path":   path,
 		"target": target,

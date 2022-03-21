@@ -5,7 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
 	"io"
-	"net/http"
 	"sync"
 	"time"
 )
@@ -26,8 +25,8 @@ func (r *Refraction) String() string {
 	return r.name
 }
 
-func (r *Refraction) Exists(ctx context.Context, path string) (string, error) {
-	ch := make(chan string, 1)
+func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) {
+	ch := make(chan Message, 1)
 	// create a goroutine for each remote
 	log.WithContext(ctx).WithFields(log.Fields{
 		"path": path,
@@ -40,33 +39,32 @@ func (r *Refraction) Exists(ctx context.Context, path string) (string, error) {
 		rem := r.remotes[i]
 		go func() {
 			ok, _ := rem.Exists(reqCtx, path)
-			ch <- ok
+			ch <- Message{
+				URI:    ok,
+				Remote: rem,
+			}
 		}()
 	}
 	// wait for the first response or for
 	// the context to expire
 	select {
 	case val := <-ch:
-		log.WithContext(ctx).Infof("received final response: %s", val)
-		return val, nil
+		log.WithContext(ctx).Infof("received final response: %s from remote", val.URI)
+		return &val, nil
 	case _ = <-ctx.Done():
-		return "", ctx.Err()
+		return nil, ctx.Err()
 	}
 }
 
 func (r *Refraction) Download(ctx context.Context, path string) (io.Reader, error) {
 	// find the best location for the file
-	uri, err := r.Exists(ctx, path)
+	msg, err := r.Exists(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	// get an ephemeral remote we can use
-	pool := r.rp.Get().(*remote.EphemeralRemote)
-	defer r.rp.Put(pool)
-	// download the file
-	resp, err := pool.Do(ctx, http.MethodGet, uri)
+	resp, err := msg.Remote.Download(ctx, msg.URI)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Body, nil
+	return resp, nil
 }

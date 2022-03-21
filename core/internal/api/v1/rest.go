@@ -15,12 +15,12 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve
-	buf, err := g.Serve(r.Context(), req)
+	reader, err := g.Serve(r.Context(), req)
 	if err != nil {
 		// todo figure out the code and appropriate message
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// copy the response back
-	_, _ = io.Copy(w, buf)
+	_, _ = io.Copy(w, reader)
 }

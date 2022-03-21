@@ -5,6 +5,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
+	"gitlab.com/go-prism/prism3/core/internal/storage"
 	"io"
 )
 
@@ -13,10 +14,10 @@ type BackedRefraction struct {
 	rf  *Refraction
 }
 
-func NewBackedRefraction(mod *model.Refraction, onCreate repo.CreateArtifactFunc) *BackedRefraction {
+func NewBackedRefraction(mod *model.Refraction, store storage.Reader, onCreate repo.CreateArtifactFunc) *BackedRefraction {
 	remotes := make([]remote.Remote, len(mod.Remotes))
 	for i := range mod.Remotes {
-		remotes[i] = remote.NewBackedRemote(mod.Remotes[i], onCreate)
+		remotes[i] = remote.NewBackedRemote(mod.Remotes[i], store, onCreate)
 	}
 	return &BackedRefraction{
 		mod: mod,
@@ -25,7 +26,11 @@ func NewBackedRefraction(mod *model.Refraction, onCreate repo.CreateArtifactFunc
 }
 
 func (b *BackedRefraction) Exists(ctx context.Context, path string) (string, error) {
-	return b.rf.Exists(ctx, path)
+	msg, err := b.rf.Exists(ctx, path)
+	if err != nil {
+		return "", err
+	}
+	return msg.URI, nil
 }
 
 func (b *BackedRefraction) Download(ctx context.Context, path string) (io.Reader, error) {

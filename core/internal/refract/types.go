@@ -10,3 +10,8 @@ type Refraction struct {
 	remotes []remote.Remote
 	rp      *sync.Pool
 }
+
+type Message struct {
+	URI    string
+	Remote remote.Remote
+}

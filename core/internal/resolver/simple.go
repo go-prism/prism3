@@ -6,8 +6,8 @@ import (
 	"github.com/bluele/gcache"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
-	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
+	"gitlab.com/go-prism/prism3/core/internal/storage"
 	"io"
 	"time"
 )
@@ -17,10 +17,11 @@ func (r *Request) New(bucket, path string) {
 	r.path = path
 }
 
-func NewResolver(repos *repo.Repos) *Resolver {
+func NewResolver(repos *repo.Repos, store storage.Reader) *Resolver {
 	r := new(Resolver)
 	r.repos = repos
 	r.cache = gcache.New(1000).ARC().Expiration(time.Minute * 5).LoaderFunc(r.getRefraction).Build()
+	r.store = store
 	return r
 }
 
@@ -31,8 +32,7 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error)
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
 		return nil, err
 	}
-	refraction := refract.NewBackedRefraction(ref.(*model.Refraction), r.repos.ArtifactRepo.CreateArtifact)
-	return refraction.Download(ctx, req.path)
+	return ref.(*refract.BackedRefraction).Download(ctx, req.path)
 }
 
 func (r *Resolver) getRefraction(v interface{}) (interface{}, error) {
@@ -41,5 +41,9 @@ func (r *Resolver) getRefraction(v interface{}) (interface{}, error) {
 		return nil, errors.New("expected string")
 	}
 	log.Infof("fetching remote from database: %s", name)
-	return r.repos.RefractRepo.GetRefractionByName(context.TODO(), name)
+	ref, err := r.repos.RefractRepo.GetRefractionByName(context.TODO(), name)
+	if err != nil {
+		return nil, err
+	}
+	return refract.NewBackedRefraction(ref, r.store, r.repos.ArtifactRepo.CreateArtifact), nil
 }

@@ -48,24 +48,31 @@ func (r *RegexEnforcer) CanReceive(ctx context.Context, path string) bool {
 	return true
 }
 
-func (r *RegexEnforcer) CanCache(_ context.Context, path string) bool {
+func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 	if r.archetype == "" {
 		return false
 	}
+	canCache := true
 	switch r.archetype {
 	case model.ArchetypeNpm:
-		return RegexNode.MatchString(path)
+		canCache = RegexNode.MatchString(path)
 	case model.ArchetypeMaven:
-		return !strings.HasSuffix(path, "maven-metadata.xml")
+		canCache = !strings.HasSuffix(path, "maven-metadata.xml")
 	case model.ArchetypeAlpine:
-		return !strings.HasSuffix(path, "APKINDEX.tar.gz")
+		canCache = !strings.HasSuffix(path, "APKINDEX.tar.gz")
 	case model.ArchetypeDebian:
-		return RegexDebian.MatchString(path)
+		canCache = RegexDebian.MatchString(path)
 	case model.ArchetypeHelm:
-		return RegexHelm.MatchString(path)
+		canCache = RegexHelm.MatchString(path)
 	default:
-		return true
+		canCache = true
 	}
+	log.WithContext(ctx).WithFields(log.Fields{
+		"path":  path,
+		"cache": canCache,
+		"arch":  r.archetype,
+	}).Debug("checked cache status")
+	return canCache
 }
 
 func (*RegexEnforcer) anyMatch(path string, rules []*regexp.Regexp) bool {

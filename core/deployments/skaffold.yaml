@@ -35,3 +35,10 @@ deploy:
         upgradeOnChange: true
         valuesFiles:
           - deployments/postgresql.yaml
+      - name: minio3
+        namespace: prism
+        remoteChart: https://charts.bitnami.com/bitnami/minio-11.1.4.tgz
+        skipBuildDependencies: true
+        upgradeOnChange: true
+        valuesFiles:
+          - deployments/minio.yaml
