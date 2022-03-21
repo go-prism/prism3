@@ -33,6 +33,10 @@ func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo.Creat
 	}
 }
 
+func (b *BackedRemote) String() string {
+	return b.eph.String()
+}
+
 func (b *BackedRemote) Exists(ctx context.Context, path string) (string, error) {
 	// check that this remote is allowed to receive the file
 	if !b.pol.CanReceive(ctx, path) {

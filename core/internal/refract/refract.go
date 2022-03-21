@@ -25,6 +25,10 @@ func (r *Refraction) String() string {
 	return r.name
 }
 
+func (r *Refraction) Remotes() []remote.Remote {
+	return r.remotes
+}
+
 func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) {
 	ch := make(chan Message, 1)
 	// create a goroutine for each remote

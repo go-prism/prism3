@@ -36,3 +36,7 @@ func (b *BackedRefraction) Exists(ctx context.Context, path string) (string, err
 func (b *BackedRefraction) Download(ctx context.Context, path string) (io.Reader, error) {
 	return b.rf.Download(ctx, path)
 }
+
+func (b *BackedRefraction) Refraction() *Refraction {
+	return b.rf
+}

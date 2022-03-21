@@ -46,7 +46,7 @@ const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element
 				</div>,
 				config: <div>
 					<CodeBlock
-						code={`helm repo add prism-helm ${API_URL}/api/-/${refraction}\nhelm repo update`}
+						code={`helm repo add prism-helm ${API_URL}/api/helm/${refraction}/-/\nhelm repo update`}
 						language="bash"
 					/>
 				</div>,

@@ -20,7 +20,7 @@ func TestGateway_ServeHTTP(t *testing.T) {
 
 	for _, tt := range cases {
 		t.Run(tt.target, func(t *testing.T) {
-			assert.HTTPSuccess(t, g.ServeHTTP, http.MethodGet, tt.target, nil)
+			assert.HTTPSuccess(t, g.ServeHTTPGeneric, http.MethodGet, tt.target, nil)
 		})
 	}
 }

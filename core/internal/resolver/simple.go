@@ -6,6 +6,7 @@ import (
 	"github.com/bluele/gcache"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/internal/impl/helmapi"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/internal/storage"
 	"io"
@@ -23,6 +24,17 @@ func NewResolver(repos *repo.Repos, store storage.Reader) *Resolver {
 	r.cache = gcache.New(1000).ARC().Expiration(time.Minute * 5).LoaderFunc(r.getRefraction).Build()
 	r.store = store
 	return r
+}
+
+func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, error) {
+	ref, err := r.cache.Get(req.bucket)
+	if err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
+		return nil, err
+	}
+	refraction := ref.(*refract.BackedRefraction)
+	h := &helmapi.Index{}
+	return h.Serve(ctx, refraction.Refraction())
 }
 
 func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {

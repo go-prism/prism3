@@ -27,6 +27,10 @@ func NewEphemeralRemote(root string) *EphemeralRemote {
 	}
 }
 
+func (r *EphemeralRemote) String() string {
+	return r.root
+}
+
 func (r *EphemeralRemote) Exists(ctx context.Context, path string) (string, error) {
 	// check the cache
 	res, err := r.cache.GetIFPresent(path)
@@ -59,7 +63,7 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string) (string, erro
 func (r *EphemeralRemote) Download(ctx context.Context, path string) (io.Reader, error) {
 	target := path
 	if !strings.HasPrefix(path, "https://") {
-		target = fmt.Sprintf("%s/%s", r.root, path)
+		target = fmt.Sprintf("%s/%s", r.root, strings.TrimPrefix(path, "/"))
 	}
 	log.WithContext(ctx).WithFields(log.Fields{
 		"path":   path,

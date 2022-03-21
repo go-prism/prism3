@@ -79,7 +79,10 @@ func main() {
 	router.Handle("/api/graphql", playground.Handler("GraphQL Playground", "/api/query"))
 	router.Handle("/api/query", srv)
 	router.PathPrefix("/api/v1/{bucket}/").
-		Handler(h).
+		HandlerFunc(h.ServeHTTPGeneric).
+		Methods(http.MethodGet)
+	router.PathPrefix("/api/helm/{bucket}/").
+		HandlerFunc(h.ServeHTTPHelm).
 		Methods(http.MethodGet)
 
 	// start serving
