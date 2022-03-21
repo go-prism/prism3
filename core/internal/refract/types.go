@@ -1,9 +1,12 @@
 package refract
 
 import (
+	"errors"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
 	"sync"
 )
+
+var ErrNotFound = errors.New("object could not be found in any remote")
 
 type Refraction struct {
 	name    string

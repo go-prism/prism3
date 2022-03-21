@@ -38,22 +38,29 @@ func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) 
 	for i := range r.remotes {
 		rem := r.remotes[i]
 		go func() {
-			ok, _ := rem.Exists(reqCtx, path)
+			uri, _ := rem.Exists(reqCtx, path)
 			ch <- Message{
-				URI:    ok,
+				URI:    uri,
 				Remote: rem,
 			}
 		}()
 	}
 	// wait for the first response or for
 	// the context to expire
-	select {
-	case val := <-ch:
-		log.WithContext(ctx).Infof("received final response: %s from remote", val.URI)
-		return &val, nil
-	case _ = <-ctx.Done():
-		return nil, ctx.Err()
+	count := 0
+	for count < len(r.remotes) {
+		select {
+		case val := <-ch:
+			if val.URI != "" {
+				log.WithContext(ctx).Infof("received final response: %s from remote", val.URI)
+				return &val, nil
+			}
+		case _ = <-ctx.Done():
+			return nil, ctx.Err()
+		}
+		count++
 	}
+	return nil, ErrNotFound
 }
 
 func (r *Refraction) Download(ctx context.Context, path string) (io.Reader, error) {
