@@ -77,6 +77,8 @@ func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*repo.Ind
 		return nil, err
 	}
 	log.WithContext(ctx).Debug("parsing yaml response")
+	// todo find a way to reduce memory usage when parsing helm index.yaml files
+	// this will require instances to run with increased memory requirements (200+ MiB)
 	var resp repo.IndexFile
 	if err := yaml.Unmarshal(data, &resp); err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to unmarshal index.yaml")
@@ -91,6 +93,8 @@ func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*repo.Ind
 	return &resp, nil
 }
 
+// rewriteURLs converts all the URLs in a Helm repository
+// to point to Prism rather than their original source.
 func (svc *Index) rewriteURLs(_ context.Context, ref string, e *repo.ChartVersion) {
 	for i := range e.URLs {
 		e.URLs[i] = fmt.Sprintf("%s/api/v1/%s/-/%s-%s.tgz", svc.publicURL, ref, e.Metadata.Name, e.Metadata.Version)
