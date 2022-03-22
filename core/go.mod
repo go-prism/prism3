@@ -1,6 +1,6 @@
 module gitlab.com/go-prism/prism3/core
 
-go 1.17
+go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.1

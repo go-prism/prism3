@@ -10,8 +10,12 @@ env:
   PRISM_S3_ENDPOINT: http://minio3:9000
   PRISM_S3_BUCKET: prism
   PRISM_LOG_DEBUG: "true"
+  PRISM_PUBLIC_URL: https://prism3.devel
   AWS_ACCESS_KEY_ID: admin
   AWS_SECRET_ACCESS_KEY: password
+  HELM_CACHE_HOME: /tmp
+  HELM_CONFIG_HOME: /tmp
+  HELM_DATA_HOME: /tmp
 security:
   podContext:
     fsGroup: 1001
@@ -52,6 +56,11 @@ livenessProbe:
 readinessProbe:
   path: "/healthz"
   port: 8080
+volumes:
+  - name: tmp
+    mountPath: /tmp
+    config:
+      emptyDir: {}
 resources:
   requests:
     cpu: 100m

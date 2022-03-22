@@ -10,11 +10,18 @@ import (
 	"io"
 	"io/ioutil"
 	"sigs.k8s.io/yaml"
-	"strings"
 	"sync"
 )
 
-type Index struct{}
+type Index struct {
+	publicURL string
+}
+
+func NewIndex(publicURL string) *Index {
+	return &Index{
+		publicURL: publicURL,
+	}
+}
 
 func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader, error) {
 	remotes := ref.Remotes()
@@ -34,7 +41,7 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader
 			if err != nil {
 				return
 			}
-			idx, err := svc.parse(ctx, ref.String(), remotes[j].String(), resp)
+			idx, err := svc.parse(ctx, ref.String(), resp)
 			if err != nil {
 				return
 			}
@@ -61,7 +68,7 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader
 
 // parse converts raw yaml into
 // a Helm repo.IndexFile
-func (svc *Index) parse(ctx context.Context, ref, root string, r io.Reader) (*repo.IndexFile, error) {
+func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*repo.IndexFile, error) {
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to read response")
@@ -75,14 +82,14 @@ func (svc *Index) parse(ctx context.Context, ref, root string, r io.Reader) (*re
 	log.WithContext(ctx).Infof("parsed %d entries", len(resp.Entries))
 	for _, e := range resp.Entries {
 		for _, ee := range e {
-			svc.rewriteURLs(ctx, ref, root, ee.URLs)
+			svc.rewriteURLs(ctx, ref, ee)
 		}
 	}
 	return &resp, nil
 }
 
-func (*Index) rewriteURLs(ctx context.Context, ref, root string, urls []string) {
-	for i := range urls {
-		urls[i] = strings.ReplaceAll(urls[i], strings.TrimSuffix(root, "/"), fmt.Sprintf("https://prism3.devel/api/v1/%s/-", ref))
+func (svc *Index) rewriteURLs(_ context.Context, ref string, e *repo.ChartVersion) {
+	for i := range e.URLs {
+		e.URLs[i] = fmt.Sprintf("%s/api/v1/%s/-/%s-%s.tgz", svc.publicURL, ref, e.Metadata.Name, e.Metadata.Version)
 	}
 }

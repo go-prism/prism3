@@ -26,6 +26,8 @@ type environment struct {
 	Port int `envconfig:"PORT" default:"8080"`
 	Log  logging.Config
 
+	PublicURL string `split_words:"true" required:"true"`
+
 	DB struct {
 		DSN string `split_words:"true" required:"true"`
 	}
@@ -58,7 +60,7 @@ func main() {
 	}
 
 	// configure graphql
-	h := v1.NewGateway(resolver.NewResolver(repos, s3))
+	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL))
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{

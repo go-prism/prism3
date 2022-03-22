@@ -18,11 +18,12 @@ func (r *Request) New(bucket, path string) {
 	r.path = path
 }
 
-func NewResolver(repos *repo.Repos, store storage.Reader) *Resolver {
+func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Resolver {
 	r := new(Resolver)
 	r.repos = repos
 	r.cache = gcache.New(1000).ARC().Expiration(time.Minute * 5).LoaderFunc(r.getRefraction).Build()
 	r.store = store
+	r.helm = helmapi.NewIndex(publicURL)
 	return r
 }
 
@@ -33,8 +34,7 @@ func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, er
 		return nil, err
 	}
 	refraction := ref.(*refract.BackedRefraction)
-	h := &helmapi.Index{}
-	return h.Serve(ctx, refraction.Refraction())
+	return r.helm.Serve(ctx, refraction.Refraction())
 }
 
 func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {
@@ -47,12 +47,12 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error)
 	return ref.(*refract.BackedRefraction).Download(ctx, req.path)
 }
 
-func (r *Resolver) getRefraction(v interface{}) (interface{}, error) {
+func (r *Resolver) getRefraction(v any) (any, error) {
 	name, ok := v.(string)
 	if !ok {
 		return nil, errors.New("expected string")
 	}
-	log.Infof("fetching remote from database: %s", name)
+	log.Infof("fetching refraction from database: %s", name)
 	ref, err := r.repos.RefractRepo.GetRefractionByName(context.TODO(), name)
 	if err != nil {
 		return nil, err

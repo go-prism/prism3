@@ -16,7 +16,7 @@ func TestGateway_ServeHTTP(t *testing.T) {
 			"https://prism.devel/api/v1/alpine/-/v3.14/main/x86_64/APKINDEX.tar.gz",
 		},
 	}
-	g := NewGateway(resolver.NewResolver(nil, storage.NewNoOp()))
+	g := NewGateway(resolver.NewResolver(nil, storage.NewNoOp(), ""))
 
 	for _, tt := range cases {
 		t.Run(tt.target, func(t *testing.T) {

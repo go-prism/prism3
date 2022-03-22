@@ -14,7 +14,7 @@ func NewSimple(name string, remotes []remote.Remote) *Refraction {
 		name:    name,
 		remotes: remotes,
 		rp: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return remote.NewEphemeralRemote("")
 			},
 		},

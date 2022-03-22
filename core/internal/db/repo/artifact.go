@@ -19,7 +19,7 @@ type CreateArtifactFunc = func(ctx context.Context, path, remote string) error
 
 func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) error {
 	// try to update the existing artifact
-	tx := r.db.Model(&model.Artifact{}).Where("uri = ? AND remote_id = ?", path, remote).Updates(map[string]interface{}{
+	tx := r.db.Model(&model.Artifact{}).Where("uri = ? AND remote_id = ?", path, remote).Updates(map[string]any{
 		"downloads":  gorm.Expr("downloads + ?", 1),
 		"updated_at": time.Now().Unix(),
 	})

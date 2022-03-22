@@ -10,8 +10,8 @@ build:
         runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
         dependencies:
           paths:
-            - cmd/core/**
-            - internal/**
+            - cmd/core/
+            - internal/
   local:
     push: false
 deploy:

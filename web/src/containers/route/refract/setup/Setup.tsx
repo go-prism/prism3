@@ -99,7 +99,7 @@ echo "deb ${url} buster main" >> /etc/apt/sources.list
 # to use only Prism
 echo "deb ${url} buster main" > /etc/apt/sources.list`;
 			case Archetype.HELM:
-				return `helm repo add prism-${refract.name.toLocaleLowerCase()} ${url}
+				return `helm repo add prism-${refract.name.toLocaleLowerCase()} ${API_URL}/api/helm/${refract.name.toLocaleLowerCase()}/-
 helm repo update`;
 			default:
 				return `curl ${url}/path/to/file.txt > file.txt`;

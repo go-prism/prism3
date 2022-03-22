@@ -25,7 +25,7 @@ func TestIndex_Serve(t *testing.T) {
 		{
 			"single remote",
 			refract.NewSimple("helm-test", []remote.Remote{
-				remote.NewEphemeralRemote("https://charts.bitnami.com/bitnami"),
+				remote.NewEphemeralRemote("https://av1o.gitlab.io/charts"),
 			}),
 			true,
 		},
@@ -51,7 +51,6 @@ func TestIndex_Serve(t *testing.T) {
 			var file repo.IndexFile
 			err = yaml.Unmarshal(data, &file)
 			assert.NoError(t, err)
-			t.Log(len(file.Entries))
 			for _, v := range file.Entries {
 				for _, vv := range v {
 					t.Logf("%+v", vv.URLs)

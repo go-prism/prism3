@@ -23,7 +23,7 @@ func (m JSONArray) Value() (driver.Value, error) {
 }
 
 // Scan scan value into Jsonb, implements sql.Scanner interface
-func (m *JSONArray) Scan(val interface{}) error {
+func (m *JSONArray) Scan(val any) error {
 	var ba []byte
 	switch v := val.(type) {
 	case []byte:
@@ -75,7 +75,7 @@ func (JSONArray) GormDBDataType(db *gorm.DB, _ *schema.Field) string {
 }
 
 // UnmarshalGQL implements the graphql.Unmarshaler interface
-func (m *JSONArray) UnmarshalGQL(v interface{}) error {
+func (m *JSONArray) UnmarshalGQL(v any) error {
 	val, ok := v.([]string)
 	if !ok {
 		return errors.New("JSONArray must be a JSON array")

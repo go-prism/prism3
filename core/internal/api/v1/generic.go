@@ -11,7 +11,7 @@ func NewGateway(r *resolver.Resolver) *Gateway {
 	return &Gateway{
 		resolver: r,
 		pool: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return new(resolver.Request)
 			},
 		},

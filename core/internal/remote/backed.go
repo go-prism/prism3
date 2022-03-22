@@ -17,16 +17,22 @@ import (
 
 type BackedRemote struct {
 	rm       *model.Remote
-	eph      *EphemeralRemote
+	eph      Remote
 	onCreate repo.CreateArtifactFunc
 	pol      policy.Enforcer
 	store    storage.Reader
 }
 
 func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc) *BackedRemote {
+	var eph Remote
+	if rm.Archetype == model.ArchetypeHelm {
+		eph = NewHelmRemote(rm.URI)
+	} else {
+		eph = NewEphemeralRemote(rm.URI)
+	}
 	return &BackedRemote{
 		rm:       rm,
-		eph:      NewEphemeralRemote(rm.URI),
+		eph:      eph,
 		onCreate: onCreate,
 		pol:      policy.NewRegexEnforcer(rm),
 		store:    store,
