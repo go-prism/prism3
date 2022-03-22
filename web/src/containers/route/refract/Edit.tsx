@@ -26,6 +26,7 @@ import {IDParams} from "../settings";
 import useGetRefraction from "../../../graph/actions/remote/useGetRefraction";
 import {Archetype, Remote} from "../../../graph/types";
 import {getRemoteIcon} from "../../../utils/remote";
+import usePatchRefract from "../../../graph/actions/refract/usePatchRefract";
 import Setup from "./setup/Setup";
 import RemoteSelect from "./RemoteSelect";
 
@@ -73,6 +74,7 @@ const EditRefract: React.FC = (): JSX.Element => {
 	const {id} = useParams<IDParams>();
 
 	// global state
+	const [patchRefraction, {error: patchErr}] = usePatchRefract();
 	const [getRefraction, {data, loading, error}] = useGetRefraction();
 	let refractInfo: object | null = null;
 
@@ -101,20 +103,19 @@ const EditRefract: React.FC = (): JSX.Element => {
 	}, [data?.getRefraction]);
 
 	const handleUpdate = (): void => {
-		if (data?.getRefraction == null)
+		if (!id)
 			return;
 		setSuccess(false);
-		// dispatch(updateRefract(id, {
-		// 	archetype: refraction.archetype,
-		// 	name: name.value,
-		// 	remotesList: remotes
-		// })).then((action) => {
-		// 	// only show the alert if there was a success
-		// 	if(action.error !== true) {
-		// 		setSuccess(true);
-		// 		dispatch(getRefract(id));
-		// 	}
-		// });
+		patchRefraction({variables: {
+			id: id,
+			name: name.value,
+			remotes: remotes.map(r => r.id)
+		}}).then(r => {
+			if (!r.errors) {
+				setSuccess(true);
+				void getRefraction({variables: {id: id}});
+			}
+		});
 	}
 
 	const chips = useMemo(() => {
@@ -233,12 +234,12 @@ const EditRefract: React.FC = (): JSX.Element => {
 				<List>
 					{options}
 				</List>
-				{error != null && <Alert
+				{patchErr != null && <Alert
 					severity="error">
 						Failed to update Refraction.
 					<br/>
 					<Code>
-						{getErrorMessage(error)}
+						{getErrorMessage(patchErr)}
 					</Code>
 				</Alert>}
 				<div

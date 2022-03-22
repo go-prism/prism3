@@ -4,4 +4,4 @@
 2. [x] Merge indices
 3. [x] Rewrite URLs to Prism-relative
 4. [ ] Serve/save `index.yaml`
-5. [ ] Custom `Remote` implementation that fetches original Helm package
+5. [x] Custom `Remote` implementation that fetches original Helm package

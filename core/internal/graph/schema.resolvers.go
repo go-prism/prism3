@@ -23,6 +23,10 @@ func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.New
 	return r.repos.RefractRepo.CreateRefraction(ctx, &input)
 }
 
+func (r *mutationResolver) PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error) {
+	return r.repos.RefractRepo.PatchRefraction(ctx, id, &input)
+}
+
 func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }

@@ -90,6 +90,6 @@ func main() {
 	// start serving
 	serverless.NewBuilder(router).
 		WithPort(e.Port).
-		WithHandlers(false).
+		WithHandlers(true).
 		Run()
 }

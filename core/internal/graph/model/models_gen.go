@@ -33,6 +33,11 @@ type NewRemote struct {
 	Transport string    `json:"transport"`
 }
 
+type PatchRefract struct {
+	Name    string   `json:"name"`
+	Remotes []string `json:"remotes"`
+}
+
 type Refraction struct {
 	ID        string    `json:"id" gorm:"primaryKey;type:uuid;not null"`
 	CreatedAt int64     `json:"createdAt"`

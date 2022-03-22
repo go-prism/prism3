@@ -37,6 +37,7 @@ func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) 
 	}).Infof("probing %d remotes", len(r.remotes))
 	// create a new context that we use for all
 	// requests, so we can cancel the old ones
+	// todo cancel contexts more aggressively
 	reqCtx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 	for i := range r.remotes {

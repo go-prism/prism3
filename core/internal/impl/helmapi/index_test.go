@@ -2,6 +2,7 @@ package helmapi
 
 import (
 	"context"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
@@ -12,6 +13,7 @@ import (
 )
 
 func TestIndex_Serve(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	var cases = []struct {
 		name string
 		ref  *refract.Refraction
@@ -20,7 +22,7 @@ func TestIndex_Serve(t *testing.T) {
 		{
 			"no remotes",
 			refract.NewSimple("helm-test", []remote.Remote{}),
-			true,
+			false, // should this be an error?
 		},
 		{
 			"single remote",
@@ -37,12 +39,23 @@ func TestIndex_Serve(t *testing.T) {
 			}),
 			true,
 		},
+		{
+			"invalid remote",
+			refract.NewSimple("helm-test", []remote.Remote{
+				remote.NewEphemeralRemote("https://gitlab.dcas.dev"),
+			}),
+			false,
+		},
 	}
 
 	idx := new(Index)
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := idx.Serve(context.TODO(), tt.ref)
+			if !tt.ok {
+				assert.Error(t, err)
+				return
+			}
 			assert.NoError(t, err)
 
 			data, err := io.ReadAll(resp)
@@ -51,11 +64,6 @@ func TestIndex_Serve(t *testing.T) {
 			var file repo.IndexFile
 			err = yaml.Unmarshal(data, &file)
 			assert.NoError(t, err)
-			for _, v := range file.Entries {
-				for _, vv := range v {
-					t.Logf("%+v", vv.URLs)
-				}
-			}
 		})
 	}
 }

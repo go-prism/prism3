@@ -101,5 +101,6 @@ func (s *S3) Head(ctx context.Context, path string) (bool, error) {
 		log.WithContext(ctx).WithError(err).WithFields(fields).Error("failed to head S3 object")
 		return false, err
 	}
+	log.WithContext(ctx).WithFields(fields).Debug("successfully located file in S3")
 	return true, nil
 }

@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/bluele/gcache v0.0.2
+	github.com/ghodss/yaml v1.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/kelseyhightower/envconfig v1.4.0

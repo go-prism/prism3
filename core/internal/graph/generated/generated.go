@@ -59,6 +59,7 @@ type ComplexityRoot struct {
 		CreateRemote     func(childComplexity int, input model.NewRemote) int
 		DeleteRefraction func(childComplexity int, id string) int
 		DeleteRemote     func(childComplexity int, id string) int
+		PatchRefraction  func(childComplexity int, id string, input model.PatchRefract) int
 	}
 
 	Query struct {
@@ -118,6 +119,7 @@ type MutationResolver interface {
 	CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error)
 	DeleteRemote(ctx context.Context, id string) (bool, error)
 	CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error)
+	PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error)
 	DeleteRefraction(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
@@ -241,6 +243,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteRemote(childComplexity, args["id"].(string)), true
+
+	case "Mutation.patchRefraction":
+		if e.complexity.Mutation.PatchRefraction == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_patchRefraction_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PatchRefraction(childComplexity, args["id"].(string), args["input"].(model.PatchRefract)), true
 
 	case "Query.getRefraction":
 		if e.complexity.Query.GetRefraction == nil {
@@ -686,11 +700,17 @@ input NewRefract {
   remotes: [String!]!
 }
 
+input PatchRefract {
+  name: String!
+  remotes: [String!]!
+}
+
 type Mutation {
   createRemote(input: NewRemote!): Remote!
   deleteRemote(id: ID!): Boolean!
 
   createRefraction(input: NewRefract!): Refraction!
+  patchRefraction(id: ID!, input: PatchRefract!): Refraction!
   deleteRefraction(id: ID!): Boolean!
 }
 `, BuiltIn: false},
@@ -758,6 +778,30 @@ func (ec *executionContext) field_Mutation_deleteRemote_args(ctx context.Context
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_patchRefraction_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.PatchRefract
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNPatchRefract2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐPatchRefract(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1244,6 +1288,48 @@ func (ec *executionContext) _Mutation_createRefraction(ctx context.Context, fiel
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateRefraction(rctx, args["input"].(model.NewRefract))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Refraction)
+	fc.Result = res
+	return ec.marshalNRefraction2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRefraction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_patchRefraction(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_patchRefraction_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PatchRefraction(rctx, args["id"].(string), args["input"].(model.PatchRefract))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3975,6 +4061,37 @@ func (ec *executionContext) unmarshalInputNewRemote(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPatchRefract(ctx context.Context, obj interface{}) (model.PatchRefract, error) {
+	var it model.PatchRefract
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "remotes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remotes"))
+			it.Remotes, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -4116,6 +4233,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createRefraction":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createRefraction(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "patchRefraction":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_patchRefraction(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -5272,6 +5399,11 @@ func (ec *executionContext) unmarshalNNewRefract2gitlabᚗcomᚋgoᚑprismᚋpri
 
 func (ec *executionContext) unmarshalNNewRemote2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRemote(ctx context.Context, v interface{}) (model.NewRemote, error) {
 	res, err := ec.unmarshalInputNewRemote(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPatchRefract2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐPatchRefract(ctx context.Context, v interface{}) (model.PatchRefract, error) {
+	res, err := ec.unmarshalInputPatchRefract(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

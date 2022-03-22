@@ -25,6 +25,31 @@ func getAnyQuery(vals []string) string {
 	return fmt.Sprintf("{%s}", strings.Join(items, ","))
 }
 
+func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.PatchRefract) (*model.Refraction, error) {
+	// fetch the original refraction
+	var ref model.Refraction
+	if err := r.db.Where("id = ?", id).First(&ref).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to fetch refraction")
+		return nil, err
+	}
+	// fetch the remotes
+	var remotes []*model.Remote
+	if err := r.db.Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to retrieve remotes")
+		return nil, err
+	}
+	// update the refraction
+	ref.Name = in.Name
+	ref.Remotes = remotes
+	ref.UpdatedAt = time.Now().Unix()
+	// save the changes
+	if err := r.db.Save(&ref).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to update refraction")
+		return nil, err
+	}
+	return &ref, nil
+}
+
 func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract) (*model.Refraction, error) {
 	var remotes []*model.Remote
 	if err := r.db.Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
