@@ -18,7 +18,6 @@
 
 import React, {useMemo} from "react";
 import {ErrorBoundary} from "react-error-boundary";
-import {Language} from "prism-react-renderer";
 import {API_URL} from "../../../../config";
 import Error from "../../../alert/Error";
 import {Archetype, Refraction} from "../../../../graph/types";
@@ -30,16 +29,16 @@ interface SetupProps {
 
 const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	// local state
-	const language: Language = useMemo(() => {
+	const language: string = useMemo(() => {
 		switch (refract.archetype) {
 			case Archetype.MAVEN:
-				return "clike";
+				return "xml";
 			case Archetype.HELM:
 			case Archetype.GO:
 			case Archetype.ALPINE:
-				return "bash";
+				return "shell";
 			default:
-				return "markdown";
+				return "text";
 		}
 	}, [refract]);
 

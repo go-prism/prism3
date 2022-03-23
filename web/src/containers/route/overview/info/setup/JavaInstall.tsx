@@ -79,7 +79,7 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 				install: <div>
 					<CodeBlock
 						code={getInstall(TYPE_MAVEN_XML)}
-						language="clike"
+						language="xml"
 					/>
 				</div>,
 				config: <div>
@@ -90,7 +90,7 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 					</Typography>
 					<CodeBlock
 						code={getConfig(TYPE_MAVEN_XML)}
-						language="clike"
+						language="xml"
 					/>
 				</div>,
 				name: "Maven XML"
@@ -99,13 +99,13 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 				install: <div>
 					<CodeBlock
 						code={getInstall(TYPE_GRADLE_KT)}
-						language="clike"
+						language="kotlin"
 					/>
 				</div>,
 				config: <div>
 					<CodeBlock
 						code={getConfig(TYPE_GRADLE_KT)}
-						language="clike"
+						language="kotlin"
 					/>
 				</div>,
 				name: "Gradle Kotlin DSL"
@@ -114,13 +114,13 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 				install: <div>
 					<CodeBlock
 						code={getInstall(TYPE_GRADLE_GROOVY)}
-						language="clike"
+						language="groovy"
 					/>
 				</div>,
 				config: <div>
 					<CodeBlock
 						code={getConfig(TYPE_GRADLE_GROOVY)}
-						language="clike"
+						language="groovy"
 					/>
 				</div>,
 				name: "Gradle Groovy DSL"

@@ -126,7 +126,8 @@ const Browser: React.FC = (): JSX.Element => {
 		if (data?.listCombinedArtifacts == null)
 			return [];
 		return data.listCombinedArtifacts.reduce((r: TreeNode[], p) => {
-			const names = p.uri.split("/").map(n => ({first: n, second: p}));
+			// filter out empty paths (closes #1)
+			const names = p.uri.split("/").filter(n => n !== "").map(n => ({first: n, second: p}));
 			names.reduce((q, value) => {
 				let temp = q.find(o => o.name === value.first);
 				if (!temp) {

@@ -26,7 +26,7 @@ export interface MavenPackage {
  * @param path
  */
 export const parseMavenPackage = (path: string): MavenPackage | null => {
-	const parts = path.split("/");
+	const parts = path.split("/").filter(p => p !== "");
 	parts.pop(); // remove the filename
 	const version = parts.pop();
 	if (version == null) {

@@ -2,10 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import {BrowserRouter} from "react-router-dom";
+import {ApolloProvider} from "@apollo/client";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "typeface-roboto";
-import {ApolloProvider} from "@apollo/client";
 import Client from "./graph";
 
 ReactDOM.render(
