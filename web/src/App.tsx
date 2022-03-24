@@ -8,16 +8,11 @@ import NotFound from "./containers/route/NotFound";
 import Remotes from "./containers/route/settings/Remotes";
 import Refractions from "./containers/route/settings/Refractions";
 import CreateRemote from "./containers/route/remote/Create";
-import EditRemote from "./containers/route/remote/Edit";
-import EditRefract from "./containers/route/refract/Edit";
 import CreateRefract from "./containers/route/refract/Create";
 import Overview from "./containers/route/Overview";
 import Help from "./containers/route/Help";
 import Settings from "./containers/route/settings";
-import GoLangSettings from "./containers/route/settings/GoLangSettings";
-import ReactorSettings from "./containers/route/settings/ReactorSettings";
 import Browser from "./containers/route/overview/Browser";
-import AccessControlSettings from "./containers/route/acl";
 import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Profile from "./containers/route/Profile";
 

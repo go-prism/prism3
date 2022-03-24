@@ -27,7 +27,7 @@ interface HelmInstallProps {
 
 const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element => {
 	const [pkgName, pkgVersion] = useMemo(() => {
-		const bits = uri.split("/");
+		const bits = uri.split("/").filter(i => i !== "");
 		if (bits.length === 0)
 			return ["", ""];
 		const filename = bits[bits.length - 1].replace(".tgz", "");
@@ -55,7 +55,7 @@ const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element
 			{
 				install: <div>
 					<CodeBlock
-						code={`helm install my-app ${API_URL}/api/-/${refraction}/${uri}`}
+						code={`helm install my-app ${API_URL}/api/-/${refraction}/${pkgName}-${pkgVersion}.tgz`}
 						language="bash"
 					/>
 				</div>,

@@ -1,6 +1,6 @@
-import {createStyles, Divider, Drawer, IconButton, makeStyles, Theme, Tooltip} from "@material-ui/core";
+import {ButtonBase, createStyles, Drawer, makeStyles, Theme, Tooltip} from "@material-ui/core";
 import React from "react";
-import {Link, useLocation} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {ArrowsRight, ArrowsSplit, Home, Icon, Settings, User} from "tabler-icons-react";
 import {useTheme} from "@material-ui/core/styles";
 
@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 	item: {
 		width: 48,
 		height: 48,
+		borderRadius: theme.spacing(0.75)
 	}
 }));
 
@@ -74,14 +75,14 @@ const SideBar: React.FC = (): JSX.Element => {
 			<Tooltip
 				title={opt.name}
 				placement="right">
-				<IconButton
+				<ButtonBase
 					className={classes.item}
+					focusRipple
 					component={Link}
 					to={opt.path}
-					color="secondary"
-					centerRipple={false}>
+					color="secondary">
 					<opt.icon color={theme.palette.primary.contrastText}/>
-				</IconButton>
+				</ButtonBase>
 			</Tooltip>
 		)
 	}
