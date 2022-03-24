@@ -18,9 +18,14 @@ type ArtifactRepo struct {
 	db *gorm.DB
 }
 
+type NPMPackageRepo struct {
+	db *gorm.DB
+}
+
 type Repos struct {
-	RemoteRepo    *RemoteRepo
-	RefractRepo   *RefractRepo
-	TransportRepo *TransportRepo
-	ArtifactRepo  *ArtifactRepo
+	RemoteRepo     *RemoteRepo
+	RefractRepo    *RefractRepo
+	TransportRepo  *TransportRepo
+	ArtifactRepo   *ArtifactRepo
+	NPMPackageRepo *NPMPackageRepo
 }

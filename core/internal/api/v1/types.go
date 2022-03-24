@@ -8,4 +8,5 @@ import (
 type Gateway struct {
 	resolver *resolver.Resolver
 	pool     *sync.Pool
+	npmPool  *sync.Pool
 }

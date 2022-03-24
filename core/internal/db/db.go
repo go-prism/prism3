@@ -3,6 +3,7 @@ package db
 import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/internal/schemas"
 	"gorm.io/gorm"
 )
 import "gorm.io/driver/postgres"
@@ -32,6 +33,7 @@ func (db *Database) Init() error {
 		&model.RemoteSecurity{},
 		&model.TransportSecurity{},
 		&model.Artifact{},
+		&schemas.NPMPackage{},
 	)
 	if err != nil {
 		log.WithError(err).Error("failed to run auto-migration")

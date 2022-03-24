@@ -80,16 +80,27 @@ func main() {
 	})
 	router.Handle("/api/graphql", playground.Handler("GraphQL Playground", "/api/query"))
 	router.Handle("/api/query", srv)
+	// generic
 	router.PathPrefix("/api/v1/{bucket}/").
 		HandlerFunc(h.ServeHTTPGeneric).
 		Methods(http.MethodGet)
+	// helm
 	router.PathPrefix("/api/helm/{bucket}/").
 		HandlerFunc(h.ServeHTTPHelm).
+		Methods(http.MethodGet)
+	// npm
+	router.HandleFunc("/api/npm/{bucket}/{package}", h.ServeHTTPNPM).
+		Methods(http.MethodGet)
+	router.HandleFunc("/api/npm/{bucket}/@{scope}/{package}", h.ServeHTTPNPM).
+		Methods(http.MethodGet)
+	router.HandleFunc("/api/npm/{bucket}/{package}/{version}", h.ServeHTTPNPM).
+		Methods(http.MethodGet)
+	router.HandleFunc("/api/npm/{bucket}/@{scope}/{package}/{version}", h.ServeHTTPNPM).
 		Methods(http.MethodGet)
 
 	// start serving
 	serverless.NewBuilder(router).
 		WithPort(e.Port).
-		WithHandlers(true).
+		WithHandlers(false).
 		Run()
 }

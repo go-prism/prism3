@@ -15,6 +15,11 @@ func NewGateway(r *resolver.Resolver) *Gateway {
 				return new(resolver.Request)
 			},
 		},
+		npmPool: &sync.Pool{
+			New: func() any {
+				return new(resolver.NPMRequest)
+			},
+		},
 	}
 }
 

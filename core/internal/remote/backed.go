@@ -75,6 +75,9 @@ func (b *BackedRemote) Download(ctx context.Context, path string) (io.Reader, er
 	if canCache {
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			if canCache {
+				_ = b.onCreate(ctx, normalPath, b.rm.ID)
+			}
 			return b.store.Get(ctx, uploadPath)
 		}
 	}

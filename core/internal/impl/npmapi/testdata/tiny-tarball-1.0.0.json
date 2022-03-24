@@ -1,0 +1,34 @@
+{
+  "_id": "tiny-tarball@1.0.0",
+  "dist": {
+    "shasum": "bbf102d5ae73afe2c553295e0fb02230216f65b1",
+    "tarball": "https://registry.npmjs.org/tiny-tarball/-/tiny-tarball-1.0.0.tgz"
+  },
+  "main": "index.js",
+  "name": "tiny-tarball",
+  "_from": ".",
+  "author": {
+    "name": "Ben Coe",
+    "email": "ben@npmjs.com"
+  },
+  "_shasum": "bbf102d5ae73afe2c553295e0fb02230216f65b1",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.0",
+  "_npmUser": {
+    "name": "bcoe",
+    "email": "bencoe@gmail.com"
+  },
+  "_npmVersion": "2.7.0",
+  "description": "tiny tarball used for health checks",
+  "directories": {},
+  "maintainers": [
+    {
+      "name": "bcoe",
+      "email": "bencoe@gmail.com"
+    }
+  ],
+  "_nodeVersion": "1.5.0"
+}

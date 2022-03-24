@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/impl/helmapi"
+	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/internal/storage"
 	"io"
@@ -21,9 +22,15 @@ func (r *Request) New(bucket, path string) {
 func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Resolver {
 	r := new(Resolver)
 	r.repos = repos
+
+	// caches
 	r.cache = gcache.New(1000).ARC().Expiration(time.Minute * 5).LoaderFunc(r.getRefraction).Build()
+
 	r.store = store
+
+	// providers
 	r.helm = helmapi.NewIndex(publicURL)
+	r.npm = npmapi.NewProvider(repos, publicURL)
 	return r
 }
 
