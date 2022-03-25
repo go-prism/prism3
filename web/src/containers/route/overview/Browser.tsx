@@ -19,34 +19,25 @@ import React, {CSSProperties, ReactElement, useEffect, useMemo, useState} from "
 import {ListItemSkeleton} from "jmp-coreui";
 import {Alert} from "@material-ui/lab";
 import {useTheme} from "@material-ui/core/styles";
-import {Link, useHistory} from "react-router-dom";
+import {useHistory} from "react-router-dom";
 import {useParams} from "react-router";
 import LZString from "lz-string";
-import {IconButton, makeStyles, Theme} from "@material-ui/core";
-import Icon from "@mdi/react";
-import {mdiArrowLeft} from "@mdi/js";
-import {gql, useQuery} from "@apollo/client";
+import {gql, useLazyQuery} from "@apollo/client";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {FixedSizeList} from "react-window";
 import FolderTreeItem, {TreeNode} from "../../list/FolderTreeItem";
 import {Node} from "../Overview";
 import SidebarLayout from "../../layout/SidebarLayout";
 import {Artifact, Refraction} from "../../../graph/types";
+import RefractHeader from "../../widgets/RefractHeader";
 import ObjectInfo from "./ObjectInfo";
-
-const useStyles = makeStyles((theme: Theme) => ({
-	icon: {
-		margin: theme.spacing(1),
-		marginRight: theme.spacing(2)
-	}
-}));
 
 interface OverviewParams {
 	ref?: string;
 }
 
 interface QueryData {
-	listRefractions: Refraction[];
+	getRefraction: Refraction;
 	listCombinedArtifacts: Artifact[];
 }
 
@@ -59,15 +50,13 @@ const Browser: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 	const history = useHistory();
 	const {ref} = useParams<OverviewParams>();
-	const classes = useStyles();
 
 	// local state
-	const [open, setOpen] = useState<Refraction | null>(null);
 	const [selected, setSelected] = useState<string>("");
 
-	const {data, loading, error} = useQuery<QueryData, QueryVars>(gql`
+	const [getData, {data, loading, error}] = useLazyQuery<QueryData, QueryVars>(gql`
         query overview($refract: ID!) {
-            listRefractions {
+	        getRefraction(id: $refract) {
                 id
                 name
                 createdAt
@@ -89,12 +78,18 @@ const Browser: React.FC = (): JSX.Element => {
 	}, [history.location.hash]);
 
 	useEffect(() => {
-		if (open == null) {
+		if (!ref)
+			return;
+		void getData({variables: {refract: ref}});
+	}, [ref]);
+
+	useEffect(() => {
+		if (data?.getRefraction == null) {
 			window.document.title = "Prism";
 			return;
 		}
-		window.document.title = `Prism - ${open.name}`;
-	}, [open]);
+		window.document.title = `Prism - ${data.getRefraction.name}`;
+	}, [data?.getRefraction]);
 
 	const selectedItem = useMemo(() => {
 		if (data?.listCombinedArtifacts == null)
@@ -105,22 +100,6 @@ const Browser: React.FC = (): JSX.Element => {
 		}
 		return null;
 	}, [data?.listCombinedArtifacts, selected]);
-
-	useEffect(() => {
-		if (ref == null) {
-			setOpen(null);
-			return;
-		}
-		if (data?.listRefractions == null)
-			return;
-		for (const r of data.listRefractions) {
-			if (r.id === ref) {
-				setOpen(r);
-				return;
-			}
-		}
-		setOpen(null);
-	}, [data, ref]);
 
 	const items = useMemo(() => {
 		if (data?.listCombinedArtifacts == null)
@@ -220,19 +199,10 @@ const Browser: React.FC = (): JSX.Element => {
 			</div>}>
 			<div
 				style={{margin: theme.spacing(1)}}>
-				<div>
-					<IconButton
-						className={classes.icon}
-						component={Link}
-						to="/">
-						<Icon
-							path={mdiArrowLeft}
-							size={0.8}
-							color={theme.palette.text.secondary}
-						/>
-					</IconButton>
-					Back
-				</div>
+				<RefractHeader
+					refraction={data?.getRefraction ?? null}
+					loading={loading}
+				/>
 				{selectedItem == null && error == null && <Alert
 					severity="info">
 					Nothing has been selected
@@ -241,9 +211,9 @@ const Browser: React.FC = (): JSX.Element => {
 					severity="error">
 					Failed to load refractions.
 				</Alert>}
-				{selectedItem != null && open != null && <ObjectInfo
+				{selectedItem != null && data?.getRefraction != null && <ObjectInfo
 					item={selectedItem}
-					refraction={open}
+					refraction={data.getRefraction}
 				/>}
 			</div>
 		</SidebarLayout>

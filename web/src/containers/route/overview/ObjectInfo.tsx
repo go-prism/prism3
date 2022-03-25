@@ -17,6 +17,7 @@
 
 import React, {ReactNode, useMemo, useState} from "react";
 import {
+	Card,
 	Chip,
 	createStyles,
 	Divider,
@@ -29,7 +30,7 @@ import {
 	useTheme,
 	withStyles
 } from "@material-ui/core";
-import {Alert, TabContext, TabPanel} from "@material-ui/lab";
+import {TabContext, TabPanel} from "@material-ui/lab";
 import {formatDistanceToNow} from "date-fns";
 import {CirclePlus, Edit, FileDownload} from "tabler-icons-react";
 import {MetadataChip} from "../../../config/types";
@@ -48,12 +49,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 		fontFamily: "Manrope",
 		fontWeight: 500
 	},
-	alert: {
-		marginTop: theme.spacing(1),
-		marginBottom: theme.spacing(1)
-	},
 	chip: {
 		margin: theme.spacing(0.5)
+	},
+	headerCard: {
+		padding: theme.spacing(1),
+		borderRadius: theme.spacing(0.75)
 	}
 }));
 
@@ -62,7 +63,7 @@ const StyledTab = withStyles(() => createStyles({
 		textTransform: "none",
 		minWidth: 72
 	}
-}))((props: TabProps) => <Tab disableRipple {...props}/>);
+}))((props: TabProps) => <Tab {...props}/>);
 
 interface ObjectInfoProps {
 	item: Artifact;
@@ -76,6 +77,7 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 
 	// local state
 	const [selected, setSelected] = useState<string>("0");
+	const name = item.uri.split("/").filter(i => i !== "").pop();
 
 	const chips = useMemo(() => {
 		const chipData: MetadataChip[] = [
@@ -131,20 +133,20 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 
 	return (
 		<div>
-			<Typography
-				className={classes.title}
-				variant="h5">
-				{item.uri}
-			</Typography>
-			{chips}
-			{item.uri.endsWith("APKINDEX.tar.gz") && <Alert
-				className={classes.alert}
-				severity="warning">
-				This file is an index and cannot currently be cached by Prism.
-			</Alert>}
+			<Card
+				className={classes.headerCard}
+				variant="outlined">
+				<Typography
+					className={classes.title}
+					variant="h5">
+					{name}
+				</Typography>
+				{chips}
+			</Card>
 			<TabContext
 				value={selected}>
 				<Tabs
+					style={{marginTop: theme.spacing(1)}}
 					value={selected}
 					onChange={(_, value: number) => setSelected(value.toString())}>
 					<StyledTab label="Details" value="0"/>
@@ -152,8 +154,13 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				</Tabs>
 				<Divider/>
 				<TabPanel
+					style={{padding: 0, paddingTop: theme.spacing(2)}}
 					value="0">
-					{setupInfo()}
+					<Card
+						className={classes.headerCard}
+						variant="outlined">
+						{setupInfo()}
+					</Card>
 				</TabPanel>
 				{allowPreview() && <TabPanel
 					value="1">

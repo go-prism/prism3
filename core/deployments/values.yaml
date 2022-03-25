@@ -4,14 +4,14 @@ podAnnotations:
   app.kubernetes.io/name: core
   app.kubernetes.io/part-of: prism3
 env:
-  PRISM_DB_DSN: "user=prism password=password dbname=prism host=db3-postgresql port=5432 sslmode=disable"
+  PRISM_DB_DSN: "user=devstack password=password dbname=prism host=cockroachdb-public.cockroachdb.svc.cluster.local port=26257 sslmode=require"
   PRISM_S3_REGION: "us-east-1"
   PRISM_S3_PATH_STYLE: "true"
-  PRISM_S3_ENDPOINT: http://minio3:9000
+  PRISM_S3_ENDPOINT: http://minio.minio.svc.cluster.local:9000
   PRISM_S3_BUCKET: prism
   PRISM_LOG_DEBUG: "true"
   PRISM_PUBLIC_URL: https://prism3.devel
-  AWS_ACCESS_KEY_ID: admin
+  AWS_ACCESS_KEY_ID: username
   AWS_SECRET_ACCESS_KEY: password
   HELM_CACHE_HOME: /tmp
   HELM_CONFIG_HOME: /tmp
@@ -42,7 +42,7 @@ ingress:
   path: /api
   className: nginx
   annotations:
-    cert-manager.io/cluster-issuer: "root-ca-issuer"
+    cert-manager.io/cluster-issuer: "iss-kube"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
   tls:

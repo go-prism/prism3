@@ -7,6 +7,6 @@ import (
 
 type NPMPackage struct {
 	gorm.Model
-	Name     string `gorm:"uniqueIndex"`
+	Name     string `gorm:"index;unique"`
 	Document datatypes.JSON
 }

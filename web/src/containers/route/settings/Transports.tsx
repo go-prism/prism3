@@ -15,7 +15,7 @@
  *
  */
 
-import React, {useState} from "react";
+import React from "react";
 import {
 	Button,
 	Card,
@@ -25,7 +25,8 @@ import {
 	ListItem,
 	ListItemSecondaryAction,
 	ListItemText,
-	makeStyles, Theme
+	makeStyles,
+	Theme
 } from "@material-ui/core";
 import {ListItemSkeleton} from "jmp-coreui";
 import {Alert} from "@material-ui/lab";
@@ -43,6 +44,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 	button: {
 		margin: theme.spacing(1)
+	},
+	configHolder: {
+		padding: theme.spacing(1),
+		paddingRight: theme.spacing(3)
 	}
 }));
 
@@ -53,7 +58,9 @@ interface TransportItemProps {
 }
 
 const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelected}): JSX.Element => {
+	const classes = useStyles();
 	const open = selected === item.id;
+
 	return <div>
 		<ListItem
 			selected={open}
@@ -72,11 +79,13 @@ const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelecte
 			</ListItemSecondaryAction>
 		</ListItem>
 		<Collapse in={open}>
-			<ClientConfig
-				profile={item}
-				setProfile={() => {}}
-				disabled={item.name === "default"}
-			/>
+			<div className={classes.configHolder}>
+				<ClientConfig
+					profile={item}
+					setProfile={() => {}}
+					disabled={item.name === "default"}
+				/>
+			</div>
 		</Collapse>
 	</div>
 }

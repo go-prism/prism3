@@ -71,9 +71,9 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 export GOPROXY="${API_URL}/api/plugin/-/mod/-/"`;
 			case Archetype.NPM:
 				return `# automatically using the npm cli
-npm config set registry "${url}"
+npm config set registry "${API_URL}/api/npm/${refract.name.toLocaleLowerCase()}/"
 # manually
-echo "registry=${url}" >> ~/.npmrc`;
+echo "registry=${API_URL}/api/npm/${refract.name.toLocaleLowerCase()}/" >> ~/.npmrc`;
 			case Archetype.ALPINE:
 				return `# replace "latest-stable" with the target version (e.g. 3.12, 3.12)
 # replace "main" with the target repository (e.g. main, community, edge)

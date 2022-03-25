@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 	},
 	appBarShift: {
 		marginLeft: drawerWidth,
-		width: `calc(100% - ${drawerWidth}px)`,
+		width: `calc(100% - ${drawerWidth}px)`
 	},
 	menuButton: {
 		marginRight: 36,
@@ -79,9 +79,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 		display: "flex",
 		alignItems: "center",
 		justifyContent: "flex-end",
-		padding: theme.spacing(0, 1),
-		// necessary for content to be below app bar
-		...theme.mixins.toolbar,
+		padding: theme.spacing(0, 1)
 	},
 }));
 
@@ -112,7 +110,8 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 				color="inherit"
 				className={classes.appBarShift}>
 				<Toolbar
-					className={classes.toolbar}>
+					className={classes.toolbar}
+					variant="dense">
 					<Avatar
 						className={classes.avatar}
 						src="/favicon.png"

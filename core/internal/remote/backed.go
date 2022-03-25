@@ -107,7 +107,7 @@ func (b *BackedRemote) getPath(ctx context.Context, path string) (string, string
 		if err != nil {
 			log.WithContext(ctx).Error("failed to parse URI")
 		} else {
-			uploadPath = uri.Path
+			uploadPath = strings.TrimPrefix(uri.Path, "/")
 		}
 	}
 	log.WithContext(ctx).WithFields(log.Fields{

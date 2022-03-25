@@ -1,16 +1,7 @@
 import React, {ReactNode, useMemo, useState} from "react";
-import {
-	List,
-	ListItem,
-	ListItemIcon,
-	ListItemText,
-	ListSubheader,
-	makeStyles,
-	Theme,
-	Typography
-} from "@material-ui/core";
+import {List, ListItem, ListItemIcon, ListItemText, ListSubheader, makeStyles, Theme} from "@material-ui/core";
 import {Link} from "react-router-dom";
-import {ArrowsSplit, Icon} from "tabler-icons-react";
+import {Icon} from "tabler-icons-react";
 import {ListItemSkeleton} from "jmp-coreui";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -80,7 +71,7 @@ const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header
 			return [];
 		const items = [];
 		for (let i = 0; i < 6; i++) {
-			items.push(<ListItemSkeleton/>);
+			items.push(<ListItemSkeleton key={i}/>);
 		}
 		return items;
 	}, [loading]);

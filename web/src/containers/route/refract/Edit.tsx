@@ -1,22 +1,9 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {
-	Button,
-	Chip,
-	FormGroup,
-	FormLabel,
-	List,
-	ListItem,
-	ListItemIcon,
-	ListItemText,
-	makeStyles,
-	Theme,
-	Typography
-} from "@material-ui/core";
+import {Button, Chip, FormGroup, FormLabel, List, makeStyles, Theme} from "@material-ui/core";
 import {useTheme} from "@material-ui/core/styles";
-import {Link, useHistory} from "react-router-dom";
+import {useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert, Skeleton} from "@material-ui/lab";
-import Icon from "@mdi/react";
 import {useParams} from "react-router";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
@@ -25,8 +12,8 @@ import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
 import useGetRefraction from "../../../graph/actions/remote/useGetRefraction";
 import {Archetype, Remote} from "../../../graph/types";
-import {getRemoteIcon} from "../../../utils/remote";
 import usePatchRefract from "../../../graph/actions/refract/usePatchRefract";
+import RefractHeader from "../../widgets/RefractHeader";
 import Setup from "./setup/Setup";
 import RemoteSelect from "./RemoteSelect";
 
@@ -174,26 +161,10 @@ const EditRefract: React.FC = (): JSX.Element => {
 				severity="success">
 					Refraction updated successfully
 			</Alert>}
-			<ListItem>
-				<ListItemIcon>
-					{loading ? <Skeleton variant="circle" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRefraction?.archetype || Archetype.NONE)}
-				</ListItemIcon>
-				<ListItemText
-					disableTypography
-					secondary={<Typography
-						color="textSecondary">
-						{loading ? <Skeleton animation="wave" width="15%"/> : <span>
-							Refraction ID: <code>{data?.getRefraction?.id}</code>
-						</span>}
-					</Typography>}>
-					<Typography
-						className={classes.title}
-						color="textPrimary"
-						variant="h4">
-						{loading ? <Skeleton animation="wave" width="25%" height={64}/> : data?.getRefraction?.name}
-					</Typography>
-				</ListItemText>
-			</ListItem>
+			<RefractHeader
+				refraction={data?.getRefraction ?? null}
+				loading={loading}
+			/>
 			<FormGroup
 				className={classes.form}>
 				<div>

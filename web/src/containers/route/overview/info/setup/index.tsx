@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		marginBottom: theme.spacing(1),
-		marginTop: theme.spacing(1)
+		marginLeft: theme.spacing(1)
 	},
 	code: {
 		margin: theme.spacing(0.5)

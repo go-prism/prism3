@@ -73,6 +73,7 @@ const SideBar: React.FC = (): JSX.Element => {
 	const getListItem = (opt: MenuOption): JSX.Element => {
 		return (
 			<Tooltip
+				key={opt.path}
 				title={opt.name}
 				placement="right">
 				<ButtonBase

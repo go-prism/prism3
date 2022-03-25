@@ -18,13 +18,13 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, sidebarWidth = DE
 		<Grid
 			container>
 			<Grid
-				style={{backgroundColor: theme.palette.grey["200"], height: "calc(100vh - 68px)", padding: theme.spacing(1)}}
+				style={{backgroundColor: theme.palette.grey["200"], height: "calc(100vh - 52px)", padding: theme.spacing(1)}}
 				item
 				xs={sidebarWidth || DEFAULT_WIDTH}>
 				<ErrorBoundary
 					fallbackRender={p => <Error props={p}/>}>
 					<Box
-						style={{maxHeight: "calc(100vh - 112px)", overflowY: "auto"}}>
+						style={{maxHeight: "calc(100vh - 96px)", overflowY: "auto"}}>
 						{sidebar}
 					</Box>
 				</ErrorBoundary>

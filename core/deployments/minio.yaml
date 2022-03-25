@@ -1,8 +1,0 @@
-global:
-  imageRegistry: harbor.dcas.dev/docker.io
-auth:
-  rootUser: admin
-  rootPassword: password
-  forcePassword: true
-  forceNewKeys: true
-defaultBuckets: "prism"

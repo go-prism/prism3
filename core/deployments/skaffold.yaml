@@ -15,6 +15,11 @@ build:
   local:
     push: false
 deploy:
+  kubectl:
+    manifests:
+      - deployments/pod.yaml
+    defaultNamespace: prism
+  kubeContext: minikube
   helm:
     releases:
       - name: core3
@@ -28,17 +33,3 @@ deploy:
           - deployments/values.yaml
         imageStrategy:
           helm: {}
-      - name: db3
-        namespace: prism
-        remoteChart: https://charts.bitnami.com/bitnami/postgresql-11.1.6.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        valuesFiles:
-          - deployments/postgresql.yaml
-      - name: minio3
-        namespace: prism
-        remoteChart: https://charts.bitnami.com/bitnami/minio-11.1.4.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        valuesFiles:
-          - deployments/minio.yaml
