@@ -1,17 +1,49 @@
 package graph
 
-import "gitlab.com/go-prism/prism3/core/internal/db/repo"
+import (
+	"context"
+	"github.com/bluele/gcache"
+	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/internal/storage"
+	"time"
+)
 
 // This file will not be regenerated automatically.
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-type Resolver struct {
-	repos *repo.Repos
+var uptime time.Time
+
+func init() {
+	uptime = time.Now()
 }
 
-func NewResolver(repos *repo.Repos) *Resolver {
-	return &Resolver{
+type Resolver struct {
+	repos *repo.Repos
+	store storage.Reader
+
+	// caches
+	storeSizeCache gcache.Cache
+}
+
+func NewResolver(repos *repo.Repos, store storage.Reader) *Resolver {
+	r := &Resolver{
 		repos: repos,
+		store: store,
 	}
+	r.storeSizeCache = gcache.New(10).ARC().LoaderFunc(r.getStoreSize).Expiration(time.Minute * 5).Build()
+	return r
+}
+
+// getStoreSize is the cache loader function used to
+// fetch the current size of the S3 bucket.
+//
+// Since it is an expensive call, it needs
+// to be cached aggressively
+func (r *Resolver) getStoreSize(any) (any, error) {
+	resp, err := r.store.Size(context.TODO(), "/")
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }

@@ -49,7 +49,7 @@ const Overview: React.FC = (): JSX.Element => {
 			id: r.id,
 			label: r.name,
 			icon: getRemoteIcon(theme, r.archetype),
-			to: `/-/${r.id}`
+			to: `/artifacts/-/${r.id}`
 		}));
 	}, [data?.listRefractions]);
 	

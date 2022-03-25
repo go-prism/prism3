@@ -1,7 +1,7 @@
 import {ButtonBase, createStyles, Drawer, makeStyles, Theme, Tooltip} from "@material-ui/core";
 import React from "react";
 import {Link} from "react-router-dom";
-import {ArrowsRight, ArrowsSplit, Home, Icon, Settings, User} from "tabler-icons-react";
+import {ArrowsRight, ArrowsSplit, Dashboard, Icon, ListDetails, Settings, User} from "tabler-icons-react";
 import {useTheme} from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
@@ -36,9 +36,14 @@ interface MenuOption {
 
 const generalOptions: MenuOption[] = [
 	{
-		name: "Overview",
-		icon: Home,
+		name: "Dashboard",
+		icon: Dashboard,
 		path: "/"
+	},
+	{
+		name: "Artifacts",
+		icon: ListDetails,
+		path: "/artifacts"
 	},
 	{
 		name: "Remotes",

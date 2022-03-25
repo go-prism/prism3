@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	log "github.com/sirupsen/logrus"
 	"io"
 )
@@ -103,4 +104,51 @@ func (s *S3) Head(ctx context.Context, path string) (bool, error) {
 	}
 	log.WithContext(ctx).WithFields(fields).Debug("successfully located file in S3")
 	return true, nil
+}
+
+func (s *S3) Size(ctx context.Context, path string) (*BucketSize, error) {
+	count := int64(0)
+	size := int64(0)
+	err := s.listObjectsV2(ctx, path, func(t types.Object) {
+		count++
+		size += t.Size
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &BucketSize{
+		Count: count,
+		Bytes: size,
+	}, nil
+}
+
+// listObjectsV2 lists an entire S3 bucket and
+// allows the caller to do something with each
+// object.
+func (s *S3) listObjectsV2(ctx context.Context, prefix string, iter func(t types.Object)) error {
+	log.WithContext(ctx).Debug("listing objects")
+	var token *string
+	for {
+		log.WithContext(ctx).Debugf("fetching page with token: '%+v'", token)
+		result, err := s.client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+			Bucket:            s.bucket,
+			Prefix:            aws.String(prefix),
+			ContinuationToken: token,
+		})
+		if err != nil {
+			log.WithContext(ctx).WithError(err).Error("failed to list objects")
+			return err
+		}
+		for _, o := range result.Contents {
+			iter(o)
+		}
+		log.WithContext(ctx).Debugf("fetched %d objects, truncated: %v", result.KeyCount, result.IsTruncated)
+		if !result.IsTruncated {
+			log.WithContext(ctx).Debug("response not truncated, exiting")
+			return nil
+		}
+		if result.NextContinuationToken != nil {
+			token = aws.String(*result.NextContinuationToken)
+		}
+	}
 }

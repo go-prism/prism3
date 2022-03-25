@@ -6,9 +6,11 @@ package graph
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/internal/storage"
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
@@ -66,6 +68,43 @@ func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract strin
 		remotes[i] = ref.Remotes[i].ID
 	}
 	return r.repos.ArtifactRepo.ListArtifacts(ctx, remotes)
+}
+
+func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error) {
+	remotes, _ := r.repos.RemoteRepo.Count(ctx)
+	refracts, _ := r.repos.RefractRepo.Count(ctx)
+	artifacts, _ := r.repos.ArtifactRepo.Count(ctx)
+	downloads, _ := r.repos.ArtifactRepo.Downloads(ctx)
+	store, err := r.storeSizeCache.Get("")
+	if err != nil {
+		return nil, err
+	}
+	// get debug build information
+	var buildInfo string
+	build, ok := debug.ReadBuildInfo()
+	if ok {
+		buildInfo = build.Main.Version
+	}
+	return &model.Overview{
+		Remotes:     remotes,
+		Refractions: refracts,
+		Artifacts:   artifacts,
+		Storage:     store.(*storage.BucketSize).Bytes,
+		Downloads:   downloads,
+		Uptime:      uptime.UnixMilli(),
+		Version:     buildInfo,
+	}, nil
+}
+
+func (r *queryResolver) GetRemoteOverview(ctx context.Context, id string) (*model.RemoteOverview, error) {
+	count, err := r.repos.ArtifactRepo.CountArtifactsByRemote(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.RemoteOverview{
+		Artifacts: count,
+		Storage:   0,
+	}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

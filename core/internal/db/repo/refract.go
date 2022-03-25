@@ -97,3 +97,12 @@ func (r *RefractRepo) ListRefractions(ctx context.Context) ([]*model.Refraction,
 	}
 	return result, nil
 }
+
+func (r *RefractRepo) Count(ctx context.Context) (int64, error) {
+	var result int64
+	if err := r.db.Model(&model.Refraction{}).Count(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to count refractions")
+		return 0, err
+	}
+	return result, nil
+}

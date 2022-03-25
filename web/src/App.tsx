@@ -15,6 +15,7 @@ import Settings from "./containers/route/settings";
 import Browser from "./containers/route/overview/Browser";
 import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Profile from "./containers/route/Profile";
+import Dashboard from "./containers/route/Dashboard";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
 	root: {
@@ -63,10 +64,15 @@ const App: React.FC = (): JSX.Element => {
 							<Route
 								path="/"
 								exact
+								component={Dashboard}
+							/>
+							<Route
+								path="/artifacts"
+								exact
 								component={Overview}
 							/>
 							<Route
-								path="/-/:ref"
+								path="/artifacts/-/:ref"
 								exact
 								component={Browser}
 							/>

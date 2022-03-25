@@ -39,3 +39,15 @@ func (n *NoOp) Head(_ context.Context, path string) (bool, error) {
 	_, ok := n.data[path]
 	return ok, nil
 }
+
+func (n *NoOp) Size(context.Context, string) (*BucketSize, error) {
+	count := len(n.data)
+	size := int64(0)
+	for _, d := range n.data {
+		size += int64(len(d))
+	}
+	return &BucketSize{
+		Count: int64(count),
+		Bytes: size,
+	}, nil
+}

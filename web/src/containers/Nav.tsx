@@ -16,7 +16,17 @@
  */
 
 import React, {useState} from "react";
-import {AppBar, Avatar, IconButton, makeStyles, Popover, Theme, Toolbar, Typography} from "@material-ui/core";
+import {
+	AppBar,
+	Avatar,
+	ButtonBase,
+	IconButton,
+	makeStyles,
+	Popover,
+	Theme,
+	Toolbar,
+	Typography
+} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import Icon from "@mdi/react";
 import {mdiAccountCircleOutline, mdiHelpCircleOutline} from "@mdi/js";
@@ -27,6 +37,11 @@ const drawerWidth = 64;
 const useStyles = makeStyles((theme: Theme) => ({
 	grow: {
 		flexGrow: 1
+	},
+	brandButton: {
+		borderRadius: theme.spacing(1),
+		paddingRight: theme.spacing(1),
+		height: 40
 	},
 	brand: {
 		paddingRight: 8,
@@ -56,7 +71,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 		paddingRight: theme.spacing(1)
 	},
 	avatar: {
-		cursor: "pointer",
 		width: 24,
 		height: 24,
 		borderRadius: 100,
@@ -112,25 +126,28 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 				<Toolbar
 					className={classes.toolbar}
 					variant="dense">
-					<Avatar
-						className={classes.avatar}
-						src="/favicon.png"
-						alt="Prism logo"
+					<ButtonBase
+						className={classes.brandButton}
 						component={Link}
-						to="/"
-					/>
-					<Typography
-						className={classes.brand}
-						variant="h6"
-						color="textPrimary">
+						to="/">
+						<Avatar
+							className={classes.avatar}
+							src="/favicon.png"
+							alt="Prism logo"
+						/>
+						<Typography
+							className={classes.brand}
+							variant="h6"
+							color="textPrimary">
 							Prism
-					</Typography>
-					<Typography
-						className={classes.title}
-						variant="h6"
-						color="textSecondary">
+						</Typography>
+						<Typography
+							className={classes.title}
+							variant="h6"
+							color="textSecondary">
 							DEV
-					</Typography>
+						</Typography>
+					</ButtonBase>
 					<div className={classes.grow}/>
 					<div className={classes.sectionDesktop}>
 						<IconButton

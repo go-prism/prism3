@@ -57,3 +57,30 @@ func (r *ArtifactRepo) ListArtifacts(ctx context.Context, remotes []string) ([]*
 	}
 	return result, nil
 }
+
+func (r *ArtifactRepo) Count(ctx context.Context) (int64, error) {
+	var result int64
+	if err := r.db.Model(&model.Artifact{}).Count(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to count artifacts")
+		return 0, err
+	}
+	return result, nil
+}
+
+func (r *ArtifactRepo) CountArtifactsByRemote(ctx context.Context, remote string) (int64, error) {
+	var result int64
+	if err := r.db.Model(&model.Artifact{}).Where("remoteID = ?", remote).Count(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to count artifacts")
+		return 0, err
+	}
+	return result, nil
+}
+
+func (r *ArtifactRepo) Downloads(ctx context.Context) (int64, error) {
+	var result int64
+	if err := r.db.Model(&model.Artifact{}).Select("SUM(downloads)").Scan(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to aggregate downloads")
+		return 0, err
+	}
+	return result, nil
+}

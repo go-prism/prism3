@@ -68,6 +68,21 @@ type TransportSecurity {
   noProxy: String!
 }
 
+type Overview {
+  remotes: Int!
+  refractions: Int!
+  artifacts: Int!
+  storage: Int!
+  downloads: Int!
+  uptime: Int!
+  version: String!
+}
+
+type RemoteOverview {
+  artifacts: Int!
+  storage: Int!
+}
+
 type Query {
   listRemotes(arch: String!): [Remote!]!
   getRemote(id: ID!): Remote!
@@ -79,6 +94,9 @@ type Query {
 
   listArtifacts(remote: ID!): [Artifact!]!
   listCombinedArtifacts(refract: ID!): [Artifact!]!
+
+  getOverview: Overview!
+  getRemoteOverview(id: ID!): RemoteOverview!
 }
 
 input NewRemote {

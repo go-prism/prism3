@@ -33,6 +33,16 @@ type NewRemote struct {
 	Transport string    `json:"transport"`
 }
 
+type Overview struct {
+	Remotes     int64  `json:"remotes"`
+	Refractions int64  `json:"refractions"`
+	Artifacts   int64  `json:"artifacts"`
+	Storage     int64  `json:"storage"`
+	Downloads   int64  `json:"downloads"`
+	Uptime      int64  `json:"uptime"`
+	Version     string `json:"version"`
+}
+
 type PatchRefract struct {
 	Name    string   `json:"name"`
 	Remotes []string `json:"remotes"`
@@ -59,6 +69,11 @@ type Remote struct {
 	Security    *RemoteSecurity    `json:"security"`
 	TransportID string             `json:"transportID"`
 	Transport   *TransportSecurity `json:"transport"`
+}
+
+type RemoteOverview struct {
+	Artifacts int64 `json:"artifacts"`
+	Storage   int64 `json:"storage"`
 }
 
 type RemoteSecurity struct {

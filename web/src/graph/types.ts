@@ -59,3 +59,13 @@ export interface Refraction {
 	archetype: Archetype;
 	remotes: Remote[];
 }
+
+export interface Overview {
+	remotes: number;
+	refractions: number;
+	artifacts: number;
+	storage: number;
+	downloads: number;
+	uptime: number;
+	version: string;
+}

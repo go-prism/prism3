@@ -69,3 +69,12 @@ func (r *RemoteRepo) ListRemotes(ctx context.Context, arch model.Archetype) ([]*
 	}
 	return result, nil
 }
+
+func (r *RemoteRepo) Count(ctx context.Context) (int64, error) {
+	var result int64
+	if err := r.db.Model(&model.Remote{}).Count(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to count remotes")
+		return 0, err
+	}
+	return result, nil
+}
