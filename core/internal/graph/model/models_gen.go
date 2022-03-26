@@ -43,6 +43,7 @@ type Overview struct {
 	Version      string `json:"version"`
 	PackagesPypi int64  `json:"packages_pypi"`
 	PackagesNpm  int64  `json:"packages_npm"`
+	PackagesHelm int64  `json:"packages_helm"`
 }
 
 type PatchRefract struct {

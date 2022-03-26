@@ -72,4 +72,5 @@ export interface Overview {
 
 	packages_pypi: number;
 	packages_npm: number;
+	packages_helm: number;
 }

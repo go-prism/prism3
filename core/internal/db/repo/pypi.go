@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func NewPyRepo(db *gorm.DB) *PyPackageRepo {
@@ -17,7 +18,7 @@ type GetPackageFunc = func(ctx context.Context, file string) (string, error)
 
 func (r *PyPackageRepo) BatchInsert(ctx context.Context, packages []*schemas.PyPackage) error {
 	log.WithContext(ctx).Debugf("upserting %d packages", len(packages))
-	if err := r.db.Save(packages).Error; err != nil {
+	if err := r.db.Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches(packages, 1000).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to upsert packages")
 		return err
 	}

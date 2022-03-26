@@ -23,13 +23,13 @@ type BackedRemote struct {
 	store    storage.Reader
 }
 
-func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPackage repo.GetPackageFunc) *BackedRemote {
+func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
 	var eph Remote
 	switch rm.Archetype {
 	case model.ArchetypeHelm:
-		eph = NewHelmRemote(rm.URI)
+		eph = NewHelmRemote(rm.URI, getHelm)
 	case model.ArchetypePip:
-		eph = NewPyPiRemote(rm.URI, getPackage)
+		eph = NewPyPiRemote(rm.URI, getPyPi)
 	default:
 		eph = NewEphemeralRemote(rm.URI)
 	}

@@ -151,6 +151,11 @@ const Dashboard: React.FC = (): JSX.Element => {
 			spacing={0}>
 			{item("NPM Indices", getRemoteIcon(theme, Archetype.NPM), data?.getOverview.packages_npm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
 			{item("PyPi Indices", getRemoteIcon(theme, Archetype.PIP), data?.getOverview.packages_pypi.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+			{item("Helm Indices", getRemoteIcon(theme, Archetype.HELM), data?.getOverview.packages_helm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+		</Grid>
+		<Grid
+			container
+			spacing={0}>
 			{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
 		</Grid>
 	</div>

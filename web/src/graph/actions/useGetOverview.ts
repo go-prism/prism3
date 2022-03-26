@@ -19,6 +19,7 @@ export const useGetOverview = (): QueryResult<Data, void> => {
 
                 packages_pypi
                 packages_npm
+				packages_helm
             }
 		}
 	`, {pollInterval: 10000});

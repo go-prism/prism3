@@ -7,6 +7,10 @@ data:
     http://core3-auto-deploy:8080/api/v1/alpine/-/v3.15/main
     http://core3-auto-deploy:8080/api/v1/alpine/-/v3.15/community
     http://core3-auto-deploy:8080/api/v1/alpine/-/edge/testing
+  pip.conf: |
+    [global]
+    index-url = https://prism3.devel/api/pypi/pypi/simple/
+    trusted-host = prism3.devel
 ---
 apiVersion: v1
 kind: Pod
@@ -30,3 +34,7 @@ spec:
           name: config
           readOnly: true
           subPath: repositories
+        - mountPath: /root/.config/pip/pip.conf
+          name: config
+          readOnly: true
+          subPath: pip.conf

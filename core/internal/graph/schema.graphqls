@@ -80,6 +80,7 @@ type Overview {
 
   packages_pypi: Int!
   packages_npm: Int!
+  packages_helm: Int!
 }
 
 type RemoteOverview {

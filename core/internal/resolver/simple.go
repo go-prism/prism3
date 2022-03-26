@@ -30,7 +30,7 @@ func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Res
 	r.store = store
 
 	// providers
-	r.helm = helmapi.NewIndex(publicURL)
+	r.helm = helmapi.NewIndex(repos, publicURL)
 	r.npm = npmapi.NewProvider(repos, publicURL)
 	r.pypi = pypiapi.NewProvider(repos, publicURL)
 	return r
@@ -66,5 +66,11 @@ func (r *Resolver) getRefraction(v any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return refract.NewBackedRefraction(ref, r.store, r.repos.ArtifactRepo.CreateArtifact, r.repos.PyPackageRepo.GetPackage), nil
+	return refract.NewBackedRefraction(
+		ref,
+		r.store,
+		r.repos.ArtifactRepo.CreateArtifact,
+		r.repos.PyPackageRepo.GetPackage,
+		r.repos.HelmPackageRepo.GetPackage,
+	), nil
 }

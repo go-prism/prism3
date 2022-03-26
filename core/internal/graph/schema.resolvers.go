@@ -81,6 +81,7 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	downloads, _ := r.repos.ArtifactRepo.Downloads(ctx)
 	packagesPyPi, _ := r.repos.PyPackageRepo.Count(ctx)
 	packagesNPM, _ := r.repos.NPMPackageRepo.Count(ctx)
+	packagesHelm, _ := r.repos.HelmPackageRepo.Count(ctx)
 	// get debug build information
 	var buildInfo string
 	build, ok := debug.ReadBuildInfo()
@@ -97,6 +98,7 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 		Version:      buildInfo,
 		PackagesPypi: packagesPyPi,
 		PackagesNpm:  packagesNPM,
+		PackagesHelm: packagesHelm,
 	}, nil
 }
 

@@ -26,11 +26,16 @@ type PyPackageRepo struct {
 	db *gorm.DB
 }
 
+type HelmPackageRepo struct {
+	db *gorm.DB
+}
+
 type Repos struct {
-	RemoteRepo     *RemoteRepo
-	RefractRepo    *RefractRepo
-	TransportRepo  *TransportRepo
-	ArtifactRepo   *ArtifactRepo
-	NPMPackageRepo *NPMPackageRepo
-	PyPackageRepo  *PyPackageRepo
+	RemoteRepo      *RemoteRepo
+	RefractRepo     *RefractRepo
+	TransportRepo   *TransportRepo
+	ArtifactRepo    *ArtifactRepo
+	NPMPackageRepo  *NPMPackageRepo
+	PyPackageRepo   *PyPackageRepo
+	HelmPackageRepo *HelmPackageRepo
 }
