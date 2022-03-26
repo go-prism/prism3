@@ -1,3 +1,4 @@
 core:
   trigger:
+    strategy: depend
     include: .gitlab/ci/core.gitlab-ci.yml
