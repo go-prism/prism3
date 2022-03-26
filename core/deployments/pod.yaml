@@ -38,3 +38,26 @@ spec:
           name: config
           readOnly: true
           subPath: pip.conf
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debian
+spec:
+  volumes:
+    - name: config
+      configMap:
+        name: alpine-config
+  automountServiceAccountToken: false
+  containers:
+    - name: app
+      image: harbor.dcas.dev/docker.io/library/debian:bullseye
+      command:
+        - bash
+        - -c
+        - "tail -f /dev/null"
+      volumeMounts:
+        - mountPath: /root/.config/pip/pip.conf
+          name: config
+          readOnly: true
+          subPath: pip.conf

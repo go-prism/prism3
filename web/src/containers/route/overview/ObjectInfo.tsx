@@ -43,6 +43,7 @@ import AlpineInstall from "./info/setup/AlpineInstall";
 import HelmInstall from "./info/setup/HelmInstall";
 import NpmInstall from "./info/setup/NpmInstall";
 import PyPiInstall from "./info/setup/PyPiInstall";
+import DebianInstall from "./info/setup/DebianInstall";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -106,6 +107,8 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 
 	const setupInfo = (): ReactNode | null => {
 		switch (true) {
+			case item.uri.endsWith(".deb"):
+				return <DebianInstall uri={item.uri} refraction={refraction.name}/>;
 			case item.uri.endsWith(".pom"):
 			case item.uri.endsWith(".jar"):
 				return <JavaInstall uri={item.uri} refraction={refraction}/>;
