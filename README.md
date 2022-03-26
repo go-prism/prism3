@@ -19,4 +19,4 @@ Prism3 is a rework of the Prism application designed to reduce technical debt an
 | Debian       | ✗     | ✗      |                                               |
 | Rust         | ✗     | ✗      | No implementation.                            |
 | Go           | ✗     | ✗      | No implementation.                            |
-| Python (Pip) | ✗     | ✗      | No implementation.                            |
+| Python (Pip) | ✓     | ✓      |                                               |

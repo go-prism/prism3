@@ -71,14 +71,16 @@ func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract strin
 }
 
 func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error) {
-	remotes, _ := r.repos.RemoteRepo.Count(ctx)
-	refracts, _ := r.repos.RefractRepo.Count(ctx)
-	artifacts, _ := r.repos.ArtifactRepo.Count(ctx)
-	downloads, _ := r.repos.ArtifactRepo.Downloads(ctx)
 	store, err := r.storeSizeCache.Get("")
 	if err != nil {
 		return nil, err
 	}
+	remotes, _ := r.repos.RemoteRepo.Count(ctx)
+	refracts, _ := r.repos.RefractRepo.Count(ctx)
+	artifacts, _ := r.repos.ArtifactRepo.Count(ctx)
+	downloads, _ := r.repos.ArtifactRepo.Downloads(ctx)
+	packagesPyPi, _ := r.repos.PyPackageRepo.Count(ctx)
+	packagesNPM, _ := r.repos.NPMPackageRepo.Count(ctx)
 	// get debug build information
 	var buildInfo string
 	build, ok := debug.ReadBuildInfo()
@@ -86,13 +88,15 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 		buildInfo = build.Main.Version
 	}
 	return &model.Overview{
-		Remotes:     remotes,
-		Refractions: refracts,
-		Artifacts:   artifacts,
-		Storage:     store.(*storage.BucketSize).Bytes,
-		Downloads:   downloads,
-		Uptime:      uptime.UnixMilli(),
-		Version:     buildInfo,
+		Remotes:      remotes,
+		Refractions:  refracts,
+		Artifacts:    artifacts,
+		Storage:      store.(*storage.BucketSize).Bytes,
+		Downloads:    downloads,
+		Uptime:       uptime.UnixMilli(),
+		Version:      buildInfo,
+		PackagesPypi: packagesPyPi,
+		PackagesNpm:  packagesNPM,
 	}, nil
 }
 

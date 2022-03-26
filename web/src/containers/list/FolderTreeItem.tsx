@@ -20,6 +20,7 @@ import {useTheme} from "@material-ui/core/styles";
 import {ListItem, ListItemIcon, ListItemText, makeStyles, Theme} from "@material-ui/core";
 import {
 	BrandDebian,
+	BrandPython,
 	Certificate,
 	Database,
 	FileCode,
@@ -89,6 +90,8 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 				return FileZip;
 			case node.name.endsWith(".mod"):
 				return Hexagon;
+			case node.name.endsWith(".whl"):
+				return BrandPython;
 			default:
 				return node.children.length === 0 ? FileCode : Folder;
 		}
@@ -96,6 +99,7 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 
 	const colours = useMemo(() => {
 		switch (true) {
+			case node.name.endsWith(".whl"):
 			case node.name.endsWith(".pom"):
 				return [theme.palette.success.main, theme.palette.success.light];
 			case node.name.endsWith(".jar"):

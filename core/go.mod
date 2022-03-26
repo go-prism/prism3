@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/99designs/gqlgen v0.17.1
+	github.com/Code-Hex/go-generics-cache v1.0.0
 	github.com/aws/aws-sdk-go-v2 v1.15.0
 	github.com/aws/aws-sdk-go-v2/config v1.15.0
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.0
@@ -18,6 +19,7 @@ require (
 	github.com/vektah/gqlparser/v2 v2.4.0
 	gitlab.com/autokubeops/serverless v0.3.3
 	gitlab.com/av1o/cap10-ingress v0.0.0-20220212125434-d2886402dc5d
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
 	gorm.io/datatypes v1.0.6
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.2
@@ -27,7 +29,6 @@ require (
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/Code-Hex/go-generics-cache v1.0.0 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -122,7 +123,6 @@ require (
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/exp v0.0.0-20220209042442-160e291fcf24 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect

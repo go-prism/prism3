@@ -80,7 +80,7 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 	roots := make([]string, len(remotes))
 
 	wg := sync.WaitGroup{}
-	log.WithContext(ctx).Infof("fetching metadata for '%s' from %d remotes (%s)", pkg, len(remotes), ref)
+	log.WithContext(ctx).Infof("fetching NPM metadata for '%s' from %d remotes (%s)", pkg, len(remotes), ref)
 	for i := range remotes {
 		wg.Add(1)
 		roots[i] = remotes[i].String()

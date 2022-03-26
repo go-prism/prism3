@@ -1,6 +1,7 @@
 import React, {ReactNode, useEffect} from "react";
 import {
 	Avatar,
+	Box,
 	Card,
 	CircularProgress,
 	Grid,
@@ -11,13 +12,17 @@ import {
 	Theme,
 	Typography
 } from "@material-ui/core";
-import {ArrowsRight, ArrowsSplit, CloudDownload, CloudUpload, ListDetails} from "tabler-icons-react";
+import {ArrowsRight, ArrowsSplit, CloudDownload, CloudUpload, InfoCircle, ListDetails} from "tabler-icons-react";
 import {useTheme} from "@material-ui/core/styles";
 import {formatDistanceStrict} from "date-fns";
 import {Alert} from "@material-ui/lab";
+import {ThemedTooltip} from "jmp-coreui";
 import useGetOverview from "../../graph/actions/useGetOverview";
 import {formatBytes} from "../../utils/format";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
+import {getRemoteIcon} from "../../utils/remote";
+import {Archetype} from "../../graph/types";
+import Flexbox from "../widgets/Flexbox";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	root: {
@@ -61,7 +66,7 @@ const Dashboard: React.FC = (): JSX.Element => {
 		window.document.title = "Prism";
 	}, []);
 
-	const item = (title: string, icon: ReactNode, children: ReactNode): ReactNode => {
+	const item = (title: string, icon: ReactNode, children: ReactNode, info?: string): ReactNode => {
 		return <Grid
 			item
 			xs>
@@ -76,9 +81,24 @@ const Dashboard: React.FC = (): JSX.Element => {
 						primaryTypographyProps={{
 							variant: "body2",
 							color: "textSecondary"
-						}}
-						primary={title}
-					/>
+						}}>
+						<Flexbox>
+							{title}
+							{info != null && <ThemedTooltip
+								interactive
+								title={info}
+								placement="right">
+								<Box
+									style={{display: "flex", alignItems: "center"}}>
+									<InfoCircle
+										style={{marginLeft: theme.spacing(1)}}
+										color={theme.palette.text.disabled}
+										size={16}
+									/>
+								</Box>
+							</ThemedTooltip>}
+						</Flexbox>
+					</ListItemText>
 					<Typography
 						variant="h5"
 						component="h2"
@@ -129,6 +149,8 @@ const Dashboard: React.FC = (): JSX.Element => {
 		<Grid
 			container
 			spacing={0}>
+			{item("NPM Indices", getRemoteIcon(theme, Archetype.NPM), data?.getOverview.packages_npm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+			{item("PyPi Indices", getRemoteIcon(theme, Archetype.PIP), data?.getOverview.packages_pypi.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
 			{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
 		</Grid>
 	</div>

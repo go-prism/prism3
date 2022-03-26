@@ -51,3 +51,12 @@ func (r *NPMPackageRepo) GetPackageVersion(ctx context.Context, pkg, version str
 	}
 	return result, nil
 }
+
+func (r *NPMPackageRepo) Count(ctx context.Context) (int64, error) {
+	var result int64
+	if err := r.db.Model(&schemas.NPMPackage{}).Count(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to count NPM packages")
+		return 0, err
+	}
+	return result, nil
+}

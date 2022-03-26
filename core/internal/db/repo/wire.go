@@ -9,5 +9,6 @@ func NewRepos(db *gorm.DB) *Repos {
 		TransportRepo:  NewTransportRepo(db),
 		ArtifactRepo:   NewArtifactRepo(db),
 		NPMPackageRepo: NewNPMRepo(db),
+		PyPackageRepo:  NewPyRepo(db),
 	}
 }

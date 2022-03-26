@@ -20,18 +20,23 @@ import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
-interface AlpineInstallProps {
+interface Props {
 	uri: string;
 	refraction: string;
+	wheel: boolean;
 }
 
-const AlpineInstall: React.FC<AlpineInstallProps> = ({uri, refraction}): JSX.Element => {
-	const [path, pkgName, pkgVersion] = useMemo((): string[] => {
+const PyPiInstall: React.FC<Props> = ({uri, refraction, wheel}): JSX.Element => {
+	const [pkgName, pkgVersion] = useMemo((): string[] => {
+		// todo handle semantic versions properly
+		// e.g. lab-4.0.0-alpha.60.tgz doesn't display correctly
 		const bits = uri.split("/");
 		const name = bits[bits.length - 1];
-		const [packageRevision, packageVersion, ...names] = name.replace(".apk", "").split("-").reverse().join("-").split("-");
-
-		return [bits.slice(0, 2).join("/"), names.reverse().join("-"), `${packageVersion}-${packageRevision}`];
+		if (!wheel) {
+			const [packageVersion, ...names] = name.replace(".tar.gz", "").split("-").reverse().join("-").split("-");
+			return [names.reverse().join("-"), `${packageVersion}`];
+		}
+		return name.split("-");
 	}, [uri]);
 
 	return (
@@ -39,22 +44,22 @@ const AlpineInstall: React.FC<AlpineInstallProps> = ({uri, refraction}): JSX.Ele
 			variants={[{
 				install: <div>
 					<CodeBlock
-						code={`apk add ${pkgName}=${pkgVersion}`}
+						code={`pip install ${pkgName}==${pkgVersion}`}
 						language="bash"
 					/>
 				</div>,
 				config: <div>
 					<CodeBlock
-						code={`echo "${API_URL}/api/-/${refraction.toLocaleLowerCase()}/${path}" >> /etc/apk/repositories\napk update`}
+						code={`pip config --user set global.index-url ${API_URL}/api/pypi/${refraction.toLocaleLowerCase()}/simple/
+pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`}
 						language="bash"
 					/>
 				</div>,
 				name: "Permanent"
-			},
-			{
+			}, {
 				install: <div>
 					<CodeBlock
-						code={`apk add ${pkgName}=${pkgVersion} \\\n\t-X ${API_URL}/api/-/${refraction.toLocaleLowerCase()}/${path}`}
+						code={`pip install ${pkgName}==${pkgVersion} --index-url ${API_URL}/api/pypi/${refraction.toLocaleLowerCase()}/simple/`}
 						language="bash"
 					/>
 				</div>,
@@ -69,4 +74,4 @@ const AlpineInstall: React.FC<AlpineInstallProps> = ({uri, refraction}): JSX.Ele
 		/>
 	)
 }
-export default AlpineInstall;
+export default PyPiInstall;

@@ -68,3 +68,21 @@ func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = io.Copy(w, reader)
 }
+
+func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	bucket, pkg := vars["bucket"], vars["package"]
+	req := g.pool.Get().(*resolver.Request)
+	req.New(bucket, pkg)
+	defer g.pool.Put(req)
+	// serve
+	reader, err := g.resolver.ResolvePyPi(r.Context(), req)
+	if err != nil {
+		// todo figure out the code and appropriate message
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// copy the response back
+	w.Header().Set("Content-Type", "text/html")
+	_, _ = io.Copy(w, reader)
+}

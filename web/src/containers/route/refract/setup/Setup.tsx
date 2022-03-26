@@ -36,6 +36,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 			case Archetype.HELM:
 			case Archetype.GO:
 			case Archetype.ALPINE:
+			case Archetype.PIP:
 				return "shell";
 			default:
 				return "text";
@@ -43,7 +44,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	}, [refract]);
 
 	const text = useMemo(() => {
-		const url = `${API_URL}/api/v1/${refract.name.toLocaleLowerCase()}/-`;
+		const url = `${API_URL}/api/v1/${refract.name.toLocaleLowerCase()}/-/`;
 		switch(refract.archetype) {
 			case Archetype.MAVEN:
 				return `<settings xmlns="https://maven.apache.org/SETTINGS/1.0.0"
@@ -89,7 +90,10 @@ echo "${url}/latest-stable/community" >> /etc/apk/repositories
 apk add somepackage \\
 	-X ${url}/latest-stable/main \\
 	-X ${url}/latest-stable/community`;
-			case Archetype.RUST:
+			case Archetype.PIP:
+				return `pip config --user set global.index-url ${API_URL}/api/pypi/${refract.name.toLocaleLowerCase()}/simple/
+pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`;
+			case Archetype.DEBIAN:
 				return `# replace "buster" with the target distribution (e.g. buster, jessie, stretch)
 # replace "main" with the target components (e.g. main, security)
 #
@@ -98,7 +102,7 @@ echo "deb ${url} buster main" >> /etc/apt/sources.list
 # to use only Prism
 echo "deb ${url} buster main" > /etc/apt/sources.list`;
 			case Archetype.HELM:
-				return `helm repo add prism-${refract.name.toLocaleLowerCase()} ${API_URL}/api/helm/${refract.name.toLocaleLowerCase()}/-
+				return `helm repo add prism-${refract.name.toLocaleLowerCase()} ${API_URL}/api/helm/${refract.name.toLocaleLowerCase()}/-/
 helm repo update`;
 			default:
 				return `curl ${url}/path/to/file.txt > file.txt`;

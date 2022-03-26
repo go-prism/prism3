@@ -31,7 +31,10 @@ type environment struct {
 	DB struct {
 		DSN string `split_words:"true" required:"true"`
 	}
-	S3 storage.S3Options
+	S3  storage.S3Options
+	Dev struct {
+		Handlers bool `split_words:"true"`
+	}
 }
 
 func main() {
@@ -97,10 +100,13 @@ func main() {
 		Methods(http.MethodGet)
 	router.HandleFunc("/api/npm/{bucket}/@{scope}/{package}/{version}", h.ServeHTTPNPM).
 		Methods(http.MethodGet)
+	// pypi
+	router.HandleFunc("/api/pypi/{bucket}/simple/{package}/", h.ServePyPi).
+		Methods(http.MethodGet)
 
 	// start serving
 	serverless.NewBuilder(router).
 		WithPort(e.Port).
-		WithHandlers(false).
+		WithHandlers(e.Dev.Handlers).
 		Run()
 }

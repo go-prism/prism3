@@ -12,7 +12,7 @@ var (
 	RegexDebian = regexp.MustCompile(`^.*\.(deb|tar.gz)$`)
 	RegexNode   = regexp.MustCompile(`.tgz$`)
 	RegexHelm   = regexp.MustCompile(`.tgz(.prov)?$`)
-	RegexPy     = regexp.MustCompile(`.whl$`)
+	RegexPy     = regexp.MustCompile(`.(tar.gz|whl)$`)
 )
 
 type RegexEnforcer struct {
@@ -66,6 +66,12 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 	case model.ArchetypeHelm:
 		canCache = RegexHelm.MatchString(path)
 	case model.ArchetypePip:
+		// handle downloads having a fragment
+		uri, _, ok := strings.Cut(path, "#")
+		if ok {
+			canCache = RegexPy.MatchString(uri)
+			break
+		}
 		canCache = RegexPy.MatchString(path)
 	default:
 		canCache = true

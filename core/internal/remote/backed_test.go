@@ -14,6 +14,8 @@ func TestBackedRemote_Exists(t *testing.T) {
 		Security: &model.RemoteSecurity{},
 	}, storage.NewNoOp(), func(ctx context.Context, path, remote string) error {
 		return nil
+	}, func(ctx context.Context, file string) (string, error) {
+		return "", nil
 	})
 	uri, err := rem.Exists(context.TODO(), "v3.14/main/x86_64/APKINDEX.tar.gz")
 	assert.NoError(t, err)

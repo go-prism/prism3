@@ -42,6 +42,7 @@ import JavaInstall from "./info/setup/JavaInstall";
 import AlpineInstall from "./info/setup/AlpineInstall";
 import HelmInstall from "./info/setup/HelmInstall";
 import NpmInstall from "./info/setup/NpmInstall";
+import PyPiInstall from "./info/setup/PyPiInstall";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	title: {
@@ -117,6 +118,10 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				return <HelmInstall uri={item.uri} refraction={refraction.name}/>;
 			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.NPM:
 				return <NpmInstall uri={item.uri} refraction={refraction.name}/>;
+			case item.uri.endsWith(".tar.gz") && refraction.archetype === Archetype.PIP:
+				return <PyPiInstall uri={item.uri} refraction={refraction.name} wheel={false}/>;
+			case item.uri.endsWith(".whl") && refraction.archetype === Archetype.PIP:
+				return <PyPiInstall uri={item.uri} refraction={refraction.name} wheel/>;
 			default:
 				return <DefaultInstall uri={item.uri}/>;
 		}

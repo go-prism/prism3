@@ -16,6 +16,9 @@ export const useGetOverview = (): QueryResult<Data, void> => {
 				downloads
 				uptime
 				version
+
+                packages_pypi
+                packages_npm
             }
 		}
 	`, {pollInterval: 10000});

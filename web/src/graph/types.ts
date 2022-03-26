@@ -69,4 +69,7 @@ export interface Overview {
 	downloads: number;
 	uptime: number;
 	version: string;
+
+	packages_pypi: number;
+	packages_npm: number;
 }

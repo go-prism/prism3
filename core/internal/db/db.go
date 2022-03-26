@@ -34,6 +34,7 @@ func (db *Database) Init() error {
 		&model.TransportSecurity{},
 		&model.Artifact{},
 		&schemas.NPMPackage{},
+		&schemas.PyPackage{},
 	)
 	if err != nil {
 		log.WithError(err).Error("failed to run auto-migration")

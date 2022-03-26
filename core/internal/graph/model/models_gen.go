@@ -34,13 +34,15 @@ type NewRemote struct {
 }
 
 type Overview struct {
-	Remotes     int64  `json:"remotes"`
-	Refractions int64  `json:"refractions"`
-	Artifacts   int64  `json:"artifacts"`
-	Storage     int64  `json:"storage"`
-	Downloads   int64  `json:"downloads"`
-	Uptime      int64  `json:"uptime"`
-	Version     string `json:"version"`
+	Remotes      int64  `json:"remotes"`
+	Refractions  int64  `json:"refractions"`
+	Artifacts    int64  `json:"artifacts"`
+	Storage      int64  `json:"storage"`
+	Downloads    int64  `json:"downloads"`
+	Uptime       int64  `json:"uptime"`
+	Version      string `json:"version"`
+	PackagesPypi int64  `json:"packages_pypi"`
+	PackagesNpm  int64  `json:"packages_npm"`
 }
 
 type PatchRefract struct {

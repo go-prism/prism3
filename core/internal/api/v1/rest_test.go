@@ -24,6 +24,10 @@ func (t *testResolver) ResolveNPM(context.Context, *resolver.NPMRequest) (io.Rea
 	return strings.NewReader("ResolveNPM"), nil
 }
 
+func (*testResolver) ResolvePyPi(context.Context, *resolver.Request) (io.Reader, error) {
+	return strings.NewReader("ResolvePyPi"), nil
+}
+
 func TestGateway_ServeHTTP(t *testing.T) {
 	var cases = []struct {
 		target string

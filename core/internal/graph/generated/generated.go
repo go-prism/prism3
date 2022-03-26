@@ -63,13 +63,15 @@ type ComplexityRoot struct {
 	}
 
 	Overview struct {
-		Artifacts   func(childComplexity int) int
-		Downloads   func(childComplexity int) int
-		Refractions func(childComplexity int) int
-		Remotes     func(childComplexity int) int
-		Storage     func(childComplexity int) int
-		Uptime      func(childComplexity int) int
-		Version     func(childComplexity int) int
+		Artifacts    func(childComplexity int) int
+		Downloads    func(childComplexity int) int
+		PackagesNpm  func(childComplexity int) int
+		PackagesPypi func(childComplexity int) int
+		Refractions  func(childComplexity int) int
+		Remotes      func(childComplexity int) int
+		Storage      func(childComplexity int) int
+		Uptime       func(childComplexity int) int
+		Version      func(childComplexity int) int
 	}
 
 	Query struct {
@@ -288,6 +290,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Overview.Downloads(childComplexity), true
+
+	case "Overview.packages_npm":
+		if e.complexity.Overview.PackagesNpm == nil {
+			break
+		}
+
+		return e.complexity.Overview.PackagesNpm(childComplexity), true
+
+	case "Overview.packages_pypi":
+		if e.complexity.Overview.PackagesPypi == nil {
+			break
+		}
+
+		return e.complexity.Overview.PackagesPypi(childComplexity), true
 
 	case "Overview.refractions":
 		if e.complexity.Overview.Refractions == nil {
@@ -784,6 +800,9 @@ type Overview {
   downloads: Int!
   uptime: Int!
   version: String!
+
+  packages_pypi: Int!
+  packages_npm: Int!
 }
 
 type RemoteOverview {
@@ -1766,6 +1785,76 @@ func (ec *executionContext) _Overview_version(ctx context.Context, field graphql
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Overview_packages_pypi(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Overview",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PackagesPypi, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Overview_packages_npm(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Overview",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PackagesNpm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_listRemotes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4871,6 +4960,26 @@ func (ec *executionContext) _Overview(ctx context.Context, sel ast.SelectionSet,
 		case "version":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Overview_version(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "packages_pypi":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Overview_packages_pypi(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "packages_npm":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Overview_packages_npm(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
