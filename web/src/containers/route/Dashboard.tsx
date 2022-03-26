@@ -14,8 +14,10 @@ import {
 import {ArrowsRight, ArrowsSplit, CloudDownload, CloudUpload, ListDetails} from "tabler-icons-react";
 import {useTheme} from "@material-ui/core/styles";
 import {formatDistanceStrict} from "date-fns";
+import {Alert} from "@material-ui/lab";
 import useGetOverview from "../../graph/actions/useGetOverview";
 import {formatBytes} from "../../utils/format";
+import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
 
 const useStyles = makeStyles((theme: Theme) => ({
 	root: {
@@ -112,6 +114,10 @@ const Dashboard: React.FC = (): JSX.Element => {
 			{data?.getOverview.version}<br/>
 			This instance has been running for {formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0)}
 		</Typography>
+		{error && <Alert>
+			Something went wrong loading the dashboard.<br/>
+			{getGraphErrorMessage(error)}
+		</Alert>}
 		<Grid
 			container
 			spacing={0}>

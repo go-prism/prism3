@@ -1,7 +1,8 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {
 	Button,
-	Chip, Collapse,
+	Chip,
+	Collapse,
 	FormControlLabel,
 	FormGroup,
 	FormLabel,
@@ -14,10 +15,8 @@ import {
 	Theme,
 	Typography
 } from "@material-ui/core";
-import Icon from "@mdi/react";
-import {mdiPencilOutline, mdiPlusCircleOutline, mdiShapeOutline} from "@mdi/js";
 import {useTheme} from "@material-ui/core/styles";
-import {Link, useHistory} from "react-router-dom";
+import {useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert, Skeleton} from "@material-ui/lab";
 import {useParams} from "react-router";
@@ -33,7 +32,6 @@ import {Archetype} from "../../../graph/types";
 import {getRemoteIcon} from "../../../utils/remote";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
-import ClientConfig from "./options/ClientConfig";
 import TransportOpts from "./options/TransportOpts";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -220,7 +218,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 				primary: "HTTP/TLS/Proxy options",
 				secondary: "Configure how Prism communicates with remotes.",
 				children: data?.getRemote == null ? "" : <TransportOpts
-					selected={data.getRemote.transport}
+					onSelect={() => {}}
 				/>
 			}
 		];

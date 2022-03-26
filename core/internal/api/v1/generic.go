@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-func NewGateway(r *resolver.Resolver) *Gateway {
+func NewGateway(r resolver.IResolver) *Gateway {
 	return &Gateway{
 		resolver: r,
 		pool: &sync.Pool{

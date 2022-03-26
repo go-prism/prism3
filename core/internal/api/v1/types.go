@@ -6,7 +6,7 @@ import (
 )
 
 type Gateway struct {
-	resolver *resolver.Resolver
+	resolver resolver.IResolver
 	pool     *sync.Pool
 	npmPool  *sync.Pool
 }

@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo} from "react";
 import {Alert} from "@material-ui/lab";
 import {ArrowsRight} from "tabler-icons-react";
-import {Button, useTheme} from "@material-ui/core";
+import {Button, Typography, useTheme} from "@material-ui/core";
 import {useParams} from "react-router";
 import {Link} from "react-router-dom";
 import useListRemotes from "../../../graph/actions/remote/useListRemotes";
@@ -12,6 +12,7 @@ import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
 import {getRemoteIcon} from "../../../utils/remote";
 import EditRemote from "../remote/Edit";
 import Header from "../../layout/Header";
+import InfoCard from "../../widgets/InfoCard";
 import {IDParams} from "./index";
 
 const Remotes: React.FC = (): JSX.Element => {
@@ -49,15 +50,6 @@ const Remotes: React.FC = (): JSX.Element => {
 				icon={ArrowsRight}
 				loading={loading}
 			/>}>
-			{!loading && error != null && <Alert
-				severity="error">
-					Failed to load remotes.<br/>
-				{getGraphErrorMessage(error)}
-			</Alert>}
-			{!loading && error == null && items.length === 0 && <Alert
-				severity="info">
-					No remotes
-			</Alert>}
 			{id ? <EditRemote/> : <Header
 				title="Remotes"
 				actions={<Button
@@ -69,6 +61,23 @@ const Remotes: React.FC = (): JSX.Element => {
 				</Button>}
 				counter={items.length}
 			/>}
+			{!loading && error != null && <Alert
+				severity="error">
+				Failed to load remotes.<br/>
+				{getGraphErrorMessage(error)}
+			</Alert>}
+			{!loading && error == null && items.length === 0 && <InfoCard
+				title="Remotes"
+				icon={ArrowsRight}>
+				<Typography
+					color="textSecondary">
+					A remote is a location that Prism can fetch packages and artifacts from.
+					Remotes provide advanced controls over how Prism interacts with them, including transport, firewall and authentication options.
+					<br/>
+					<br/>
+					To get started, <Link to="/remotes/new">create a Remote</Link>
+				</Typography>
+			</InfoCard>}
 		</SidebarLayout>
 	);
 }

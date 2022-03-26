@@ -3,7 +3,6 @@ package repo
 import (
 	"context"
 	"fmt"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gorm.io/gorm"
@@ -17,10 +16,10 @@ func NewRefractRepo(db *gorm.DB) *RefractRepo {
 	}
 }
 
-func getAnyQuery(vals []string) string {
+func getAnyQuery[T string | int | ~uint](vals []T) string {
 	items := make([]string, len(vals))
 	for i := range vals {
-		items[i] = fmt.Sprintf(`"%s"`, vals[i])
+		items[i] = fmt.Sprintf(`"%v"`, vals[i])
 	}
 	return fmt.Sprintf("{%s}", strings.Join(items, ","))
 }
@@ -57,7 +56,6 @@ func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract
 		return nil, err
 	}
 	result := model.Refraction{
-		ID:        uuid.NewV4().String(),
 		CreatedAt: time.Now().Unix(),
 		UpdatedAt: time.Now().Unix(),
 		Name:      in.Name,

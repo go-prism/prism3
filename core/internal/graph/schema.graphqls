@@ -14,10 +14,11 @@ enum Archetype {
   HELM
   RUST
   DEBIAN
+  PIP
 }
 
 type Artifact {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   createdAt: Int!
   updatedAt: Int!
   uri: String!
@@ -27,7 +28,7 @@ type Artifact {
 }
 
 type Refraction {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   createdAt: Int!
   updatedAt: Int!
   name: String! @goTag(key: "gorm", value: "unique")
@@ -36,7 +37,7 @@ type Refraction {
 }
 
 type Remote {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   createdAt: Int!
   updatedAt: Int!
   name: String! @goTag(key: "gorm", value: "unique")
@@ -50,14 +51,14 @@ type Remote {
 }
 
 type RemoteSecurity {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   allowed: Strings!
   blocked: Strings!
   authHeaders: Strings!
 }
 
 type TransportSecurity {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   name: String! @goTag(key: "gorm", value: "unique")
   ca: String!
   cert: String!
@@ -109,12 +110,12 @@ input NewRemote {
 input NewRefract {
   name: String!
   archetype: Archetype!
-  remotes: [String!]!
+  remotes: [ID!]!
 }
 
 input PatchRefract {
   name: String!
-  remotes: [String!]!
+  remotes: [ID!]!
 }
 
 type Mutation {

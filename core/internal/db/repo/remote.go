@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -26,7 +25,6 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 		return nil, err
 	}
 	result := model.Remote{
-		ID:        uuid.NewV4().String(),
 		CreatedAt: time.Now().Unix(),
 		UpdatedAt: time.Now().Unix(),
 		Name:      in.Name,
@@ -34,7 +32,6 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 		Archetype: in.Archetype,
 		Enabled:   true,
 		Security: &model.RemoteSecurity{
-			ID:          uuid.NewV4().String(),
 			Allowed:     nil,
 			Blocked:     nil,
 			AuthHeaders: nil,

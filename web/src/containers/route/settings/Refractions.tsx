@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo} from "react";
 import {Alert} from "@material-ui/lab";
 import {ArrowsSplit} from "tabler-icons-react";
-import {Button, useTheme} from "@material-ui/core";
+import {Button, Typography, useTheme} from "@material-ui/core";
 import {useParams} from "react-router";
 import {Link} from "react-router-dom";
 import useListRefractions from "../../../graph/actions/remote/useListRefractions";
@@ -11,6 +11,7 @@ import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
 import {getRemoteIcon} from "../../../utils/remote";
 import EditRefract from "../refract/Edit";
 import Header from "../../layout/Header";
+import InfoCard from "../../widgets/InfoCard";
 import {IDParams} from "./index";
 
 const Refractions: React.FC = (): JSX.Element => {
@@ -18,12 +19,16 @@ const Refractions: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	// global state
-	const {data, loading, error} = useListRefractions();
+	const {data, loading, error, refetch} = useListRefractions();
 	const {id} = useParams<IDParams>();
 
 	useEffect(() => {
 		window.document.title = "Refractions";
 	}, []);
+
+	useEffect(() => {
+		void refetch();
+	}, [id]);
 
 	// local state
 	const items: SidebarItem[] = useMemo(() => {
@@ -48,15 +53,6 @@ const Refractions: React.FC = (): JSX.Element => {
 				loading={loading}
 			/>}>
 			<div>
-				{!loading && error != null && <Alert
-					severity="error">
-					Failed to load refractions.<br/>
-					{getGraphErrorMessage(error)}
-				</Alert>}
-				{!loading && error == null && items.length === 0 && <Alert
-					severity="info">
-					No refractions
-				</Alert>}
 				{id ? <EditRefract/> : <Header
 					title="Refractions"
 					actions={<Button
@@ -68,6 +64,25 @@ const Refractions: React.FC = (): JSX.Element => {
 					</Button>}
 					counter={items.length}
 				/>}
+				{!loading && error != null && <Alert
+					severity="error">
+					Failed to load refractions.<br/>
+					{getGraphErrorMessage(error)}
+				</Alert>}
+				{!loading && error == null && items.length === 0 && <InfoCard
+					title="Refractions"
+					icon={ArrowsSplit}>
+					<Typography
+						color="textSecondary">
+						A refraction is an abstraction that allows you to retrieve artifacts and packages from a collection of <Link to="/remotes">Remotes</Link>, as if they were one.
+						Refractions respect the individual configurations of a remote.
+						<br/>
+						Refractions can only contain remotes of a single archetype (e.g. Maven or NPM).
+						<br/>
+						<br/>
+						To get started, <Link to="/refract/new">create a Refraction</Link>
+					</Typography>
+				</InfoCard>}
 			</div>
 		</SidebarLayout>
 	);

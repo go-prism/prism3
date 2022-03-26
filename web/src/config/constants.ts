@@ -6,7 +6,8 @@ export const REMOTE_ARCHETYPES: {name: string, value: Archetype, stable: boolean
 	{name: "NPM", value: Archetype.NPM, stable: false},
 	{name: "Alpine", value: Archetype.ALPINE, stable: true},
 	{name: "Helm", value: Archetype.HELM, stable: false},
-	{name: "Debian", value: Archetype.DEBIAN, stable: false}
+	{name: "Debian", value: Archetype.DEBIAN, stable: false},
+	{name: "PyPI", value: Archetype.PIP, stable: false}
 ];
 
 export const DEFAULT_RESTRICTED_HEADERS = [

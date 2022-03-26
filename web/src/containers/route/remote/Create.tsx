@@ -20,7 +20,7 @@ import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert} from "@material-ui/lab";
 import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
-import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
+import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
 import useCreateRemote from "../../../graph/actions/remote/useCreateRemote";
 import {Archetype, TransportSecurity} from "../../../graph/types";
@@ -139,7 +139,6 @@ const CreateRemote: React.FC = (): JSX.Element => {
 						}}
 					/>
 					<TransportOpts
-						selected={transport}
 						onSelect={setTransport}
 					/>
 					<FormLabel

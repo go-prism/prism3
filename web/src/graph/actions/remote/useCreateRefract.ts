@@ -13,7 +13,7 @@ interface Vars {
 
 export const useCreateRefract = (): MutationTuple<Data, Vars> => {
 	return useMutation(gql`
-		mutation createRefract($name: String!, $archetype: Archetype!, $remotes: [String!]!) {
+		mutation createRefract($name: String!, $archetype: Archetype!, $remotes: [ID!]!) {
 			createRefraction(input: {name: $name, archetype: $archetype, remotes: $remotes}) {
 				id
 			}

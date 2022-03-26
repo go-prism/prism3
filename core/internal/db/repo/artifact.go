@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gorm.io/gorm"
@@ -35,7 +34,6 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 	}
 	log.WithContext(ctx).Debug("creating artifact entry")
 	result := model.Artifact{
-		ID:        uuid.NewV4().String(),
 		CreatedAt: time.Now().Unix(),
 		UpdatedAt: time.Now().Unix(),
 		URI:       path,
@@ -78,7 +76,7 @@ func (r *ArtifactRepo) CountArtifactsByRemote(ctx context.Context, remote string
 
 func (r *ArtifactRepo) Downloads(ctx context.Context) (int64, error) {
 	var result int64
-	if err := r.db.Model(&model.Artifact{}).Select("SUM(downloads)").Scan(&result).Error; err != nil {
+	if err := r.db.Model(&model.Artifact{}).Select("COALESCE(SUM(downloads), 0)").Scan(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to aggregate downloads")
 		return 0, err
 	}

@@ -1,5 +1,5 @@
 import {CircularProgress, List, ListItem, ListItemText, MenuItem, Select} from "@material-ui/core";
-import React, {ChangeEvent} from "react";
+import React, {useEffect, useState} from "react";
 import {Alert} from "@material-ui/lab";
 import {useTheme} from "@material-ui/core/styles";
 import useListTransports from "../../../../graph/actions/remote/useListTransports";
@@ -7,34 +7,32 @@ import {getGraphErrorMessage} from "../../../../selectors/getErrorMessage";
 import {TransportSecurity} from "../../../../graph/types";
 
 interface Props {
-	selected: TransportSecurity | null;
-	onSelect?: (val: TransportSecurity) => void;
+	onSelect: (val: TransportSecurity) => void;
 }
 
-const TransportOpts: React.FC<Props> = ({selected, onSelect}): JSX.Element => {
+const TransportOpts: React.FC<Props> = ({onSelect}): JSX.Element => {
 	// hooks
 	const theme = useTheme();
 	const {data, loading, error} = useListTransports();
+	const [selected, setSelected] = useState<TransportSecurity | null>(null);
+
+	useEffect(() => {
+		if (data?.listTransports == null)
+			return;
+		if (data.listTransports.length === 0)
+			return;
+		setSelected(data.listTransports[0]);
+		onSelect(data.listTransports[0]);
+	}, [data?.listTransports]);
 
 	if (loading)
 		return <CircularProgress/>;
 
-	if (error != null)
+	if (error != null) {
 		return <Alert
 			severity="error">
 			{getGraphErrorMessage(error)}
-		</Alert>
-
-	const handleChange = (e: ChangeEvent<{value: unknown}>): void => {
-		if (onSelect == null || data?.listTransports == null)
-			return;
-		const id = e.target.value as string;
-		for (let i = 0; i < data.listTransports.length; i++) {
-			if (data.listTransports[i].id === id) {
-				onSelect(data.listTransports[i]);
-				return;
-			}
-		}
+		</Alert>;
 	}
 
 	return <List>
@@ -44,18 +42,22 @@ const TransportOpts: React.FC<Props> = ({selected, onSelect}): JSX.Element => {
 				primary="Transport profile"
 				secondary="Settings used by Prism when establishing an HTTP(S) connection to the remote."
 			/>
-			<Select
-				value={selected?.id}
-				onChange={handleChange}
+			{data?.listTransports != null && data.listTransports.length > 0 && <Select
+				value={selected?.id || data.listTransports[0].id}
 				variant="filled"
 				style={{minWidth: 300}}>
-				{data?.listTransports?.map(t => <MenuItem
+				{data.listTransports.map(t => <MenuItem
 					key={t.id}
 					selected={selected?.id === t.id}
+					onClick={() => {
+						console.log(t.id);
+						setSelected(t);
+						onSelect(t);
+					}}
 					value={t.id}>
 					{t.name || "-"}
 				</MenuItem>)}
-			</Select>
+			</Select>}
 		</ListItem>
 	</List>
 }

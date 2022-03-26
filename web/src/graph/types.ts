@@ -7,6 +7,7 @@ export enum Archetype {
 	HELM = "HELM",
 	RUST = "RUST",
 	DEBIAN = "DEBIAN",
+	PIP = "PIP",
 	NONE = ""
 }
 

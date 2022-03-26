@@ -16,6 +16,13 @@ export const getRemoteIcon = (theme: Theme, type: Archetype): ReactNode => {
 				width={24}
 				height={24}
 			/>
+		case Archetype.PIP:
+			return <img
+				src={`/${type.toLocaleLowerCase()}_logo.png`}
+				alt={`${type} logo`}
+				width={24}
+				height={24}
+			/>
 		case Archetype.DEBIAN:
 			return <BrandDebian
 				color={theme.palette.error.dark}

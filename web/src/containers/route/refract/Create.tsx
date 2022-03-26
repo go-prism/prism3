@@ -18,7 +18,6 @@ import {useTheme} from "@material-ui/core/styles";
 import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {Alert} from "@material-ui/lab";
-import {ApolloError} from "@apollo/client";
 import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";

@@ -721,10 +721,11 @@ enum Archetype {
   HELM
   RUST
   DEBIAN
+  PIP
 }
 
 type Artifact {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   createdAt: Int!
   updatedAt: Int!
   uri: String!
@@ -734,7 +735,7 @@ type Artifact {
 }
 
 type Refraction {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   createdAt: Int!
   updatedAt: Int!
   name: String! @goTag(key: "gorm", value: "unique")
@@ -743,7 +744,7 @@ type Refraction {
 }
 
 type Remote {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   createdAt: Int!
   updatedAt: Int!
   name: String! @goTag(key: "gorm", value: "unique")
@@ -757,14 +758,14 @@ type Remote {
 }
 
 type RemoteSecurity {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   allowed: Strings!
   blocked: Strings!
   authHeaders: Strings!
 }
 
 type TransportSecurity {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
   name: String! @goTag(key: "gorm", value: "unique")
   ca: String!
   cert: String!
@@ -816,12 +817,12 @@ input NewRemote {
 input NewRefract {
   name: String!
   archetype: Archetype!
-  remotes: [String!]!
+  remotes: [ID!]!
 }
 
 input PatchRefract {
   name: String!
-  remotes: [String!]!
+  remotes: [ID!]!
 }
 
 type Mutation {
@@ -4530,7 +4531,7 @@ func (ec *executionContext) unmarshalInputNewRefract(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remotes"))
-			it.Remotes, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			it.Remotes, err = ec.unmarshalNID2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4608,7 +4609,7 @@ func (ec *executionContext) unmarshalInputPatchRefract(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("remotes"))
-			it.Remotes, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			it.Remotes, err = ec.unmarshalNID2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6081,6 +6082,38 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
 	res, err := graphql.UnmarshalInt64(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6278,38 +6311,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) unmarshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, v interface{}) (datatypes.JSONArray, error) {

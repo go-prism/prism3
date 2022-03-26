@@ -18,11 +18,13 @@
 import React, {useEffect, useMemo} from "react";
 import {useTheme} from "@material-ui/core/styles";
 import {Apps} from "tabler-icons-react";
+import {Typography} from "@material-ui/core";
 import {TreeNode} from "../list/FolderTreeItem";
 import {getRemoteIcon} from "../../utils/remote";
 import useListRefractions from "../../graph/actions/remote/useListRefractions";
 import SidebarLayout from "../layout/SidebarLayout";
 import SimpleSidebar, {SidebarItem} from "../layout/SimpleSidebar";
+import InfoCard from "../widgets/InfoCard";
 
 export interface Node {
 	node: TreeNode;
@@ -61,7 +63,14 @@ const Overview: React.FC = (): JSX.Element => {
 				icon={Apps}
 				loading={loading}
 			/>}>
-			Test
+			<InfoCard
+				title="Artifacts"
+				icon={Apps}>
+				<Typography
+					color="textSecondary">
+					An artifact is a package or binary that has been retrieved by a Prism user.
+				</Typography>
+			</InfoCard>
 		</SidebarLayout>
 	);
 }

@@ -13,7 +13,7 @@ interface Vars {
 
 export const usePatchRefract = (): MutationTuple<Data, Vars> => {
 	return useMutation(gql`
-		mutation patchRefract($id: ID!, $name: String!, $remotes: [String!]!) {
+		mutation patchRefract($id: ID!, $name: String!, $remotes: [ID!]!) {
 			patchRefraction(id: $id, input: {name: $name, remotes: $remotes}) {
 				id
 			}

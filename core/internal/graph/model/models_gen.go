@@ -11,7 +11,7 @@ import (
 )
 
 type Artifact struct {
-	ID        string              `json:"id" gorm:"primaryKey;type:uuid;not null"`
+	ID        string              `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	CreatedAt int64               `json:"createdAt"`
 	UpdatedAt int64               `json:"updatedAt"`
 	URI       string              `json:"uri"`
@@ -49,7 +49,7 @@ type PatchRefract struct {
 }
 
 type Refraction struct {
-	ID        string    `json:"id" gorm:"primaryKey;type:uuid;not null"`
+	ID        string    `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	CreatedAt int64     `json:"createdAt"`
 	UpdatedAt int64     `json:"updatedAt"`
 	Name      string    `json:"name" gorm:"unique"`
@@ -58,7 +58,7 @@ type Refraction struct {
 }
 
 type Remote struct {
-	ID          string             `json:"id" gorm:"primaryKey;type:uuid;not null"`
+	ID          string             `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	CreatedAt   int64              `json:"createdAt"`
 	UpdatedAt   int64              `json:"updatedAt"`
 	Name        string             `json:"name" gorm:"unique"`
@@ -77,14 +77,14 @@ type RemoteOverview struct {
 }
 
 type RemoteSecurity struct {
-	ID          string              `json:"id" gorm:"primaryKey;not null"`
+	ID          string              `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	Allowed     datatypes.JSONArray `json:"allowed"`
 	Blocked     datatypes.JSONArray `json:"blocked"`
 	AuthHeaders datatypes.JSONArray `json:"authHeaders"`
 }
 
 type TransportSecurity struct {
-	ID            string `json:"id" gorm:"primaryKey;not null"`
+	ID            string `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	Name          string `json:"name" gorm:"unique"`
 	Ca            string `json:"ca"`
 	Cert          string `json:"cert"`
@@ -106,6 +106,7 @@ const (
 	ArchetypeHelm    Archetype = "HELM"
 	ArchetypeRust    Archetype = "RUST"
 	ArchetypeDebian  Archetype = "DEBIAN"
+	ArchetypePip     Archetype = "PIP"
 )
 
 var AllArchetype = []Archetype{
@@ -117,11 +118,12 @@ var AllArchetype = []Archetype{
 	ArchetypeHelm,
 	ArchetypeRust,
 	ArchetypeDebian,
+	ArchetypePip,
 }
 
 func (e Archetype) IsValid() bool {
 	switch e {
-	case ArchetypeGeneric, ArchetypeMaven, ArchetypeGo, ArchetypeNpm, ArchetypeAlpine, ArchetypeHelm, ArchetypeRust, ArchetypeDebian:
+	case ArchetypeGeneric, ArchetypeMaven, ArchetypeGo, ArchetypeNpm, ArchetypeAlpine, ArchetypeHelm, ArchetypeRust, ArchetypeDebian, ArchetypePip:
 		return true
 	}
 	return false
