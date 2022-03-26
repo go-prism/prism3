@@ -1,0 +1,21 @@
+variables:
+  AUTO_CNB_RUN_IMAGE: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+  BUILD_KANIKO_DISABLED: "true"
+  PROJECT_PATH: "core"
+  REPLICAS: 0
+
+container-scanning:
+  needs:
+    - job: autobuild golang
+
+production:
+  environment:
+    kubernetes:
+      namespace: prism
+  needs:
+    - job: autobuild golang
+    - job: container-scanning
+      optional: true
+
+include:
+  - remote: 'https://gitlab.dcas.dev/open-source/gitlab-ci-templates/-/raw/master/auto/Auto-GoMod.gitlab-ci.yml'

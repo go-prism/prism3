@@ -1,0 +1,3 @@
+core:
+  trigger:
+    include: .gitlab/ci/core.gitlab-ci.yml
