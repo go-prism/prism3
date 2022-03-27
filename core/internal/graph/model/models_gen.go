@@ -33,6 +33,12 @@ type NewRemote struct {
 	Transport string    `json:"transport"`
 }
 
+type NewRoleBinding struct {
+	Subject  string `json:"subject"`
+	Role     Role   `json:"role"`
+	Resource string `json:"resource"`
+}
+
 type Overview struct {
 	Remotes      int64  `json:"remotes"`
 	Refractions  int64  `json:"refractions"`
@@ -84,6 +90,13 @@ type RemoteSecurity struct {
 	Allowed     datatypes.JSONArray `json:"allowed"`
 	Blocked     datatypes.JSONArray `json:"blocked"`
 	AuthHeaders datatypes.JSONArray `json:"authHeaders"`
+}
+
+type RoleBinding struct {
+	ID       string `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
+	Subject  string `json:"subject"`
+	Role     Role   `json:"role"`
+	Resource string `json:"resource"`
 }
 
 type TransportSecurity struct {
@@ -150,5 +163,46 @@ func (e *Archetype) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Archetype) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Role string
+
+const (
+	RoleSuper Role = "SUPER"
+	RolePower Role = "POWER"
+)
+
+var AllRole = []Role{
+	RoleSuper,
+	RolePower,
+}
+
+func (e Role) IsValid() bool {
+	switch e {
+	case RoleSuper, RolePower:
+		return true
+	}
+	return false
+}
+
+func (e Role) String() string {
+	return string(e)
+}
+
+func (e *Role) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Role(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Role", str)
+	}
+	return nil
+}
+
+func (e Role) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

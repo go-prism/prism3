@@ -46,3 +46,11 @@ export const formatBytes = (bytes: number, si: boolean = false, dp: number = 1):
 
 	return `${bytes.toFixed(dp)} ${units[u]}`;
 }
+
+/**
+ * https://stackoverflow.com/a/196991
+ * @param s
+ */
+export const toTitleCase = (s: string): string => {
+	return s.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLocaleLowerCase());
+}

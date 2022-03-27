@@ -87,6 +87,22 @@ func (r *RefractRepo) GetRefraction(ctx context.Context, id string) (*model.Refr
 	return &result, nil
 }
 
+func (r *RefractRepo) ListNames(ctx context.Context) ([]*ResourceName, error) {
+	var results []string
+	if err := r.db.Model(&model.Refraction{}).Select("name").Find(&results).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to fetch refraction names")
+		return nil, err
+	}
+	resources := make([]*ResourceName, len(results))
+	for i := range results {
+		resources[i] = &ResourceName{
+			Name:     results[i],
+			Resource: ResourceRefraction,
+		}
+	}
+	return resources, nil
+}
+
 func (r *RefractRepo) ListRefractions(ctx context.Context) ([]*model.Refraction, error) {
 	var result []*model.Refraction
 	if err := r.db.Preload("Remotes").Find(&result).Error; err != nil {

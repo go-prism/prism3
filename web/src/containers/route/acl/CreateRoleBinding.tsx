@@ -15,15 +15,20 @@
  *
  */
 
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
 	Alert,
 	Button,
+	FormControl,
 	FormControlLabel,
 	FormGroup,
 	FormLabel,
+	Grid,
+	InputLabel,
+	MenuItem,
 	Radio,
 	RadioGroup,
+	Select,
 	Theme,
 	Typography,
 } from "@mui/material";
@@ -32,10 +37,11 @@ import {Link, useHistory} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import StandardLayout from "../../layout/StandardLayout";
-import useLoading from "../../../hooks/useLoading";
-import useErrors from "../../../hooks/useErrors";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
+import {Role} from "../../../graph/types";
+import useCreateRoleBinding from "../../../graph/actions/rbac/useCreateRoleBinding";
+import {toTitleCase} from "../../../utils/format";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -70,16 +76,15 @@ const initialUser: ValidatedData = {
 	regex: new RegExp(/^.{3,}$/)
 };
 
-const initialSub: ValidatedData = {
+const initialID: ValidatedData = {
 	value: "",
 	error: "",
 	regex: new RegExp(/^.{3,}$/)
 };
 
-const ROLE_POWER = "power_user";
-const ROLE_SUPER = "super_user";
+const RESOURCE_REFRACT = "refraction";
 
-const ROLES = [ROLE_SUPER, ROLE_POWER];
+const RESOURCES = [RESOURCE_REFRACT];
 
 const CreateRoleBinding: React.FC = (): JSX.Element => {
 	// hooks
@@ -88,24 +93,35 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 	const history = useHistory();
 
 	// global state
-	const loading = useLoading([]);
-	const error = useErrors([]);
+	const [createRoleBinding, {loading, error}] = useCreateRoleBinding();
 
 	// local state
 	const [user, setUser] = useState<ValidatedData>(initialUser);
-	const [sub, setSub] = useState<ValidatedData>(initialSub);
-	const [role, setRole] = useState<string>("");
+	const [id, setID] = useState<ValidatedData>(initialID);
+	const [role, setRole] = useState<Role>(Role.POWER);
+	const [resource, setResource] = useState<string>("");
 
 	const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-		setRole((e.target as HTMLInputElement).value);
+		setRole((e.target as HTMLInputElement).value as Role);
 	}
 
+	useEffect(() => {
+		if (role !== Role.SUPER)
+			return;
+		setResource(() => "");
+		setID(i => ({...i, value: ""}));
+	}, [role]);
+
 	const handleCreate = (): void => {
-		// dispatch(createRole(role, sub.value, user.value)).then((action) => {
-		// 	// only change the url if there was a success
-		// 	if (action.error !== true)
-		// 		history.push("/settings/acl");
-		// });
+		createRoleBinding({variables: {
+			role: role!,
+			resource: `${resource}::${id.value}`,
+			subject: user.value
+		}}).then(r => {
+			if (!r.errors) {
+				history.push("/settings/sys/acl");
+			}
+		});
 	}
 
 	return (
@@ -127,23 +143,53 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 							className: classes.formItem,
 							required: true,
 							label: "Username",
-							variant: "outlined",
+							variant: "filled",
 							id: "txt-user"
 						}}
 					/>
-					<ValidatedTextField
-						data={sub}
-						setData={setSub}
-						invalidLabel="Must be at least 3 characters."
-						fieldProps={{
-							className: classes.formItem,
-							required: role === ROLE_POWER,
-							label: "Subject",
-							variant: "outlined",
-							id: "txt-subject",
-							disabled: role !== ROLE_POWER
-						}}
-					/>
+					<Grid container>
+						<Grid item xs={6}>
+							<FormControl
+								sx={{m: 1, pr: 1}}
+								fullWidth>
+								<InputLabel>Resource</InputLabel>
+								<Select
+									sx={{minWidth: 200}}
+									variant="outlined"
+									value={resource}
+									label="Resource"
+									required={role === Role.POWER}
+									disabled={role !== Role.POWER}>
+									{RESOURCES.map(r => <MenuItem
+										key={r}
+										value={r}
+										onClick={() => setResource(() => r)}>
+										{r}
+									</MenuItem>)}
+								</Select>
+							</FormControl>
+						</Grid>
+						<Grid
+							item
+							xs={6}
+							sx={{pr: 2, pl: 1}}>
+							<ValidatedTextField
+								data={id}
+								setData={setID}
+								invalidLabel="Must be at least 3 characters."
+								fieldProps={{
+									className: classes.formItem,
+									required: role === Role.POWER,
+									label: "Resource name",
+									placeholder: "maven-central",
+									variant: "filled",
+									id: "txt-resource",
+									disabled: role !== Role.POWER,
+									fullWidth: true
+								}}
+							/>
+						</Grid>
+					</Grid>
 					<FormLabel
 						className={classes.formItem}
 						component="legend">
@@ -155,10 +201,20 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						name="role"
 						value={role}
 						onChange={handleRoleChange}>
-						{ROLES.map(r => <FormControlLabel
+						{Object.keys(Role).map(r => <FormControlLabel
 							key={r}
 							control={<Radio color="primary"/>}
-							label={r}
+							label={<div>
+								<Typography
+									sx={{fontSize: 14}}>
+									{toTitleCase(r)}
+								</Typography>
+								<Typography
+									sx={{fontSize: 14}}
+									color="text.secondary">
+									{r === Role.SUPER ? "Grant full permissions to all resources." : "Grant full permissions to a specific resource."}
+								</Typography>
+							</div>}
 							value={r}
 						/>)}
 					</RadioGroup>
@@ -175,7 +231,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							component={Link}
-							to="/settings/acl"
+							to="/settings/sys/acl"
 							variant="outlined">
 							Cancel
 						</Button>
@@ -183,7 +239,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
-							disabled={!DataIsValid(user) || loading || role === ""}
+							disabled={!DataIsValid(user) || loading || role == null}
 							onClick={handleCreate}
 							variant="contained">
 							Create

@@ -113,7 +113,7 @@ const App: React.FC = (): JSX.Element => {
 									component={Refractions}
 								/>
 								<Route
-									path="/acl/new"
+									path="/settings/acl/new"
 									exact
 									component={CreateRoleBinding}
 								/>

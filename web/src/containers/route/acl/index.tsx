@@ -15,11 +15,15 @@
  *
  */
 
-import React, {ReactNode, useEffect} from "react";
+import React, {ReactNode, useEffect, useState} from "react";
 import {
 	Alert,
 	Card,
+	FormControl,
 	IconButton,
+	InputLabel,
+	MenuItem,
+	Select,
 	Skeleton,
 	Table,
 	TableBody,
@@ -35,10 +39,12 @@ import {Link} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
 import {Plus} from "tabler-icons-react";
 import {parseUsername} from "../../../utils/parse";
-import useLoading from "../../../hooks/useLoading";
 import getErrorMessage from "../../../selectors/getErrorMessage";
-import useErrors from "../../../hooks/useErrors";
 import Flexbox from "../../widgets/Flexbox";
+import useGetUsers from "../../../graph/actions/rbac/useGetUsers";
+import {Role} from "../../../graph/types";
+import InlineNotFound from "../../widgets/InlineNotFound";
+import {toTitleCase} from "../../../utils/format";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	icon: {
@@ -47,26 +53,24 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	}
 }));
 
-interface Role {
-	id: string;
-	name: string;
-	subject: string;
-	username: string;
-}
-
 const AccessControlSettings: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
 
-	// global state
-	const roles: Role[] = [];
-	const loading = useLoading([]);
-	const error = useErrors([]);
+	// state
+	const [role, setRole] = useState<Role>(Role.SUPER);
+	const {data, loading, error, refetch} = useGetUsers({role});
+
+	const roles = data?.getUsers || [];
 
 	useEffect(() => {
 		window.document.title = "Access control";
 	}, []);
+
+	useEffect(() => {
+		void refetch({role});
+	}, [role]);
 
 	const loadingItems = (): ReactNode[] => {
 		const items = [];
@@ -118,13 +122,30 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 					/>
 				</IconButton>
 			</Flexbox>
+			<div>
+				<FormControl
+					sx={{m: 2}}>
+					<InputLabel>Role</InputLabel>
+					<Select
+						sx={{minWidth: 200}}
+						variant="outlined"
+						value={role}
+						label="Role">
+						{Object.keys(Role).map(r => <MenuItem
+							key={r}
+							value={r}
+							onClick={() => setRole(() => r as Role)}>
+							{toTitleCase(r)}
+						</MenuItem>)}
+					</Select>
+				</FormControl>
+			</div>
 			<TableContainer>
 				<Table>
 					<TableHead>
 						<TableRow>
-							<TableCell>Name</TableCell>
 							<TableCell>Subject</TableCell>
-							<TableCell>User</TableCell>
+							<TableCell>Resource</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -138,17 +159,13 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 						{loading && loadingItems()}
 						{!loading && roles.length === 0 && <TableRow>
 							<TableCell colSpan={3}>
-								<Alert
-									severity="info">
-										There are no roles.
-								</Alert>
+								<InlineNotFound/>
 							</TableCell>
 						</TableRow>}
 						{!loading && roles.map(r => <TableRow
 							key={r.id}>
-							<TableCell>{r.name}</TableCell>
-							<TableCell>{r.subject || "All resources"}</TableCell>
-							<TableCell>{parseUsername(r.username)}</TableCell>
+							<TableCell>{parseUsername(r.subject)}</TableCell>
+							<TableCell>{r.resource || "All resources"}</TableCell>
 						</TableRow>)}
 					</TableBody>
 				</Table>

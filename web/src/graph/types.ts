@@ -11,6 +11,18 @@ export enum Archetype {
 	NONE = ""
 }
 
+export enum Role {
+	SUPER = "SUPER",
+	POWER = "POWER"
+}
+
+export interface RoleBinding {
+	id: string;
+	subject: string;
+	role: Role;
+	resource: string;
+}
+
 export interface Artifact {
 	id: string;
 	createdAt: number;

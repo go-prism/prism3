@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/bluele/gcache"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/internal/storage"
 	"time"
 )
@@ -21,6 +22,7 @@ func init() {
 type Resolver struct {
 	repos *repo.Repos
 	store storage.Reader
+	authz *permissions.Manager
 
 	// caches
 	storeSizeCache gcache.Cache
@@ -30,7 +32,9 @@ func NewResolver(repos *repo.Repos, store storage.Reader) *Resolver {
 	r := &Resolver{
 		repos: repos,
 		store: store,
+		authz: permissions.NewManager(repos),
 	}
+	_ = r.authz.Load(context.TODO())
 	r.storeSizeCache = gcache.New(10).ARC().LoaderFunc(r.getStoreSize).Expiration(time.Minute * 5).Build()
 	return r
 }

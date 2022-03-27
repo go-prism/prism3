@@ -55,11 +55,12 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateRefraction func(childComplexity int, input model.NewRefract) int
-		CreateRemote     func(childComplexity int, input model.NewRemote) int
-		DeleteRefraction func(childComplexity int, id string) int
-		DeleteRemote     func(childComplexity int, id string) int
-		PatchRefraction  func(childComplexity int, id string, input model.PatchRefract) int
+		CreateRefraction  func(childComplexity int, input model.NewRefract) int
+		CreateRemote      func(childComplexity int, input model.NewRemote) int
+		CreateRoleBinding func(childComplexity int, input model.NewRoleBinding) int
+		DeleteRefraction  func(childComplexity int, id string) int
+		DeleteRemote      func(childComplexity int, id string) int
+		PatchRefraction   func(childComplexity int, id string, input model.PatchRefract) int
 	}
 
 	Overview struct {
@@ -80,6 +81,8 @@ type ComplexityRoot struct {
 		GetRefraction         func(childComplexity int, id string) int
 		GetRemote             func(childComplexity int, id string) int
 		GetRemoteOverview     func(childComplexity int, id string) int
+		GetRoleBindings       func(childComplexity int, user string) int
+		GetUsers              func(childComplexity int, role model.Role) int
 		ListArtifacts         func(childComplexity int, remote string) int
 		ListCombinedArtifacts func(childComplexity int, refract string) int
 		ListRefractions       func(childComplexity int) int
@@ -122,6 +125,13 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 	}
 
+	RoleBinding struct {
+		ID       func(childComplexity int) int
+		Resource func(childComplexity int) int
+		Role     func(childComplexity int) int
+		Subject  func(childComplexity int) int
+	}
+
 	TransportSecurity struct {
 		Ca            func(childComplexity int) int
 		Cert          func(childComplexity int) int
@@ -141,6 +151,7 @@ type MutationResolver interface {
 	CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error)
 	PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error)
 	DeleteRefraction(ctx context.Context, id string) (bool, error)
+	CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error)
 }
 type QueryResolver interface {
 	ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error)
@@ -152,6 +163,8 @@ type QueryResolver interface {
 	ListCombinedArtifacts(ctx context.Context, refract string) ([]*model.Artifact, error)
 	GetOverview(ctx context.Context) (*model.Overview, error)
 	GetRemoteOverview(ctx context.Context, id string) (*model.RemoteOverview, error)
+	GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error)
+	GetUsers(ctx context.Context, role model.Role) ([]*model.RoleBinding, error)
 }
 
 type executableSchema struct {
@@ -241,6 +254,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateRemote(childComplexity, args["input"].(model.NewRemote)), true
+
+	case "Mutation.createRoleBinding":
+		if e.complexity.Mutation.CreateRoleBinding == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createRoleBinding_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateRoleBinding(childComplexity, args["input"].(model.NewRoleBinding)), true
 
 	case "Mutation.deleteRefraction":
 		if e.complexity.Mutation.DeleteRefraction == nil {
@@ -390,6 +415,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetRemoteOverview(childComplexity, args["id"].(string)), true
+
+	case "Query.getRoleBindings":
+		if e.complexity.Query.GetRoleBindings == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getRoleBindings_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetRoleBindings(childComplexity, args["user"].(string)), true
+
+	case "Query.getUsers":
+		if e.complexity.Query.GetUsers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getUsers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetUsers(childComplexity, args["role"].(model.Role)), true
 
 	case "Query.listArtifacts":
 		if e.complexity.Query.ListArtifacts == nil {
@@ -602,6 +651,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RemoteSecurity.ID(childComplexity), true
 
+	case "RoleBinding.id":
+		if e.complexity.RoleBinding.ID == nil {
+			break
+		}
+
+		return e.complexity.RoleBinding.ID(childComplexity), true
+
+	case "RoleBinding.resource":
+		if e.complexity.RoleBinding.Resource == nil {
+			break
+		}
+
+		return e.complexity.RoleBinding.Resource(childComplexity), true
+
+	case "RoleBinding.role":
+		if e.complexity.RoleBinding.Role == nil {
+			break
+		}
+
+		return e.complexity.RoleBinding.Role(childComplexity), true
+
+	case "RoleBinding.subject":
+		if e.complexity.RoleBinding.Subject == nil {
+			break
+		}
+
+		return e.complexity.RoleBinding.Subject(childComplexity), true
+
 	case "TransportSecurity.ca":
 		if e.complexity.TransportSecurity.Ca == nil {
 			break
@@ -730,136 +807,159 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `directive @goTag(
-  key: String!
-  value: String
+    key: String!
+    value: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 scalar Strings
 
 enum Archetype {
-  GENERIC
-  MAVEN
-  GO
-  NPM
-  ALPINE
-  HELM
-  RUST
-  DEBIAN
-  PIP
+    GENERIC
+    MAVEN
+    GO
+    NPM
+    ALPINE
+    HELM
+    RUST
+    DEBIAN
+    PIP
+}
+
+enum Role {
+    SUPER
+    POWER
+}
+
+type RoleBinding {
+    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
+    subject: String!
+    role: Role!
+    resource: String!
 }
 
 type Artifact {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-  createdAt: Int!
-  updatedAt: Int!
-  uri: String!
-  downloads: Int!
-  remoteID: ID! @goTag(key: "gorm", value: "index")
-  slices: Strings!
+    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
+    createdAt: Int!
+    updatedAt: Int!
+    uri: String!
+    downloads: Int!
+    remoteID: ID! @goTag(key: "gorm", value: "index")
+    slices: Strings!
 }
 
 type Refraction {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-  createdAt: Int!
-  updatedAt: Int!
-  name: String! @goTag(key: "gorm", value: "unique")
-  archetype: Archetype!
-  remotes: [Remote!]! @goTag(key: "gorm", value: "many2many:ref_remotes;")
+    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
+    createdAt: Int!
+    updatedAt: Int!
+    name: String! @goTag(key: "gorm", value: "unique")
+    archetype: Archetype!
+    remotes: [Remote!]! @goTag(key: "gorm", value: "many2many:ref_remotes;")
 }
 
 type Remote {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-  createdAt: Int!
-  updatedAt: Int!
-  name: String! @goTag(key: "gorm", value: "unique")
-  uri: String!
-  archetype: Archetype! @goTag(key: "gorm", value: "index")
-  enabled: Boolean! @goTag(key: "gorm", value: "index")
-  securityID: ID!
-  security: RemoteSecurity!
-  transportID: ID!
-  transport: TransportSecurity!
+    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
+    createdAt: Int!
+    updatedAt: Int!
+    name: String! @goTag(key: "gorm", value: "unique")
+    uri: String!
+    archetype: Archetype! @goTag(key: "gorm", value: "index")
+    enabled: Boolean! @goTag(key: "gorm", value: "index")
+    securityID: ID!
+    security: RemoteSecurity!
+    transportID: ID!
+    transport: TransportSecurity!
 }
 
 type RemoteSecurity {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-  allowed: Strings!
-  blocked: Strings!
-  authHeaders: Strings!
+    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
+    allowed: Strings!
+    blocked: Strings!
+    authHeaders: Strings!
 }
 
 type TransportSecurity {
-  id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-  name: String! @goTag(key: "gorm", value: "unique")
-  ca: String!
-  cert: String!
-  key: String!
-  skipTLSVerify: Boolean!
-  httpProxy: String!
-  httpsProxy: String!
-  noProxy: String!
+    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
+    name: String! @goTag(key: "gorm", value: "unique")
+    ca: String!
+    cert: String!
+    key: String!
+    skipTLSVerify: Boolean!
+    httpProxy: String!
+    httpsProxy: String!
+    noProxy: String!
 }
 
 type Overview {
-  remotes: Int!
-  refractions: Int!
-  artifacts: Int!
-  storage: Int!
-  downloads: Int!
-  uptime: Int!
-  version: String!
+    remotes: Int!
+    refractions: Int!
+    artifacts: Int!
+    storage: Int!
+    downloads: Int!
+    uptime: Int!
+    version: String!
 
-  packages_pypi: Int!
-  packages_npm: Int!
-  packages_helm: Int!
+    packages_pypi: Int!
+    packages_npm: Int!
+    packages_helm: Int!
 }
 
 type RemoteOverview {
-  artifacts: Int!
-  storage: Int!
+    artifacts: Int!
+    storage: Int!
 }
 
 type Query {
-  listRemotes(arch: String!): [Remote!]!
-  getRemote(id: ID!): Remote!
+    listRemotes(arch: String!): [Remote!]!
+    getRemote(id: ID!): Remote!
 
-  listRefractions: [Refraction!]!
-  getRefraction(id: ID!): Refraction!
+    listRefractions: [Refraction!]!
+    getRefraction(id: ID!): Refraction!
 
-  listTransports: [TransportSecurity!]!
+    listTransports: [TransportSecurity!]!
 
-  listArtifacts(remote: ID!): [Artifact!]!
-  listCombinedArtifacts(refract: ID!): [Artifact!]!
+    listArtifacts(remote: ID!): [Artifact!]!
+    listCombinedArtifacts(refract: ID!): [Artifact!]!
 
-  getOverview: Overview!
-  getRemoteOverview(id: ID!): RemoteOverview!
+    getOverview: Overview!
+    getRemoteOverview(id: ID!): RemoteOverview!
+
+    getRoleBindings(user: String!): [RoleBinding!]!
+    getUsers(role: Role!): [RoleBinding!]!
 }
 
 input NewRemote {
-  name: String!
-  uri: String!
-  archetype: Archetype!
-  transport: ID!
+    name: String!
+    uri: String!
+    archetype: Archetype!
+    transport: ID!
 }
 
 input NewRefract {
-  name: String!
-  archetype: Archetype!
-  remotes: [ID!]!
+    name: String!
+    archetype: Archetype!
+    remotes: [ID!]!
 }
 
 input PatchRefract {
-  name: String!
-  remotes: [ID!]!
+    name: String!
+    remotes: [ID!]!
+}
+
+input NewRoleBinding {
+    subject: String!
+    role: Role!
+    resource: String!
 }
 
 type Mutation {
-  createRemote(input: NewRemote!): Remote!
-  deleteRemote(id: ID!): Boolean!
+    createRemote(input: NewRemote!): Remote!
+    deleteRemote(id: ID!): Boolean!
 
-  createRefraction(input: NewRefract!): Refraction!
-  patchRefraction(id: ID!, input: PatchRefract!): Refraction!
-  deleteRefraction(id: ID!): Boolean!
+    createRefraction(input: NewRefract!): Refraction!
+    patchRefraction(id: ID!, input: PatchRefract!): Refraction!
+    deleteRefraction(id: ID!): Boolean!
+
+    createRoleBinding(input: NewRoleBinding!): RoleBinding!
 }
 `, BuiltIn: false},
 }
@@ -891,6 +991,21 @@ func (ec *executionContext) field_Mutation_createRemote_args(ctx context.Context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNewRemote2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRemote(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createRoleBinding_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NewRoleBinding
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNewRoleBinding2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRoleBinding(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1010,6 +1125,36 @@ func (ec *executionContext) field_Query_getRemote_args(ctx context.Context, rawA
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getRoleBindings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["user"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Role
+	if tmp, ok := rawArgs["role"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+		arg0, err = ec.unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["role"] = arg0
 	return args, nil
 }
 
@@ -1549,6 +1694,48 @@ func (ec *executionContext) _Mutation_deleteRefraction(ctx context.Context, fiel
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createRoleBinding(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createRoleBinding_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateRoleBinding(rctx, args["input"].(model.NewRoleBinding))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.RoleBinding)
+	fc.Result = res
+	return ec.marshalNRoleBinding2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Overview_remotes(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
@@ -2256,6 +2443,90 @@ func (ec *executionContext) _Query_getRemoteOverview(ctx context.Context, field 
 	res := resTmp.(*model.RemoteOverview)
 	fc.Result = res
 	return ec.marshalNRemoteOverview2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRemoteOverview(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getRoleBindings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getRoleBindings_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetRoleBindings(rctx, args["user"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.RoleBinding)
+	fc.Result = res
+	return ec.marshalNRoleBinding2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBindingᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getUsers_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetUsers(rctx, args["role"].(model.Role))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.RoleBinding)
+	fc.Result = res
+	return ec.marshalNRoleBinding2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBindingᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3132,6 +3403,146 @@ func (ec *executionContext) _RemoteSecurity_authHeaders(ctx context.Context, fie
 	res := resTmp.(datatypes.JSONArray)
 	fc.Result = res
 	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RoleBinding_id(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RoleBinding",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RoleBinding_subject(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RoleBinding",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Subject, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RoleBinding_role(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RoleBinding",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Role)
+	fc.Result = res
+	return ec.marshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RoleBinding_resource(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RoleBinding",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Resource, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TransportSecurity_id(ctx context.Context, field graphql.CollectedField, obj *model.TransportSecurity) (ret graphql.Marshaler) {
@@ -4721,6 +5132,45 @@ func (ec *executionContext) unmarshalInputNewRemote(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNewRoleBinding(ctx context.Context, obj interface{}) (model.NewRoleBinding, error) {
+	var it model.NewRoleBinding
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "subject":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
+			it.Subject, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "role":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			it.Role, err = ec.unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "resource":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resource"))
+			it.Resource, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPatchRefract(ctx context.Context, obj interface{}) (model.PatchRefract, error) {
 	var it model.PatchRefract
 	asMap := map[string]interface{}{}
@@ -4913,6 +5363,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteRefraction":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteRefraction(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createRoleBinding":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createRoleBinding(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -5278,6 +5738,52 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getRoleBindings":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getRoleBindings(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getUsers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getUsers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -5599,6 +6105,67 @@ func (ec *executionContext) _RemoteSecurity(ctx context.Context, sel ast.Selecti
 		case "authHeaders":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._RemoteSecurity_authHeaders(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var roleBindingImplementors = []string{"RoleBinding"}
+
+func (ec *executionContext) _RoleBinding(ctx context.Context, sel ast.SelectionSet, obj *model.RoleBinding) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, roleBindingImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RoleBinding")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RoleBinding_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "subject":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RoleBinding_subject(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "role":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RoleBinding_role(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "resource":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RoleBinding_resource(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -6302,6 +6869,11 @@ func (ec *executionContext) unmarshalNNewRemote2gitlabᚗcomᚋgoᚑprismᚋpris
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNNewRoleBinding2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRoleBinding(ctx context.Context, v interface{}) (model.NewRoleBinding, error) {
+	res, err := ec.unmarshalInputNewRoleBinding(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNOverview2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐOverview(ctx context.Context, sel ast.SelectionSet, v model.Overview) graphql.Marshaler {
 	return ec._Overview(ctx, sel, &v)
 }
@@ -6459,6 +7031,74 @@ func (ec *executionContext) marshalNRemoteSecurity2ᚖgitlabᚗcomᚋgoᚑprism�
 		return graphql.Null
 	}
 	return ec._RemoteSecurity(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
+	var res model.Role
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNRoleBinding2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx context.Context, sel ast.SelectionSet, v model.RoleBinding) graphql.Marshaler {
+	return ec._RoleBinding(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRoleBinding2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBindingᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.RoleBinding) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRoleBinding2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNRoleBinding2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx context.Context, sel ast.SelectionSet, v *model.RoleBinding) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._RoleBinding(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

@@ -2,6 +2,19 @@ package repo
 
 import "gorm.io/gorm"
 
+type Resource string
+
+const (
+	ResourceRefraction Resource = "refraction"
+	ResourceRemote     Resource = "remote"
+	ResourceTransport  Resource = "transport"
+)
+
+type ResourceName struct {
+	Name     string
+	Resource Resource
+}
+
 type RemoteRepo struct {
 	db *gorm.DB
 }
@@ -30,6 +43,10 @@ type HelmPackageRepo struct {
 	db *gorm.DB
 }
 
+type RBACRepo struct {
+	db *gorm.DB
+}
+
 type Repos struct {
 	RemoteRepo      *RemoteRepo
 	RefractRepo     *RefractRepo
@@ -38,4 +55,5 @@ type Repos struct {
 	NPMPackageRepo  *NPMPackageRepo
 	PyPackageRepo   *PyPackageRepo
 	HelmPackageRepo *HelmPackageRepo
+	RBACRepo        *RBACRepo
 }

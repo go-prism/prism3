@@ -21,6 +21,7 @@ import {Link} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
 import {makeStyles} from "tss-react/mui";
 import {Help, User} from "tabler-icons-react";
+import {API_URL} from "../config";
 
 const drawerWidth = 64;
 
@@ -97,7 +98,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	const theme = useTheme();
 
 	// global state
-	const oidcEnabled = false;
+	const oidcEnabled = true;
 
 	// local state
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -154,11 +155,11 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 						{oidcEnabled && <IconButton
 							style={{margin: 8}}
 							disabled={loading}
-							component={Link}
 							centerRipple={false}
 							size="small"
 							color="inherit"
-							to="/auth/redirect">
+							href={`${API_URL}/auth/redirect`}
+							rel="noopener noreferrer">
 							<User color={theme.palette.text.secondary}/>
 						</IconButton>}
 					</div>

@@ -24,11 +24,12 @@ security:
         - ALL
 service:
   externalPort: 8080
-  internalPort: 8080
+  internalPort: 8081
 ingress:
   enabled: true
   className: gitlab-nginx
   path: /api
+  extraPaths: ["/auth"]
   annotations:
     cert-manager.io/cluster-issuer: "k2-internal"
   tls:
@@ -40,8 +41,10 @@ prometheus:
     enabled: true
 livenessProbe:
   path: "/healthz"
+  port: 8080
 readinessProbe:
   path: "/healthz"
+  port: 8080
 volumes:
   - name: tmp
     mountPath: /tmp
@@ -53,6 +56,48 @@ resources:
     memory: 100Mi
   limits:
     memory: 200Mi
+sidecars:
+  - name: captain
+    image: harbor.dcas.dev/registry.gitlab.com/av1o/cap10:master
+    imagePullPolicy: Always
+    env:
+      - name: PROXY_TARGET
+        value: "http://localhost:8080"
+      - name: PROXY_PROBE_PATH
+        value: "/healthz"
+      - name: PORT
+        value: "8081"
+    envFrom:
+      - secretRef:
+          name: prod-core-99-secret
+    ports:
+      - name: http
+        containerPort: 8081
+        protocol: TCP
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+    securityContext:
+      runAsNonRoot: true
+      runAsGroup: 1001
+      runAsUser: 1001
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      privileged: false
+      capabilities:
+        drop:
+          - ALL
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        memory: 200Mi
 networkPolicy:
   enabled: true
   spec:

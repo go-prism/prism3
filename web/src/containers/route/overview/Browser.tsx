@@ -30,6 +30,7 @@ import {Node} from "../Overview";
 import SidebarLayout from "../../layout/SidebarLayout";
 import {Artifact, Refraction} from "../../../graph/types";
 import RefractHeader from "../../widgets/RefractHeader";
+import InlineNotFound from "../../widgets/InlineNotFound";
 import ObjectInfo from "./ObjectInfo";
 
 interface OverviewParams {
@@ -181,10 +182,7 @@ const Browser: React.FC = (): JSX.Element => {
 					severity="error">
 					Failed to load data.
 				</Alert>}
-				{!loading && error == null && flattenedData.length === 0 && <Alert
-					severity="info">
-					No data could be found.
-				</Alert>}
+				{!loading && error == null && flattenedData.length === 0 && <InlineNotFound/>}
 				{!loading && error == null && flattenedData.length > 0 && <AutoSizer>
 					{({height, width}) => (
 						<FixedSizeList

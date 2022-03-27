@@ -133,9 +133,10 @@ const Dashboard: React.FC = (): JSX.Element => {
 			{data?.getOverview.version}<br/>
 			This instance has been running for {formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0)}
 		</Typography>
-		{error && <Alert>
-			Something went wrong loading the dashboard.<br/>
-			{getGraphErrorMessage(error)}
+		{error && <Alert
+			sx={{m: 2}}
+			severity="error">
+			Something went wrong loading the dashboard: &quot;{getGraphErrorMessage(error)}&quot;
 		</Alert>}
 		<Grid
 			container

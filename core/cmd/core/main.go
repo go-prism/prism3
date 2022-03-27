@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
 	"gitlab.com/av1o/cap10-ingress/pkg/logging"
+	"gitlab.com/av1o/cap10/pkg/client"
+	"gitlab.com/av1o/cap10/pkg/verify"
 	v1 "gitlab.com/go-prism/prism3/core/internal/api/v1"
 	"gitlab.com/go-prism/prism3/core/internal/db"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
@@ -28,6 +30,9 @@ type environment struct {
 
 	PublicURL string `split_words:"true" required:"true"`
 
+	Auth struct {
+		SuperUser string `split_words:"true"`
+	}
 	DB struct {
 		DSN string `split_words:"true" required:"true"`
 	}
@@ -51,7 +56,7 @@ func main() {
 		log.WithError(err).Fatal("failed to setup database layer")
 		return
 	}
-	if err := database.Init(); err != nil {
+	if err := database.Init(e.Auth.SuperUser); err != nil {
 		log.WithError(err).Fatal("failed to initialise database")
 		return
 	}
@@ -75,6 +80,7 @@ func main() {
 			},
 		},
 	})
+	c := client.NewClient(verify.NewNoOpVerifier())
 
 	// configure routing
 	router := mux.NewRouter()
@@ -82,7 +88,7 @@ func main() {
 		_, _ = w.Write([]byte("OK"))
 	})
 	router.Handle("/api/graphql", playground.Handler("GraphQL Playground", "/api/query"))
-	router.Handle("/api/query", srv)
+	router.Handle("/api/query", c.WithOptionalUser(srv))
 	// generic
 	router.PathPrefix("/api/v1/{bucket}/").
 		HandlerFunc(h.ServeHTTPGeneric).

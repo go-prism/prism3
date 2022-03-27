@@ -11,5 +11,6 @@ func NewRepos(db *gorm.DB) *Repos {
 		NPMPackageRepo:  NewNPMRepo(db),
 		PyPackageRepo:   NewPyRepo(db),
 		HelmPackageRepo: NewHelmRepo(db),
+		RBACRepo:        NewRBACRepo(db),
 	}
 }

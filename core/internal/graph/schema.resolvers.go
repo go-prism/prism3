@@ -14,14 +14,23 @@ import (
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
 	return r.repos.RemoteRepo.CreateRemote(ctx, &input)
 }
 
 func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return false, err
+	}
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
 	return r.repos.RefractRepo.CreateRefraction(ctx, &input)
 }
 
@@ -30,7 +39,25 @@ func (r *mutationResolver) PatchRefraction(ctx context.Context, id string, input
 }
 
 func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (bool, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return false, err
+	}
 	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
+	rb, err := r.repos.RBACRepo.Create(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+	// reload in the background
+	go func() {
+		_ = r.authz.Load(context.TODO())
+	}()
+	return rb, nil
 }
 
 func (r *queryResolver) ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error) {
@@ -50,6 +77,9 @@ func (r *queryResolver) GetRefraction(ctx context.Context, id string) (*model.Re
 }
 
 func (r *queryResolver) ListTransports(ctx context.Context) ([]*model.TransportSecurity, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
 	return r.repos.TransportRepo.ListTransports(ctx)
 }
 
@@ -111,6 +141,20 @@ func (r *queryResolver) GetRemoteOverview(ctx context.Context, id string) (*mode
 		Artifacts: count,
 		Storage:   0,
 	}, nil
+}
+
+func (r *queryResolver) GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
+	return r.repos.RBACRepo.ListForSubject(ctx, user)
+}
+
+func (r *queryResolver) GetUsers(ctx context.Context, role model.Role) ([]*model.RoleBinding, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
+	return r.repos.RBACRepo.ListForRole(ctx, role)
 }
 
 // Mutation returns generated.MutationResolver implementation.
