@@ -18,9 +18,9 @@
 import React from "react";
 import {
 	Alert,
+	Box,
 	Card,
 	Divider,
-	IconButton,
 	List,
 	ListItem,
 	ListItemSecondaryAction,
@@ -31,9 +31,7 @@ import {
 	useTheme,
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
-import {mdiArrowLeft, mdiPlus} from "@mdi/js";
-import Icon from "@mdi/react";
-import {Link} from "react-router-dom";
+import {mdiPlus} from "@mdi/js";
 import {GenericIconButton, ListItemSkeleton} from "jmp-coreui";
 import useLoading from "../../../hooks/useLoading";
 import useErrors from "../../../hooks/useErrors";
@@ -69,16 +67,9 @@ const GoLangSettings: React.FC = (): JSX.Element => {
 			className={classes.card}>
 			<Card
 				className={classes.card}>
-				<div>
-					<IconButton className={classes.icon} component={Link} to="/settings" size="large">
-						<Icon
-							path={mdiArrowLeft}
-							size={0.8}
-							color={theme.palette.text.secondary}
-						    />
-					</IconButton>
-						GoLang integration
-				</div>
+				<Box sx={{m: 2}}>
+					GoLang integration
+				</Box>
 				<ListItem
 					disabled>
 					<ListItemText

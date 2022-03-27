@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +12,31 @@ data:
     [global]
     index-url = https://prism3.devel/api/pypi/pypi/simple/
     trusted-host = prism3.devel
+  sources.list: |
+    deb http://core3-auto-deploy:8080/api/v1/debian/-/ bullseye main
+    deb http://core3-auto-deploy:8080/api/v1/debian/-/ bullseye-security main
+    deb http://core3-auto-deploy:8080/api/v1/debian/-/ bullseye-updates main
+  settings.xml: |
+    <settings xmlns="https://maven.apache.org/SETTINGS/1.0.0"
+        xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <localRepository/>
+        <interactiveMode/>
+        <offline/>
+        <pluginGroups/>
+        <servers/>
+        <mirrors>
+            <mirror>
+                <id>prism</id>
+                <name>Prism</name>
+                <url>http://core3-auto-deploy:8080/api/v1/maven/-/</url>
+                <mirrorOf>*</mirrorOf>
+            </mirror>
+        </mirrors>
+        <proxies/>
+        <profiles/>
+        <activeProfiles/>
+    </settings>
 ---
 apiVersion: v1
 kind: Pod
@@ -38,6 +64,10 @@ spec:
           name: config
           readOnly: true
           subPath: pip.conf
+        - mountPath: /root/.m2/settings.xml
+          name: config
+          readOnly: true
+          subPath: settings.xml
 ---
 apiVersion: v1
 kind: Pod
@@ -61,3 +91,11 @@ spec:
           name: config
           readOnly: true
           subPath: pip.conf
+        - mountPath: /root/.m2/settings.xml
+          name: config
+          readOnly: true
+          subPath: settings.xml
+        - mountPath: /etc/apt/sources.list
+          name: config
+          readOnly: true
+          subPath: sources.list

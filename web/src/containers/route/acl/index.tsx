@@ -28,16 +28,17 @@ import {
 	TableHead,
 	TableRow,
 	Theme,
+	Typography,
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {Link} from "react-router-dom";
-import Icon from "@mdi/react";
-import {mdiArrowLeft, mdiPlus} from "@mdi/js";
 import {useTheme} from "@mui/material/styles";
+import {Plus} from "tabler-icons-react";
 import {parseUsername} from "../../../utils/parse";
 import useLoading from "../../../hooks/useLoading";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import useErrors from "../../../hooks/useErrors";
+import Flexbox from "../../widgets/Flexbox";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	icon: {
@@ -99,28 +100,24 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 
 	return (
 		<Card>
-			<div style={{display: "flex", alignItems: "center"}}>
-				<IconButton className={classes.icon} component={Link} to="/settings" size="large">
-					<Icon
-						path={mdiArrowLeft}
-						size={0.8}
-						color={theme.palette.text.secondary}
-					/>
-				</IconButton>
+			<Flexbox>
+				<Typography
+					sx={{ml: 2}}>
 					Access control
+				</Typography>
 				<div style={{flexGrow: 1}}/>
 				<IconButton
 					className={classes.icon}
 					component={Link}
 					to="/settings/acl/new"
+					centerRipple={false}
 					size="large">
-					<Icon
-						path={mdiPlus}
-						size={0.8}
+					<Plus
 						color={theme.palette.text.secondary}
+						size={20}
 					/>
 				</IconButton>
-			</div>
+			</Flexbox>
 			<TableContainer>
 				<Table>
 					<TableHead>

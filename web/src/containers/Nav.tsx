@@ -18,10 +18,9 @@
 import React, {useState} from "react";
 import {AppBar, Avatar, ButtonBase, IconButton, Popover, Theme, Toolbar, Typography,} from "@mui/material";
 import {Link} from "react-router-dom";
-import Icon from "@mdi/react";
-import {mdiAccountCircleOutline, mdiHelpCircleOutline} from "@mdi/js";
 import {useTheme} from "@mui/material/styles";
 import {makeStyles} from "tss-react/mui";
+import {Help, User} from "tabler-icons-react";
 
 const drawerWidth = 64;
 
@@ -150,11 +149,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 							size="small"
 							color="inherit"
 							to="/help">
-							<Icon
-								path={mdiHelpCircleOutline}
-								size={1}
-								color={theme.palette.text.secondary}
-							/>
+							<Help color={theme.palette.text.secondary}/>
 						</IconButton>
 						{oidcEnabled && <IconButton
 							style={{margin: 8}}
@@ -164,11 +159,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 							size="small"
 							color="inherit"
 							to="/auth/redirect">
-							<Icon
-								path={mdiAccountCircleOutline}
-								size={1}
-								color={theme.palette.text.secondary}
-							/>
+							<User color={theme.palette.text.secondary}/>
 						</IconButton>}
 					</div>
 				</Toolbar>

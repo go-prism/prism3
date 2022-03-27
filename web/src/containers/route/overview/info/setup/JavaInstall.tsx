@@ -15,9 +15,13 @@
  *
  */
 
-import React from "react";
+import React, {useLayoutEffect} from "react";
 import {Typography} from "@mui/material";
 import {Link} from "react-router-dom";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import xml from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
+import kotlin from "react-syntax-highlighter/dist/esm/languages/hljs/kotlin";
+import groovy from "react-syntax-highlighter/dist/esm/languages/hljs/groovy";
 import {API_URL} from "../../../../../config";
 import {parseMavenPackage} from "../../../../../utils/parse";
 import {Refraction} from "../../../../../graph/types";
@@ -34,6 +38,13 @@ const TYPE_GRADLE_KT = "gradle-kotlin";
 const TYPE_GRADLE_GROOVY = "gradle-groovy";
 
 const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element => {
+	useLayoutEffect(() => {
+		SyntaxHighlighter.registerLanguage("xml", xml);
+		SyntaxHighlighter.registerLanguage("kotlin", kotlin);
+		SyntaxHighlighter.registerLanguage("groovy", groovy);
+	}, []);
+
+	const url = `${API_URL}/api/v1/${refraction.name.toLocaleLowerCase()}/-/`;
 
 	const getInstall = (type: string): string => {
 		const mvn = parseMavenPackage(uri);
@@ -59,14 +70,14 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 				return `<repositories>
 	<repository>
 		<id>prism-maven</id>
-		<url>${API_URL}/api/-/${refraction.name.toLocaleLowerCase()}</url>
+		<url>${url}</url>
 	</repository>
 </repositories>`;
 			case TYPE_GRADLE_KT:
-				return `maven("${API_URL}/api/-/${refraction.name.toLocaleLowerCase()}")`;
+				return `maven("${url}")`;
 			case TYPE_GRADLE_GROOVY:
 				return `maven {
-	url '${API_URL}/api/-/${refraction.name.toLocaleLowerCase()}'
+	url '${url}'
 }`;
 			default:
 				return "";
@@ -84,7 +95,7 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 				</div>,
 				config: <div>
 					<Typography
-						style={{marginBottom: 4}}
+						sx={{mb: 0.5, ml: 1}}
 						color="textSecondary">
 						You can also set this Refraction globally by following the guide <Link to={`/refract/${refraction.id}/-/edit#getting-setup`}>here</Link>.
 					</Typography>

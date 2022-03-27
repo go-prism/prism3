@@ -15,7 +15,9 @@
  *
  */
 
-import React, {useMemo} from "react";
+import React, {useLayoutEffect, useMemo} from "react";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
@@ -26,6 +28,10 @@ interface Props {
 }
 
 const NpmInstall: React.FC<Props> = ({uri, refraction}): JSX.Element => {
+	useLayoutEffect(() => {
+		SyntaxHighlighter.registerLanguage("bash", bash);
+	}, []);
+
 	const [, pkgName, pkgVersion] = useMemo((): string[] => {
 		// todo handle semantic versions properly
 		// e.g. lab-4.0.0-alpha.60.tgz doesn't display correctly

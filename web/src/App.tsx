@@ -51,6 +51,13 @@ const App: React.FC = (): JSX.Element => {
 						fontSize: "0.9rem"
 					}
 				}
+			},
+			MuiListSubheader: {
+				styleOverrides: {
+					root: {
+						backgroundColor: "transparent"
+					}
+				}
 			}
 		}
 	});

@@ -15,7 +15,9 @@
  *
  */
 
-import React from "react";
+import React, {useLayoutEffect} from "react";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import CodeBlock from "../../../../widgets/CodeBlock";
 import {unescapeString} from "../../../../../utils/encode";
 import {API_URL} from "../../../../../config";
@@ -26,6 +28,10 @@ interface GoLangInstallProps {
 }
 
 const GoLangInstall: React.FC<GoLangInstallProps> = ({uri}): JSX.Element => {
+	useLayoutEffect(() => {
+		SyntaxHighlighter.registerLanguage("bash", bash);
+	}, []);
+
 	return (
 		<LanguageInstall
 			variants={[{

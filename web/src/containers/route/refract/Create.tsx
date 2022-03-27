@@ -9,12 +9,9 @@ import {
 	Radio,
 	RadioGroup,
 	Theme,
-	Tooltip,
 	Typography,
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
-import Icon from "@mdi/react";
-import {mdiInformationOutline} from "@mdi/js";
 import {useTheme} from "@mui/material/styles";
 import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
@@ -120,14 +117,6 @@ const CreateRefract: React.FC = (): JSX.Element => {
 						className={classes.formItem}
 						component="legend">
 						Archetype
-						<Tooltip title="The Archetype describes any special handling that this refraction may require. E.g. not caching maven-metadata.xml">
-							<Icon
-								className={classes.formIcon}
-								path={mdiInformationOutline}
-								color={theme.palette.secondary.main}
-								size={1}
-							/>
-						</Tooltip>
 					</FormLabel>
 					<Alert
 						severity="info">

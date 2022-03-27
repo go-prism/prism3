@@ -15,7 +15,9 @@
  *
  */
 
-import React, {useMemo} from "react";
+import React, {useLayoutEffect, useMemo} from "react";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import CodeBlock from "../../../../widgets/CodeBlock";
 import LanguageInstall from "./index";
 
@@ -25,6 +27,10 @@ interface Props {
 }
 
 const DebianInstall: React.FC<Props> = ({uri}): JSX.Element => {
+	useLayoutEffect(() => {
+		SyntaxHighlighter.registerLanguage("bash", bash);
+	}, []);
+
 	const [pkgName] = useMemo((): string[] => {
 		const bits = uri.split("/");
 		const name = bits[bits.length - 1];

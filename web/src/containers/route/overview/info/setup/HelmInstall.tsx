@@ -15,7 +15,9 @@
  *
  */
 
-import React, {useMemo} from "react";
+import React, {useLayoutEffect, useMemo} from "react";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
@@ -26,6 +28,10 @@ interface HelmInstallProps {
 }
 
 const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element => {
+	useLayoutEffect(() => {
+		SyntaxHighlighter.registerLanguage("bash", bash);
+	}, []);
+
 	const [pkgName, pkgVersion] = useMemo(() => {
 		const bits = uri.split("/").filter(i => i !== "");
 		if (bits.length === 0)

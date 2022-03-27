@@ -18,6 +18,9 @@
 
 import React, {useMemo} from "react";
 import {ErrorBoundary} from "react-error-boundary";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import xml from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
+import shell from "react-syntax-highlighter/dist/esm/languages/hljs/shell";
 import {API_URL} from "../../../../config";
 import Error from "../../../alert/Error";
 import {Archetype, Refraction} from "../../../../graph/types";
@@ -32,14 +35,11 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	const language: string = useMemo(() => {
 		switch (refract.archetype) {
 			case Archetype.MAVEN:
+				SyntaxHighlighter.registerLanguage("xml", xml);
 				return "xml";
-			case Archetype.HELM:
-			case Archetype.GO:
-			case Archetype.ALPINE:
-			case Archetype.PIP:
-				return "shell";
 			default:
-				return "text";
+				SyntaxHighlighter.registerLanguage("shell", shell);
+				return "shell";
 		}
 	}, [refract]);
 

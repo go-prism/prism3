@@ -40,11 +40,11 @@ interface StyleProps {
 	secondary: string;
 }
 
-const useStyles = makeStyles<Theme, StyleProps>((theme: Theme) => ({
-	root: props => ({
+const useStyles = makeStyles<StyleProps>()((theme: Theme, props: StyleProps) => ({
+	root: {
 		borderRadius: theme.spacing(4),
 		color: props.primary,
-	}),
+	},
 	row: {
 		textOverflow: "ellipsis",
 		overflow: "hidden",
@@ -117,7 +117,7 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 		}
 	}, [node.name]);
 
-	const classes = useStyles({
+	const {classes} = useStyles({
 		primary: colours[0],
 		secondary: colours[1]
 	});
