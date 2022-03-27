@@ -1,0 +1,73 @@
+podAnnotations:
+  app.kubernetes.io/name: core
+  app.kubernetes.io/part-of: prism
+env:
+  HELM_CACHE_HOME: /tmp
+  HELM_CONFIG_HOME: /tmp
+  HELM_DATA_HOME: /tmp
+security:
+  podContext:
+    fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+  containerContext:
+    runAsNonRoot: true
+    runAsGroup: 1001
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+service:
+  externalPort: 8080
+  internalPort: 8080
+ingress:
+  className: gitlab-nginx
+  enabled: true
+  path: /api
+  annotations:
+    cert-manager.io/cluster-issuer: "k2-internal"
+  tls:
+    enabled: true
+    secretName: tls-core
+prometheus:
+  metrics: true
+  serviceMonitor:
+    enabled: true
+livenessProbe:
+  path: "/healthz"
+readinessProbe:
+  path: "/healthz"
+volumes:
+  - name: tmp
+    mountPath: /tmp
+    config:
+      emptyDir: {}
+resources:
+  requests:
+    cpu: 100m
+    memory: 100Mi
+  limits:
+    memory: 200Mi
+networkPolicy:
+  enabled: true
+  spec:
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: core
+        app.kubernetes.io/part-of: prism
+    ingress:
+      - ports:
+          - port: 8080
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: ingress-nginx
+          - podSelector:
+              matchLabels:
+                app: prometheus
+            namespaceSelector:
+              matchLabels:
+                meta.kubernetes.io/name: openshift-monitoring
