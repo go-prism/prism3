@@ -107,7 +107,7 @@ networkPolicy:
         app.kubernetes.io/part-of: prism
     ingress:
       - ports:
-          - port: 8080
+          - port: 8081
       - from:
           - namespaceSelector:
               matchLabels:
