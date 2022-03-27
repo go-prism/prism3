@@ -15,7 +15,7 @@ security:
     runAsGroup: 1001
     runAsUser: 1001
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: false
     privileged: false
     capabilities:
       drop:
