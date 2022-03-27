@@ -16,7 +16,7 @@
  */
 
 import React, {ReactNode, useState} from "react";
-import {MenuItem, Select, Theme, Typography} from "@mui/material";
+import {MenuItem, Select, SelectChangeEvent, Theme, Typography} from "@mui/material";
 
 import {makeStyles} from "tss-react/mui";
 
@@ -58,7 +58,7 @@ const LanguageInstall: React.FC<LanguageInstallProps> = ({variants}): JSX.Elemen
 	// local state
 	const [selected, setSelected] = useState<number>(0);
 
-	const handleChange = (e: React.ChangeEvent<{value: unknown}>): void => {
+	const handleChange = (e: SelectChangeEvent<number>): void => {
 		setSelected(e.target.value as number);
 	}
 

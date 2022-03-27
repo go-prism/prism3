@@ -23,6 +23,7 @@ import {
 	BrandDebian,
 	BrandPython,
 	Certificate,
+	Coffee,
 	Database,
 	FileCode,
 	FileInvoice,
@@ -81,6 +82,7 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 			case node.name.endsWith(".sha1"):
 				return Certificate;
 			case node.name.endsWith(".jar"):
+				return Coffee;
 			case node.name.endsWith(".tgz"):
 			case node.name.endsWith(".tar.gz"):
 			case node.name.endsWith(".apk"):

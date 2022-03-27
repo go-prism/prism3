@@ -1,0 +1,31 @@
+variables:
+  AUTO_DEVOPS_NODE_REGISTRY: gitlab.dcas.dev/api/v4/packages/npm/
+  AUTO_CNB_RUN_IMAGE: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+  BUILD_KANIKO_DISABLED: "true"
+  PROJECT_PATH: "web"
+  HELM_UPGRADE_VALUES_FILE: ".gitlab/values/web.yaml"
+  BP_STATIC_DIR: "build"
+  BP_NODE_VERSION: "~16"
+  BP_KEEP_FILES: ".env"
+  BP_STATIC_ENV: ".env"
+  BP_NPM_REGISTRY: gitlab.dcas.dev/api/v4/packages/npm
+  BP_NPM_TOKEN: "$CI_JOB_TOKEN"
+
+container-scanning:
+  needs:
+    - job: autobuild node
+
+production:
+  before_script:
+    - kubectl config use-context prism/prism3:kube2-prism
+  environment:
+    name: prod-web
+    kubernetes:
+      namespace: prism
+  needs:
+    - job: autobuild node
+    - job: container-scanning
+      optional: true
+
+include:
+  - remote: "https://gitlab.com/av1o/gitlab-ci-templates/-/raw/master/auto/Auto-UI.gitlab-ci.yml"

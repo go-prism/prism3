@@ -40,7 +40,7 @@ export const light: PaletteOptions = {
 		primary: "#202124",
 		secondary: "#5f6368"
 	},
-	type: "light"
+	mode: "light"
 };
 
 export const dark: PaletteOptions = {
@@ -82,5 +82,5 @@ export const dark: PaletteOptions = {
 		selected: alpha("#3399FF", 0.16),
 		hover: alpha("#3399FF", 0.08)
 	},
-	type: "dark"
+	mode: "dark"
 };
