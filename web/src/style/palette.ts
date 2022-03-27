@@ -1,5 +1,5 @@
-import {PaletteOptions} from "@material-ui/core/styles/createPalette";
-import {fade} from "@material-ui/core";
+import {PaletteOptions} from "@mui/material/styles";
+import {alpha} from "@mui/material";
 
 export const light: PaletteOptions = {
 	primary: {
@@ -79,8 +79,8 @@ export const dark: PaletteOptions = {
 		default: "#001E3C"
 	},
 	action: {
-		selected: fade("#3399FF", 0.16),
-		hover: fade("#3399FF", 0.08)
+		selected: alpha("#3399FF", 0.16),
+		hover: alpha("#3399FF", 0.08)
 	},
 	type: "dark"
 };

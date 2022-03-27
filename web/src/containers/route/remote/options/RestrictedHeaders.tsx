@@ -17,6 +17,7 @@
 
 import React, {useMemo, useState} from "react";
 import {
+	Alert,
 	Button,
 	Card,
 	Collapse,
@@ -26,19 +27,18 @@ import {
 	ListItemSecondaryAction,
 	ListItemText,
 	ListSubheader,
-	makeStyles,
 	Switch,
 	Theme,
-	Typography
-} from "@material-ui/core";
-import {Alert} from "@material-ui/lab";
+	Typography,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {GenericIconButton, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {mdiDeleteOutline} from "@mdi/js";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
 import {DEFAULT_RESTRICTED_HEADERS} from "../../../../config/constants";
 import {DataIsValid} from "../../../../utils/data";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	button: {
 		textTransform: "none",
 		fontFamily: "Manrope",
@@ -80,7 +80,7 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 }): JSX.Element => {
 	// hooks
 	const theme = useTheme();
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	// local state
 	const [header, setHeader] = useState<ValidatedData>(initialHeader);

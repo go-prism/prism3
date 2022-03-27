@@ -1,23 +1,23 @@
 import React, {useState} from "react";
 import {
+	Alert,
 	Badge,
 	Button,
 	FormControlLabel,
 	FormGroup,
 	FormLabel,
-	makeStyles,
 	Radio,
 	RadioGroup,
 	Theme,
 	Tooltip,
-	Typography
-} from "@material-ui/core";
+	Typography,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import Icon from "@mdi/react";
 import {mdiInformationOutline} from "@mdi/js";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
 import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
-import {Alert} from "@material-ui/lab";
 import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
@@ -26,7 +26,7 @@ import useCreateRemote from "../../../graph/actions/remote/useCreateRemote";
 import {Archetype, TransportSecurity} from "../../../graph/types";
 import TransportOpts from "./options/TransportOpts";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500
@@ -67,7 +67,7 @@ const initialName: ValidatedData = {
 
 const CreateRemote: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 	const history = useHistory();
 

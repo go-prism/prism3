@@ -16,24 +16,13 @@
  */
 
 import React, {useEffect, useState} from "react";
-import {
-	Button, Card,
-	Checkbox,
-	createStyles,
-	Grid,
-	List,
-	ListItem,
-	ListItemIcon,
-	ListItemText,
-	makeStyles,
-	Paper,
-	Theme
-} from "@material-ui/core";
+import {Button, Card, Checkbox, Grid, List, ListItem, ListItemIcon, ListItemText, Theme,} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight} from "tabler-icons-react";
 import useListRemotes from "../../../graph/actions/remote/useListRemotes";
 import {Archetype, Remote} from "../../../graph/types";
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
+const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
 		margin: "auto",
 	},
@@ -74,7 +63,7 @@ interface RemoteSelectProps {
 
 const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRemotes = [], disabled = false}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	// global state
 	const [listRemotes, {data}] = useListRemotes();
@@ -171,7 +160,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 	);
 
 	return (
-		<Grid container spacing={2} justify="center" alignItems="center" className={classes.root}>
+		<Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
 			<Grid item>
 				{customList(left)}
 			</Grid>

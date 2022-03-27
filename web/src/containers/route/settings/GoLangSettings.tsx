@@ -17,6 +17,7 @@
 
 import React from "react";
 import {
+	Alert,
 	Card,
 	Divider,
 	IconButton,
@@ -24,23 +25,21 @@ import {
 	ListItem,
 	ListItemSecondaryAction,
 	ListItemText,
-	makeStyles,
 	Switch,
 	Theme,
 	Typography,
-	useTheme
-} from "@material-ui/core";
+	useTheme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {mdiArrowLeft, mdiPlus} from "@mdi/js";
 import Icon from "@mdi/react";
 import {Link} from "react-router-dom";
 import {GenericIconButton, ListItemSkeleton} from "jmp-coreui";
-import {Alert} from "@material-ui/lab";
-import StandardLayout from "../../layout/StandardLayout";
 import useLoading from "../../../hooks/useLoading";
 import useErrors from "../../../hooks/useErrors";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	card: {
 		minHeight: "100%"
 	},
@@ -56,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const GoLangSettings: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	// global state
@@ -71,10 +70,7 @@ const GoLangSettings: React.FC = (): JSX.Element => {
 			<Card
 				className={classes.card}>
 				<div>
-					<IconButton
-						className={classes.icon}
-						component={Link}
-						to="/settings">
+					<IconButton className={classes.icon} component={Link} to="/settings" size="large">
 						<Icon
 							path={mdiArrowLeft}
 							size={0.8}

@@ -1,6 +1,6 @@
 import React, {ReactNode} from "react";
-import {Theme} from "@material-ui/core";
 import {Files} from "tabler-icons-react";
+import {Theme} from "@mui/material/styles";
 import {Archetype} from "../graph/types";
 
 export const getRemoteIcon = (theme: Theme, type: Archetype): ReactNode => {

@@ -23,15 +23,15 @@ import {
 	ListItemIcon,
 	ListItemSecondaryAction,
 	ListItemText,
-	makeStyles,
 	Theme,
 	useMediaQuery,
-	useTheme
-} from "@material-ui/core";
+	useTheme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {GenericIconButton} from "jmp-coreui";
 import {mdiChevronDown, mdiChevronUp} from "@mdi/js";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500
@@ -57,9 +57,9 @@ interface ExpandableListItemProps {
 
 const ExpandableListItem: React.FC<ExpandableListItemProps> = ({primary, secondary, open, setOpen, icon, disabled, children}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
-	const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+	const isSmallScreen = useMediaQuery(theme.breakpoints.down("lg"));
 
 	const toggle = (): void => {
 		setOpen(!open);

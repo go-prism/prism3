@@ -16,9 +16,9 @@
  */
 
 import React, {useEffect, useMemo} from "react";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
 import {Apps} from "tabler-icons-react";
-import {Typography} from "@material-ui/core";
+import {Typography} from "@mui/material";
 import {TreeNode} from "../list/FolderTreeItem";
 import {getRemoteIcon} from "../../utils/remote";
 import useListRefractions from "../../graph/actions/remote/useListRefractions";

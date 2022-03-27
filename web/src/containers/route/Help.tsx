@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import {Alert, AlertTitle} from "@material-ui/lab";
+import {Alert, AlertTitle} from "@mui/material";
 
 const Help: React.FC = (): JSX.Element => {
 	return (

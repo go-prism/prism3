@@ -16,19 +16,9 @@
  */
 
 
-import {CacheEntry, CacheSlice, Refraction, Remote} from "@prism/prism-rpc";
 import {ReactNode} from "react";
 import {Icon} from "tabler-icons-react";
 import {SimpleMap} from "../domain";
-
-export type RefractionV1 = Refraction.AsObject;
-export type RemoteV1 = Remote.AsObject;
-export type CacheEntryV1 = CacheEntry.AsObject;
-export type CacheSliceV1 = CacheSlice.AsObject;
-
-export type Refractions = RefractionV1[];
-export type Remotes = RemoteV1[];
-export type CacheSlices = CacheSliceV1[];
 
 export interface MetadataChip {
 	label: ReactNode | string;

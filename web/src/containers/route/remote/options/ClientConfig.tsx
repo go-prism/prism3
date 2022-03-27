@@ -17,20 +17,20 @@
 
 import React, {useEffect, useState} from "react";
 import {
+	Alert,
 	Collapse,
 	ListItem,
 	ListItemIcon,
 	ListItemText,
 	ListSubheader,
-	makeStyles,
 	Switch,
 	TextField,
-	Theme
-} from "@material-ui/core";
-import {Alert} from "@material-ui/lab";
+	Theme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {TransportSecurity} from "../../../../graph/types";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	text: {
 		margin: theme.spacing(1)
 	},
@@ -49,7 +49,7 @@ interface ClientConfigProps {
 
 const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading, disabled}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	// local state
 	const [skipTLS, setSkipTLS] = useState<boolean>(profile.skipTLSVerify);

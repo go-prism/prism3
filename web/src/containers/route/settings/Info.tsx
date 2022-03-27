@@ -15,20 +15,11 @@
  *
  */
 
-import {
-	Avatar,
-	Card,
-	Divider,
-	ListItem,
-	ListItemAvatar,
-	ListItemText,
-	ListSubheader,
-	makeStyles,
-	Theme
-} from "@material-ui/core";
+import {Avatar, Card, Divider, ListItem, ListItemAvatar, ListItemText, ListSubheader, Theme,} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import React from "react";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	item: {
 		padding: theme.spacing(1)
 	}
@@ -36,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Info: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	return (
 		<div>

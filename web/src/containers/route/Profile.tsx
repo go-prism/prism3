@@ -16,13 +16,14 @@
  */
 
 import React from "react";
-import {Avatar, makeStyles, Theme, Tooltip, Typography} from "@material-ui/core";
-import {useTheme} from "@material-ui/core/styles";
+import {Avatar, Theme, Tooltip, Typography} from "@mui/material";
+import {useTheme} from "@mui/material/styles";
+import {makeStyles} from "tss-react/mui";
 import StandardLayout from "../layout/StandardLayout";
 import {getInitials, parseUsername} from "../../utils/parse";
 import {User} from "../../config/types";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500,
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Profile: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	// global hooks

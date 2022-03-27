@@ -16,8 +16,9 @@
  */
 
 import React, {CSSProperties, useMemo} from "react";
-import {useTheme} from "@material-ui/core/styles";
-import {ListItem, ListItemIcon, ListItemText, makeStyles, Theme} from "@material-ui/core";
+import {useTheme} from "@mui/material/styles";
+import {ListItem, ListItemIcon, ListItemText, Theme} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {
 	BrandDebian,
 	BrandPython,

@@ -16,9 +16,11 @@
  */
 
 import React, {ReactNode, useState} from "react";
-import {makeStyles, MenuItem, Select, Theme, Typography} from "@material-ui/core";
+import {MenuItem, Select, Theme, Typography} from "@mui/material";
 
-const useStyles = makeStyles((theme: Theme) => ({
+import {makeStyles} from "tss-react/mui";
+
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		marginBottom: theme.spacing(1),
@@ -51,7 +53,7 @@ interface LanguageInstallProps {
 
 const LanguageInstall: React.FC<LanguageInstallProps> = ({variants}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	// local state
 	const [selected, setSelected] = useState<number>(0);

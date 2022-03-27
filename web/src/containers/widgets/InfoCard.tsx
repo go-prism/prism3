@@ -1,9 +1,10 @@
-import {Card, CardContent, makeStyles, Theme, Typography} from "@material-ui/core";
+import {Card, CardContent, Theme, Typography} from "@mui/material";
 import React from "react";
 import {Icon} from "tabler-icons-react";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
+import {makeStyles} from "tss-react/mui";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	card: {
 		margin: theme.spacing(2),
 		marginRight: 0
@@ -27,7 +28,7 @@ interface Props {
 
 const InfoCard: React.FC<Props> = ({title, children, ...props}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	return <Card

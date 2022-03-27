@@ -1,5 +1,6 @@
 import React, {ReactNode, useEffect} from "react";
 import {
+	Alert,
 	Avatar,
 	Box,
 	Card,
@@ -8,15 +9,14 @@ import {
 	ListItem,
 	ListItemIcon,
 	ListItemText,
-	makeStyles,
 	Theme,
-	Typography
-} from "@material-ui/core";
+	Typography,
+} from "@mui/material";
 import {ArrowsRight, ArrowsSplit, CloudDownload, CloudUpload, InfoCircle, ListDetails} from "tabler-icons-react";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
 import {formatDistanceStrict} from "date-fns";
-import {Alert} from "@material-ui/lab";
 import {ThemedTooltip} from "jmp-coreui";
+import {makeStyles} from "tss-react/mui";
 import useGetOverview from "../../graph/actions/useGetOverview";
 import {formatBytes} from "../../utils/format";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
@@ -24,7 +24,7 @@ import {getRemoteIcon} from "../../utils/remote";
 import {Archetype} from "../../graph/types";
 import Flexbox from "../widgets/Flexbox";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
 		flexGrow: 1
 	},
@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Dashboard: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 	const {data, loading, error} = useGetOverview();
 
@@ -85,7 +85,6 @@ const Dashboard: React.FC = (): JSX.Element => {
 						<Flexbox>
 							{title}
 							{info != null && <ThemedTooltip
-								interactive
 								title={info}
 								placement="right">
 								<Box

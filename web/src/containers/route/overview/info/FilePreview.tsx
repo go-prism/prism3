@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import {Alert} from "@material-ui/lab";
+import {Alert} from "@mui/material";
 import {ListItemSkeleton} from "jmp-coreui";
 import useErrors from "../../../../hooks/useErrors";
 import getErrorMessage from "../../../../selectors/getErrorMessage";

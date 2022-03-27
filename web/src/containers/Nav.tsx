@@ -16,25 +16,16 @@
  */
 
 import React, {useState} from "react";
-import {
-	AppBar,
-	Avatar,
-	ButtonBase,
-	IconButton,
-	makeStyles,
-	Popover,
-	Theme,
-	Toolbar,
-	Typography
-} from "@material-ui/core";
+import {AppBar, Avatar, ButtonBase, IconButton, Popover, Theme, Toolbar, Typography,} from "@mui/material";
 import {Link} from "react-router-dom";
 import Icon from "@mdi/react";
 import {mdiAccountCircleOutline, mdiHelpCircleOutline} from "@mdi/js";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
+import {makeStyles} from "tss-react/mui";
 
 const drawerWidth = 64;
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	grow: {
 		flexGrow: 1
 	},
@@ -103,7 +94,7 @@ interface NavProps {
 
 const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	// global state
@@ -119,6 +110,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	return (
 		<div>
 			<AppBar
+				elevation={0}
 				variant="outlined"
 				position="fixed"
 				color="inherit"

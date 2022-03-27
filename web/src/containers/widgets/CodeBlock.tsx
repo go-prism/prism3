@@ -1,10 +1,11 @@
 import React from "react";
-import {makeStyles, Theme} from "@material-ui/core";
+import {Theme} from "@mui/material";
 import {androidstudio, github} from "react-syntax-highlighter/dist/esm/styles/hljs";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
+import {makeStyles} from "tss-react/mui";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
 		padding: theme.spacing(1),
 		margin: 0,
@@ -19,12 +20,12 @@ interface CodeBlockProps {
 
 const CodeBlock: React.FC<CodeBlockProps> = ({code, language}): JSX.Element => {
 	const theme = useTheme();
-	const classes = useStyles();
+	const {classes} = useStyles();
 	return <div
 		className={classes.root}>
 		<SyntaxHighlighter
 			language={language}
-			style={theme.palette.type === "light" ? github : androidstudio}>
+			style={theme.palette.mode === "light" ? github : androidstudio}>
 			{code}
 		</SyntaxHighlighter>
 	</div>;

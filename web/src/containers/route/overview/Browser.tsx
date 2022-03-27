@@ -17,8 +17,8 @@
 
 import React, {CSSProperties, ReactElement, useEffect, useMemo, useState} from "react";
 import {ListItemSkeleton} from "jmp-coreui";
-import {Alert} from "@material-ui/lab";
-import {useTheme} from "@material-ui/core/styles";
+import {Alert} from "@mui/material";
+import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
 import {useParams} from "react-router";
 import LZString from "lz-string";

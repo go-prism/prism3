@@ -1,6 +1,9 @@
-import {createMuiTheme, createStyles, CssBaseline, makeStyles, MuiThemeProvider, Theme} from "@material-ui/core";
+import {createTheme, CssBaseline, Theme, ThemeProvider} from "@mui/material";
 import React from "react";
 import {Route, Switch} from "react-router";
+import createCache from "@emotion/cache";
+import {CacheProvider} from "@emotion/react";
+import {makeStyles} from "tss-react/mui";
 import {light} from "./style/palette";
 import Nav from "./containers/Nav";
 import SideBar from "./containers/SideBar";
@@ -17,7 +20,7 @@ import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Profile from "./containers/route/Profile";
 import Dashboard from "./containers/route/Dashboard";
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
+const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
 		display: "flex",
 	},
@@ -36,95 +39,104 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 
 const App: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	// global state
-	const theme = createMuiTheme({
+	const theme = createTheme({
 		palette: light,
-		overrides: {
+		components: {
 			MuiTooltip: {
-				tooltip: {
-					fontSize: "0.9rem"
+				styleOverrides: {
+					tooltip: {
+						fontSize: "0.9rem"
+					}
 				}
 			}
 		}
 	});
 
+	const cache = createCache({
+		key: "mui",
+		prepend: true
+	});
+
 	return (
 		<div>
-			<MuiThemeProvider theme={theme}>
-				<div
-					className={classes.root}>
-					<CssBaseline/>
-					<Nav/>
-					<SideBar/>
-					<main className={classes.content}>
-						<div className={classes.toolbar}/>
-						<Switch>
-							<Route
-								path="/"
-								exact
-								component={Dashboard}
-							/>
-							<Route
-								path="/artifacts"
-								exact
-								component={Overview}
-							/>
-							<Route
-								path="/artifacts/-/:ref"
-								exact
-								component={Browser}
-							/>
-							<Route
-								path="/remotes"
-								exact
-								component={Remotes}
-							/>
-							<Route
-								path="/remote/:id/-/edit"
-								component={Remotes}
-							/>
-							<Route
-								path="/refract"
-								exact
-								component={Refractions}
-							/>
-							<Route
-								path="/refract/:id/-/edit"
-								component={Refractions}
-							/>
-							<Route
-								path="/acl/new"
-								exact
-								component={CreateRoleBinding}
-							/>
-							<Route
-								path="/remotes/new"
-								component={CreateRemote}
-							/>
-							<Route
-								path="/refract/new"
-								component={CreateRefract}
-							/>
-							<Route
-								path="/settings"
-								component={Settings}
-							/>
-							<Route
-								path="/profile"
-								exact
-								component={Profile}
-							/>
-							<Route
-								path="/help"
-								component={Help}
-							/>
-							<Route component={NotFound}/>
-						</Switch>
-					</main>
-				</div>
-			</MuiThemeProvider>
+			<CacheProvider value={cache}>
+				<ThemeProvider theme={theme}>
+					<div
+						className={classes.root}>
+						<CssBaseline/>
+						<Nav/>
+						<SideBar/>
+						<main className={classes.content}>
+							<div className={classes.toolbar}/>
+							<Switch>
+								<Route
+									path="/"
+									exact
+									component={Dashboard}
+								/>
+								<Route
+									path="/artifacts"
+									exact
+									component={Overview}
+								/>
+								<Route
+									path="/artifacts/-/:ref"
+									exact
+									component={Browser}
+								/>
+								<Route
+									path="/remotes"
+									exact
+									component={Remotes}
+								/>
+								<Route
+									path="/remote/:id/-/edit"
+									component={Remotes}
+								/>
+								<Route
+									path="/refract"
+									exact
+									component={Refractions}
+								/>
+								<Route
+									path="/refract/:id/-/edit"
+									component={Refractions}
+								/>
+								<Route
+									path="/acl/new"
+									exact
+									component={CreateRoleBinding}
+								/>
+								<Route
+									path="/remotes/new"
+									component={CreateRemote}
+								/>
+								<Route
+									path="/refract/new"
+									component={CreateRefract}
+								/>
+								<Route
+									path="/settings"
+									component={Settings}
+								/>
+								<Route
+									path="/profile"
+									exact
+									component={Profile}
+								/>
+								<Route
+									path="/help"
+									component={Help}
+								/>
+								<Route component={NotFound}/>
+							</Switch>
+						</main>
+					</div>
+				</ThemeProvider>
+			</CacheProvider>
 		</div>
 	);
 };

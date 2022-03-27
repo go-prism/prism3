@@ -1,9 +1,9 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {Button, Chip, FormGroup, FormLabel, List, makeStyles, Theme} from "@material-ui/core";
-import {useTheme} from "@material-ui/core/styles";
+import {Alert, Button, Chip, FormGroup, FormLabel, List, Skeleton, Theme} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
+import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
-import {Alert, Skeleton} from "@material-ui/lab";
 import {useParams} from "react-router";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
@@ -17,7 +17,7 @@ import RefractHeader from "../../widgets/RefractHeader";
 import Setup from "./setup/Setup";
 import RemoteSelect from "./RemoteSelect";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500
@@ -55,7 +55,7 @@ const initialName: ValidatedData = {
 
 const EditRefract: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 	const history = useHistory();
 	const {id} = useParams<IDParams>();

@@ -17,27 +17,27 @@
 
 import React, {useState} from "react";
 import {
+	Alert,
 	Button,
 	FormControlLabel,
 	FormGroup,
 	FormLabel,
-	makeStyles,
 	Radio,
 	RadioGroup,
 	Theme,
-	Typography
-} from "@material-ui/core";
+	Typography,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {Link, useHistory} from "react-router-dom";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
-import {Alert} from "@material-ui/lab";
 import StandardLayout from "../../layout/StandardLayout";
 import useLoading from "../../../hooks/useLoading";
 import useErrors from "../../../hooks/useErrors";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500
@@ -83,7 +83,7 @@ const ROLES = [ROLE_SUPER, ROLE_POWER];
 
 const CreateRoleBinding: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 	const history = useHistory();
 

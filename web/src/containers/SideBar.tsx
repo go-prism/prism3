@@ -1,10 +1,11 @@
-import {ButtonBase, createStyles, Drawer, makeStyles, Theme, Tooltip} from "@material-ui/core";
+import {ButtonBase, Drawer, Theme, Tooltip} from "@mui/material";
 import React from "react";
 import {Link} from "react-router-dom";
 import {ArrowsRight, ArrowsSplit, Dashboard, Icon, ListDetails, Settings, User} from "tabler-icons-react";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
+import {makeStyles} from "tss-react/mui";
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
+const useStyles = makeStyles()((theme: Theme) => ({
 	drawer: {
 		backgroundColor: theme.palette.primary.main,
 		width: 64,
@@ -72,7 +73,7 @@ const settingOptions: MenuOption[] = [
 
 const SideBar: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	const getListItem = (opt: MenuOption): JSX.Element => {

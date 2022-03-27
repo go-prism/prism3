@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import {Alert} from "@material-ui/lab";
+import {Alert} from "@mui/material";
 
 interface DefaultInstallProps {
 	uri: string;

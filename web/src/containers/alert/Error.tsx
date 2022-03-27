@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import {Alert, AlertTitle} from "@material-ui/lab";
+import {Alert, AlertTitle} from "@mui/material";
 import {FallbackProps} from "react-error-boundary";
 import {Code} from "jmp-coreui";
 

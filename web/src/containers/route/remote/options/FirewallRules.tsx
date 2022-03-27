@@ -17,6 +17,7 @@
 
 import React, {useMemo, useState} from "react";
 import {
+	Alert,
 	Button,
 	Card,
 	List,
@@ -25,17 +26,16 @@ import {
 	ListItemSecondaryAction,
 	ListItemText,
 	ListSubheader,
-	makeStyles,
 	Switch,
-	Theme
-} from "@material-ui/core";
-import {Alert} from "@material-ui/lab";
-import {useTheme} from "@material-ui/core/styles";
+	Theme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
+import {useTheme} from "@mui/material/styles";
 import {GenericIconButton, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {mdiDeleteOutline} from "@mdi/js";
 import {DataIsValid} from "../../../../utils/data";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	button: {
 		textTransform: "none",
 		fontFamily: "Manrope",
@@ -72,7 +72,7 @@ const FirewallRules: React.FC<FirewallRulesProps> = ({
 }): JSX.Element => {
 	// hooks
 	const theme = useTheme();
-	const classes = useStyles();
+	const {classes} = useStyles();
 
 	// local state
 	const [rule, setRule] = useState<ValidatedData>(initialRule);

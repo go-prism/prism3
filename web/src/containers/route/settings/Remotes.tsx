@@ -1,7 +1,6 @@
 import React, {useEffect, useMemo} from "react";
-import {Alert} from "@material-ui/lab";
+import {Alert, Button, Typography, useTheme} from "@mui/material";
 import {ArrowsRight} from "tabler-icons-react";
-import {Button, Typography, useTheme} from "@material-ui/core";
 import {useParams} from "react-router";
 import {Link} from "react-router-dom";
 import useListRemotes from "../../../graph/actions/remote/useListRemotes";

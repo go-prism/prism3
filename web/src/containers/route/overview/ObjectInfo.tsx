@@ -16,21 +16,10 @@
  */
 
 import React, {ReactNode, useMemo, useState} from "react";
-import {
-	Card,
-	Chip,
-	createStyles,
-	Divider,
-	makeStyles,
-	Tab,
-	TabProps,
-	Tabs,
-	Theme,
-	Typography,
-	useTheme,
-	withStyles
-} from "@material-ui/core";
-import {TabContext, TabPanel} from "@material-ui/lab";
+import {Card, Chip, Divider, Tab, TabProps, Tabs, Theme, Typography, useTheme} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
+import withStyles from "@mui/styles/withStyles";
+import {TabContext, TabPanel} from "@mui/lab";
 import {formatDistanceToNow} from "date-fns";
 import {CirclePlus, Edit, FileDownload} from "tabler-icons-react";
 import {MetadataChip} from "../../../config/types";
@@ -45,7 +34,7 @@ import NpmInstall from "./info/setup/NpmInstall";
 import PyPiInstall from "./info/setup/PyPiInstall";
 import DebianInstall from "./info/setup/DebianInstall";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		margin: theme.spacing(1),
 		fontFamily: "Manrope",
@@ -60,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 	}
 }));
 
-const StyledTab = withStyles(() => createStyles({
+const StyledTab = withStyles(() => ({
 	root: {
 		textTransform: "none",
 		minWidth: 72
@@ -74,7 +63,7 @@ interface ObjectInfoProps {
 
 const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	// local state

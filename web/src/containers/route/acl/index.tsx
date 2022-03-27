@@ -17,43 +17,49 @@
 
 import React, {ReactNode, useEffect} from "react";
 import {
+	Alert,
 	Card,
 	IconButton,
-	makeStyles,
+	Skeleton,
 	Table,
 	TableBody,
 	TableCell,
 	TableContainer,
 	TableHead,
 	TableRow,
-	Theme
-} from "@material-ui/core";
-import {Alert, Skeleton} from "@material-ui/lab";
+	Theme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {Link} from "react-router-dom";
 import Icon from "@mdi/react";
 import {mdiArrowLeft, mdiPlus} from "@mdi/js";
-import {useTheme} from "@material-ui/core/styles";
-import {RoleBinding} from "@prism/prism-rpc/build/gen/domain/v1/roles_pb";
-import StandardLayout from "../../layout/StandardLayout";
+import {useTheme} from "@mui/material/styles";
 import {parseUsername} from "../../../utils/parse";
 import useLoading from "../../../hooks/useLoading";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import useErrors from "../../../hooks/useErrors";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	icon: {
 		margin: theme.spacing(1),
 		marginRight: theme.spacing(2)
 	}
 }));
 
+interface Role {
+	id: string;
+	name: string;
+	subject: string;
+	username: string;
+}
+
 const AccessControlSettings: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	// global state
-	const roles: RoleBinding.AsObject[] = [];
+	const roles: Role[] = [];
 	const loading = useLoading([]);
 	const error = useErrors([]);
 
@@ -94,10 +100,7 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 	return (
 		<Card>
 			<div style={{display: "flex", alignItems: "center"}}>
-				<IconButton
-					className={classes.icon}
-					component={Link}
-					to="/settings">
+				<IconButton className={classes.icon} component={Link} to="/settings" size="large">
 					<Icon
 						path={mdiArrowLeft}
 						size={0.8}
@@ -109,7 +112,8 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 				<IconButton
 					className={classes.icon}
 					component={Link}
-					to="/settings/acl/new">
+					to="/settings/acl/new"
+					size="large">
 					<Icon
 						path={mdiPlus}
 						size={0.8}

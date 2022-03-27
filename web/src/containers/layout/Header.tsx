@@ -1,7 +1,9 @@
 import React, {ReactNode} from "react";
-import {makeStyles, Theme, Typography} from "@material-ui/core";
+import {Theme, Typography} from "@mui/material";
 
-const useStyles = makeStyles((theme: Theme) => ({
+import {makeStyles} from "tss-react/mui";
+
+const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
 		display: "flex",
 		alignItems: "center"
@@ -26,7 +28,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({title, counter, actions}): JSX.Element => {
-	const classes = useStyles();
+	const {classes} = useStyles();
 	return <div className={classes.root}>
 		<Typography
 			className={classes.text}

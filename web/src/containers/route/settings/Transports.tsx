@@ -17,6 +17,7 @@
 
 import React from "react";
 import {
+	Alert,
 	Button,
 	Card,
 	Collapse,
@@ -25,11 +26,10 @@ import {
 	ListItem,
 	ListItemSecondaryAction,
 	ListItemText,
-	makeStyles,
-	Theme
-} from "@material-ui/core";
+	Theme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {ListItemSkeleton} from "jmp-coreui";
-import {Alert} from "@material-ui/lab";
 import {ChevronDown, ChevronUp} from "tabler-icons-react";
 import {useHistory, useLocation} from "react-router-dom";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
@@ -38,7 +38,7 @@ import {TransportSecurity} from "../../../graph/types";
 import ClientConfig from "../remote/options/ClientConfig";
 import Header from "../../layout/Header";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	card: {
 		minHeight: "100%"
 	},
@@ -58,7 +58,7 @@ interface TransportItemProps {
 }
 
 const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelected}): JSX.Element => {
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const open = selected === item.id;
 
 	return <div>
@@ -92,7 +92,7 @@ const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelecte
 
 const Transports: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const location = useLocation();
 	const history = useHistory();
 

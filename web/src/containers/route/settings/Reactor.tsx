@@ -22,16 +22,16 @@ import {
 	ListItemSecondaryAction,
 	ListItemText,
 	ListSubheader,
-	makeStyles,
 	Theme,
-	useTheme
-} from "@material-ui/core";
+	useTheme,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import React from "react";
 import Icon from "@mdi/react";
 import {mdiChevronRight, mdiHexagonMultipleOutline} from "@mdi/js";
 import {Link} from "react-router-dom";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	item: {
 		padding: theme.spacing(1)
 	}
@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Reactor: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 
 	return (

@@ -15,7 +15,7 @@
  *
  */
 
-import React, {ReactNode, useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {Settings as SettingsIcon} from "tabler-icons-react";
 import {Route, Switch} from "react-router";
 import SidebarLayout from "../../layout/SidebarLayout";
@@ -23,7 +23,6 @@ import AccessControlSettings from "../acl";
 import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
 import Info from "./Info";
 import GoLangSettings from "./GoLangSettings";
-import ReactorSettings from "./ReactorSettings";
 import Transports from "./Transports";
 
 export interface IDParams {
@@ -62,11 +61,6 @@ const Settings: React.FC = (): JSX.Element => {
 			type: "header"
 		},
 		{
-			id: "reactor",
-			label: "Reactor",
-			to: "/settings/sys/reactor"
-		},
-		{
 			id: "acl",
 			label: "Permissions",
 			to: "/settings/sys/acl"
@@ -100,10 +94,6 @@ const Settings: React.FC = (): JSX.Element => {
 				<Route
 					path="/settings/sys/about"
 					component={Info}
-				/>
-				<Route
-					path="/settings/sys/reactor"
-					component={ReactorSettings}
 				/>
 				<Route
 					path="/settings/sys/acl"

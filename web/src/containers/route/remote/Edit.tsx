@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {
+	Alert,
 	Button,
 	Chip,
 	Collapse,
@@ -10,15 +11,15 @@ import {
 	ListItem,
 	ListItemIcon,
 	ListItemText,
-	makeStyles,
+	Skeleton,
 	Switch,
 	Theme,
-	Typography
-} from "@material-ui/core";
-import {useTheme} from "@material-ui/core/styles";
+	Typography,
+} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
+import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
-import {Alert, Skeleton} from "@material-ui/lab";
 import {useParams} from "react-router";
 import {formatDistanceToNow} from "date-fns";
 import {Apps, CirclePlus, Edit} from "tabler-icons-react";
@@ -34,7 +35,7 @@ import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500
@@ -82,7 +83,7 @@ const initialName: ValidatedData = {
 
 const EditRemote: React.FC = (): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const theme = useTheme();
 	const history = useHistory();
 	const {id} = useParams<IDParams>();
@@ -250,7 +251,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 			</Alert>}
 			<ListItem>
 				<ListItemIcon>
-					{loading ? <Skeleton variant="circle" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRemote?.archetype || Archetype.NONE)}
+					{loading ? <Skeleton variant="circular" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRemote?.archetype || Archetype.NONE)}
 				</ListItemIcon>
 				<ListItemText
 					disableTypography

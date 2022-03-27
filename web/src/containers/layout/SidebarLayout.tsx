@@ -1,7 +1,7 @@
-import {Box, Grid, GridSize} from "@material-ui/core";
+import {Box, Grid, GridSize} from "@mui/material";
 import React, {ReactNode} from "react";
 import {ErrorBoundary} from "react-error-boundary";
-import {useTheme} from "@material-ui/core/styles";
+import {useTheme} from "@mui/material/styles";
 import Error from "../alert/Error";
 
 interface SidebarLayoutProps {

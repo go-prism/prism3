@@ -1,10 +1,11 @@
 import React, {ReactNode, useMemo, useState} from "react";
-import {List, ListItem, ListItemIcon, ListItemText, ListSubheader, makeStyles, Theme} from "@material-ui/core";
+import {List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme} from "@mui/material";
+import {makeStyles} from "tss-react/mui";
 import {Link} from "react-router-dom";
 import {Icon} from "tabler-icons-react";
 import {ListItemSkeleton} from "jmp-coreui";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		color: theme.palette.grey["700"],
 		fontWeight: 500,
@@ -58,7 +59,7 @@ interface SimpleSidebarProps {
 
 const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header, headerTo, loading, ...props}): JSX.Element => {
 	// hooks
-	const classes = useStyles();
+	const {classes} = useStyles();
 	const [selected, setSelected] = useState<SidebarItem | null>(null);
 
 	const onSetSelection = (val: SidebarItem): void => {
