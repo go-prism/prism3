@@ -5,14 +5,30 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 )
 import "gorm.io/driver/postgres"
 
-func NewDatabase(dsn string) (*Database, error) {
+func NewDatabase(dsn string, replicas ...string) (*Database, error) {
+	// configure primary
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.WithError(err).Error("failed to open database connection")
 		return nil, err
+	}
+	// configure read-replicas
+	var r []gorm.Dialector
+	for i := range replicas {
+		if replicas[i] == "" {
+			continue
+		}
+		r = append(r, postgres.Open(replicas[i]))
+	}
+	if err := database.Use(dbresolver.Register(dbresolver.Config{
+		Replicas: r,
+		Policy:   dbresolver.RandomPolicy{},
+	})); err != nil {
+		log.WithError(err).Error("failed to establish database replica connections")
 	}
 	log.Info("established database connection")
 	return &Database{

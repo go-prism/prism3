@@ -34,7 +34,8 @@ type environment struct {
 		SuperUser string `split_words:"true"`
 	}
 	DB struct {
-		DSN string `split_words:"true" required:"true"`
+		DSN        string `split_words:"true" required:"true"`
+		DSNReplica string `split_words:"true"`
 	}
 	S3  storage.S3Options
 	Dev struct {
@@ -51,7 +52,7 @@ func main() {
 	logging.Init(&e.Log)
 
 	// configure database
-	database, err := db.NewDatabase(e.DB.DSN)
+	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)
 	if err != nil {
 		log.WithError(err).Fatal("failed to setup database layer")
 		return

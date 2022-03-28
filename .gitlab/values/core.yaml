@@ -5,6 +5,7 @@ env:
   HELM_CACHE_HOME: /tmp
   HELM_CONFIG_HOME: /tmp
   HELM_DATA_HOME: /tmp
+  GOGC: 50
 security:
   podContext:
     fsGroup: 1001
@@ -22,6 +23,10 @@ security:
     capabilities:
       drop:
         - ALL
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
 service:
   externalPort: 8080
   internalPort: 8081
@@ -52,10 +57,10 @@ volumes:
       emptyDir: {}
 resources:
   requests:
-    cpu: 100m
-    memory: 100Mi
+    cpu: 200m
+    memory: 500Mi
   limits:
-    memory: 200Mi
+    memory: 500Mi
 sidecars:
   - name: captain
     image: harbor.dcas.dev/registry.gitlab.com/av1o/cap10:master

@@ -11,6 +11,7 @@ variables:
   BP_STATIC_ENV: ".env"
   BP_NPM_REGISTRY: gitlab.dcas.dev/api/v4/packages/npm
   BP_NPM_TOKEN: "$CI_JOB_TOKEN"
+  REPLICAS: 2
 
 container-scanning:
   needs:
