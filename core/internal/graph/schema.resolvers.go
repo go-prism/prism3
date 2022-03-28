@@ -6,6 +6,8 @@ package graph
 import (
 	"context"
 	"fmt"
+	"gitlab.com/av1o/cap10/pkg/client"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"runtime/debug"
 
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
@@ -35,6 +37,9 @@ func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.New
 }
 
 func (r *mutationResolver) PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
 	return r.repos.RefractRepo.PatchRefraction(ctx, id, &input)
 }
 
@@ -155,6 +160,17 @@ func (r *queryResolver) GetUsers(ctx context.Context, role model.Role) ([]*model
 		return nil, err
 	}
 	return r.repos.RBACRepo.ListForRole(ctx, role)
+}
+
+func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.User, error) {
+	user, ok := client.GetContextUser(ctx)
+	if !ok {
+		return nil, permissions.ErrUnauthorised
+	}
+	return &model.User{
+		Sub: user.Sub,
+		Iss: user.Iss,
+	}, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

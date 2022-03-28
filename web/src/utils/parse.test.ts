@@ -15,7 +15,7 @@
  *
  */
 
-import {MavenPackage, parseMavenPackage} from "./parse";
+import {MavenPackage, parseMavenPackage, parseUsername} from "./parse";
 
 describe("maven parsing", () => {
 	it("should extract the correct information", () => {
@@ -25,5 +25,18 @@ describe("maven parsing", () => {
 			artifactId: "spring-boot-actuator"
 		}
 		expect(parseMavenPackage("org/springframework/boot/spring-boot-actuator/2.4.4/spring-boot-actuator-2.4.4.jar")).toEqual(expected);
+	});
+});
+
+describe("username parsing", () => {
+	it("should extract PKI information", () => {
+		const username = "CN=Test Issuer/CN=Test User,OU=Foo";
+		const name = parseUsername(username);
+		expect(name).toEqual("Test User");
+	});
+	it("should handle OIDC ids", () => {
+		const username = "https://gitlab.com/123456";
+		const name = parseUsername(username);
+		expect(name).toEqual("123456");
 	});
 });

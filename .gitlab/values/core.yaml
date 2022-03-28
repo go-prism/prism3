@@ -59,8 +59,6 @@ resources:
   requests:
     cpu: 200m
     memory: 500Mi
-  limits:
-    memory: 500Mi
 sidecars:
   - name: captain
     image: harbor.dcas.dev/registry.gitlab.com/av1o/cap10:master

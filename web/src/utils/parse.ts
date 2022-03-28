@@ -45,6 +45,10 @@ export const parseMavenPackage = (path: string): MavenPackage | null => {
 }
 
 export const parseUsername = (username: string): string => {
+	// workaround for OIDC issuers
+	if (username.startsWith("https://")) {
+		username = username.replace("https://", "")
+	}
 	const [iss, sub] = username.split("/");
 	if (sub == null)
 		return parseDN(iss);

@@ -111,6 +111,11 @@ type TransportSecurity struct {
 	NoProxy       string `json:"noProxy"`
 }
 
+type User struct {
+	Sub string `json:"sub"`
+	Iss string `json:"iss"`
+}
+
 type Archetype string
 
 const (

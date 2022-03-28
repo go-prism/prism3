@@ -23,6 +23,11 @@ export interface RoleBinding {
 	resource: string;
 }
 
+export interface User {
+	sub: string;
+	iss: string;
+}
+
 export interface Artifact {
 	id: string;
 	createdAt: number;

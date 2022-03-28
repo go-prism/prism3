@@ -16,12 +16,14 @@
  */
 
 import React from "react";
-import {Avatar, Theme, Tooltip, Typography} from "@mui/material";
+import {Alert, Avatar, Box, CircularProgress, Theme, Tooltip, Typography} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {makeStyles} from "tss-react/mui";
+import {Skeleton} from "@mui/lab";
 import StandardLayout from "../layout/StandardLayout";
 import {getInitials, parseUsername} from "../../utils/parse";
-import {User} from "../../config/types";
+import useGetCurrentUser from "../../graph/actions/rbac/useGetCurrentUser";
+import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -36,36 +38,45 @@ const Profile: React.FC = (): JSX.Element => {
 	const {classes} = useStyles();
 	const theme = useTheme();
 
-	// global hooks
-	let currentUser: User = {
-		sub: "",
-		iss: "",
-		claims: {},
-		token: "",
-		token_hash: ""
-	};
+	const {data, loading, error} = useGetCurrentUser();
 
 	return <StandardLayout>
-		<div
-			style={{display: "flex", alignItems: "center", flexDirection: "column"}}>
+		<Box
+			sx={{mt: 2, display: "flex", alignItems: "center", flexDirection: "column"}}>
 			<Avatar
 				style={{width: 96, height: 96, backgroundColor: theme.palette.primary.main}}>
-				{getInitials(parseUsername(currentUser?.sub || ""))}
+				{loading ? <CircularProgress color="secondary"/> : getInitials(parseUsername(data?.getCurrentUser.sub || ""))}
 			</Avatar>
-			<Tooltip title={currentUser?.sub || ""}>
+			{error && <Alert
+				sx={{textAlign: "center"}}
+				severity="error">
+				Something went wrong loading your profile.<br/>
+				{getGraphErrorMessage(error)}
+			</Alert>}
+			<Tooltip title={data?.getCurrentUser?.sub || ""}>
 				<Typography
 					className={classes.title}
 					variant="h3">
-					{parseUsername(currentUser?.sub || "")}
+					{!loading && parseUsername(data?.getCurrentUser?.sub || "")}
+					{loading && <Skeleton
+						variant="text"
+						height={80}
+						width={300}
+					/>}
 				</Typography>
 			</Tooltip>
-			<Tooltip title={currentUser?.iss || ""}>
+			<Tooltip title={data?.getCurrentUser?.iss || ""}>
 				<Typography
 					variant="body1">
-					{parseUsername(currentUser?.iss || "")}
+					{!loading && parseUsername(data?.getCurrentUser?.iss || "")}
+					{loading && <Skeleton
+						variant="text"
+						width={150}
+						height={40}
+					/>}
 				</Typography>
 			</Tooltip>
-		</div>
+		</Box>
 	</StandardLayout>
 }
 export default Profile;

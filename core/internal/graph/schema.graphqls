@@ -29,6 +29,11 @@ type RoleBinding {
     resource: String!
 }
 
+type User {
+    sub: String!
+    iss: String!
+}
+
 type Artifact {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     createdAt: Int!
@@ -117,6 +122,8 @@ type Query {
 
     getRoleBindings(user: String!): [RoleBinding!]!
     getUsers(role: Role!): [RoleBinding!]!
+
+    getCurrentUser: User!
 }
 
 input NewRemote {
