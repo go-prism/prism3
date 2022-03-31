@@ -4,17 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/Unleash/unleash-client-go/v3"
-	"github.com/ghodss/yaml"
+	jsonyaml "github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
-	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
-	"gitlab.com/go-prism/prism3/core/pkg/flag"
+	"gopkg.in/yaml.v2"
 	helmrepo "helm.sh/helm/v3/pkg/repo"
 	"io"
-	"io/ioutil"
 	"sync"
 )
 
@@ -28,7 +25,7 @@ func NewIndex(repos *repo.Repos, publicURL string) *Index {
 func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader, error) {
 	remotes := ref.Remotes()
 	index := helmrepo.NewIndexFile()
-	indices := make([]*helmrepo.IndexFile, len(remotes))
+	indices := make([]*IndexFile, len(remotes))
 
 	wg := sync.WaitGroup{}
 	log.WithContext(ctx).Infof("downloading %d helm indices from refraction '%s'", len(remotes), ref)
@@ -63,16 +60,12 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader
 			continue
 		}
 		merged++
-		if !flag.IsEnabled(features.HelmIndexPreferAddOverMerge, unleash.WithContext(flag.Context(ctx))) {
-			index.Merge(i)
-			continue
-		}
 		for _, v := range i.Entries {
 			for _, vv := range v {
 				if len(vv.URLs) == 0 {
 					continue
 				}
-				if err := index.MustAdd(vv.Metadata, vv.URLs[0], "", vv.Digest); err != nil {
+				if err := index.MustAdd(vv.AsMetadata(), vv.URLs[0], "", vv.Digest); err != nil {
 					log.WithContext(ctx).WithError(err).Error("failed to add chart to index")
 					continue
 				}
@@ -82,7 +75,7 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader
 	if merged == 0 {
 		return nil, ErrNoIndexFound
 	}
-	data, err := yaml.Marshal(index)
+	data, err := jsonyaml.Marshal(index)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to convert index to yaml")
 		return nil, err
@@ -92,18 +85,13 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader
 
 // parse converts raw yaml into
 // a Helm repo.IndexFile
-func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*helmrepo.IndexFile, []*schemas.HelmPackage, error) {
+func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*IndexFile, []*schemas.HelmPackage, error) {
 	log.WithContext(ctx).Debug("reading response body")
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to read response")
-		return nil, nil, err
-	}
 	log.WithContext(ctx).Debug("parsing yaml response")
 	// todo find a way to reduce memory usage when parsing helm index.yaml files
 	// this will require instances to run with increased memory requirements (200+ MiB)
-	var resp helmrepo.IndexFile
-	if err := yaml.Unmarshal(data, &resp); err != nil {
+	var resp IndexFile
+	if err := yaml.NewDecoder(r).Decode(&resp); err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to unmarshal index.yaml")
 		return nil, nil, err
 	}
@@ -113,7 +101,7 @@ func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*helmrepo
 		for _, ee := range e {
 			if len(ee.URLs) > 0 {
 				packages = append(packages, &schemas.HelmPackage{
-					Filename: fmt.Sprintf("%s-%s.tgz", ee.Metadata.Name, ee.Metadata.Version),
+					Filename: fmt.Sprintf("%s-%s.tgz", ee.Name, ee.Version),
 					URL:      ee.URLs[0],
 				})
 			}
@@ -125,8 +113,8 @@ func (svc *Index) parse(ctx context.Context, ref string, r io.Reader) (*helmrepo
 
 // rewriteURLs converts all the URLs in a Helm repository
 // to point to Prism rather than their original source.
-func (svc *Index) rewriteURLs(_ context.Context, ref string, e *helmrepo.ChartVersion) {
+func (svc *Index) rewriteURLs(_ context.Context, ref string, e *ChartVersion) {
 	for i := range e.URLs {
-		e.URLs[i] = fmt.Sprintf("%s/api/v1/%s/-/%s-%s.tgz", svc.publicURL, ref, e.Metadata.Name, e.Metadata.Version)
+		e.URLs[i] = fmt.Sprintf("%s/api/v1/%s/-/%s-%s.tgz", svc.publicURL, ref, e.Name, e.Version)
 	}
 }

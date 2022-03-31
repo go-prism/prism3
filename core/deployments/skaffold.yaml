@@ -16,8 +16,6 @@ build:
     push: false
 deploy:
   kubectl:
-    manifests:
-      - deployments/pod.yaml
     defaultNamespace: prism
   kubeContext: minikube
   helm:

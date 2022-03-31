@@ -6,9 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
-	"helm.sh/helm/v3/pkg/repo"
-	"io"
-	"sigs.k8s.io/yaml"
 	"testing"
 )
 
@@ -51,18 +48,11 @@ func TestIndex_Serve(t *testing.T) {
 	idx := new(Index)
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			resp, err := idx.Serve(context.TODO(), tt.ref)
+			_, err := idx.Serve(context.TODO(), tt.ref)
 			if !tt.ok {
 				assert.Error(t, err)
 				return
 			}
-			assert.NoError(t, err)
-
-			data, err := io.ReadAll(resp)
-			assert.NoError(t, err)
-
-			var file repo.IndexFile
-			err = yaml.Unmarshal(data, &file)
 			assert.NoError(t, err)
 		})
 	}
