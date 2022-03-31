@@ -20,6 +20,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/internal/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"net/http"
 	"time"
 )
@@ -41,6 +42,7 @@ type environment struct {
 	Dev struct {
 		Handlers bool `split_words:"true"`
 	}
+	Flag flag.Options
 }
 
 func main() {
@@ -50,6 +52,7 @@ func main() {
 		return
 	}
 	logging.Init(&e.Log)
+	flag.Init(e.Flag)
 
 	// configure database
 	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)

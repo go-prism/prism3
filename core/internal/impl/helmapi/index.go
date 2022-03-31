@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/Unleash/unleash-client-go/v3"
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	helmrepo "helm.sh/helm/v3/pkg/repo"
 	"io"
 	"io/ioutil"
@@ -60,7 +63,21 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.Refraction) (io.Reader
 			continue
 		}
 		merged++
-		index.Merge(i)
+		if !flag.IsEnabled(features.HelmIndexPreferAddOverMerge, unleash.WithContext(flag.Context(ctx))) {
+			index.Merge(i)
+			continue
+		}
+		for _, v := range i.Entries {
+			for _, vv := range v {
+				if len(vv.URLs) == 0 {
+					continue
+				}
+				if err := index.MustAdd(vv.Metadata, vv.URLs[0], "", vv.Digest); err != nil {
+					log.WithContext(ctx).WithError(err).Error("failed to add chart to index")
+					continue
+				}
+			}
+		}
 	}
 	if merged == 0 {
 		return nil, ErrNoIndexFound

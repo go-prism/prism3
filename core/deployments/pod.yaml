@@ -37,6 +37,10 @@ data:
         <profiles/>
         <activeProfiles/>
     </settings>
+  .npmrc: |
+    registry=http://core3-auto-deploy:8080/api/npm/npm/
+    ssl-strict=false
+    strict-ssl=false
 ---
 apiVersion: v1
 kind: Pod
@@ -68,6 +72,10 @@ spec:
           name: config
           readOnly: true
           subPath: settings.xml
+        - mountPath: /root/.npmrc
+          name: config
+          readOnly: true
+          subPath: .npmrc
 ---
 apiVersion: v1
 kind: Pod
@@ -99,3 +107,7 @@ spec:
           name: config
           readOnly: true
           subPath: sources.list
+        - mountPath: /root/.npmrc
+          name: config
+          readOnly: true
+          subPath: .npmrc

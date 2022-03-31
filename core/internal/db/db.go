@@ -2,8 +2,10 @@ package db
 
 import (
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
 )
@@ -11,7 +13,9 @@ import "gorm.io/driver/postgres"
 
 func NewDatabase(dsn string, replicas ...string) (*Database, error) {
 	// configure primary
-	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: flag.IsEnabled(features.DBSkipDefaultTransaction),
+	})
 	if err != nil {
 		log.WithError(err).Error("failed to open database connection")
 		return nil, err
