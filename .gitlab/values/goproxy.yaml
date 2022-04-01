@@ -1,0 +1,69 @@
+podAnnotations:
+  app.kubernetes.io/name: goproxy
+  app.kubernetes.io/part-of: prism
+env:
+  GOGC: 50
+security:
+  podContext:
+    fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+  containerContext:
+    runAsNonRoot: true
+    runAsGroup: 1001
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+service:
+  externalPort: 8080
+  internalPort: 8080
+ingress:
+  enabled: false
+prometheus:
+  metrics: true
+  serviceMonitor:
+    enabled: true
+livenessProbe:
+  path: "/healthz"
+readinessProbe:
+  path: "/healthz"
+volumes:
+  - name: tmp
+    mountPath: /tmp
+    config:
+      emptyDir: {}
+resources:
+  requests:
+    cpu: 200m
+    memory: 200Mi
+networkPolicy:
+  enabled: true
+  spec:
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: goproxy
+        app.kubernetes.io/part-of: prism
+    ingress:
+      - ports:
+          - port: 8081
+      - from:
+          - podSelector:
+              matchLabels:
+                app.kubernetes.io/name: core
+                app.kubernetes.io/part-of: prism
+          - podSelector:
+              matchLabels:
+                app: prometheus
+            namespaceSelector:
+              matchLabels:
+                meta.kubernetes.io/name: openshift-monitoring
