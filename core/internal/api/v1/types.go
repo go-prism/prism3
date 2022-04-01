@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"net/http/httputil"
 	"sync"
@@ -11,5 +12,6 @@ type Gateway struct {
 	pool     *sync.Pool
 	npmPool  *sync.Pool
 
-	goProxy *httputil.ReverseProxy
+	goProxy      *httputil.ReverseProxy
+	artifactRepo *repo.ArtifactRepo
 }

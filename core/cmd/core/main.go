@@ -86,7 +86,7 @@ func main() {
 	}
 
 	// configure graphql
-	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL)
+	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{

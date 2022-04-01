@@ -43,8 +43,8 @@ const GoLangInstall: React.FC<GoLangInstallProps> = ({uri}): JSX.Element => {
 				</div>,
 				config: <div>
 					<CodeBlock
-						code={`echo 'export GOPROXY="${API_URL}/api/plugin/-/mod/-/"' >> ~/.bashrc
-					source ~/.bashrc`}
+						code={`echo 'export GOPROXY="${API_URL}/api/go"' >> ~/.bashrc
+source ~/.bashrc`}
 						language="bash"
 					/>
 				</div>,

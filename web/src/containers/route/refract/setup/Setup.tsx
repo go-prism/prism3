@@ -69,7 +69,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 </settings>`;
 			case Archetype.GO:
 				return `# use Prism as a module proxy
-export GOPROXY="${API_URL}/api/plugin/-/mod/-/"`;
+export GOPROXY="${API_URL}/api/go"`;
 			case Archetype.NPM:
 				return `# automatically using the npm cli
 npm config set registry "${API_URL}/api/npm/${refract.name.toLocaleLowerCase()}/"

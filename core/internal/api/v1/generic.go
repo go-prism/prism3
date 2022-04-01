@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"io"
 	"net/http/httputil"
@@ -9,7 +10,7 @@ import (
 	"sync"
 )
 
-func NewGateway(r resolver.IResolver, goProxyURL *url.URL) *Gateway {
+func NewGateway(r resolver.IResolver, goProxyURL *url.URL, artifactRepo *repo.ArtifactRepo) *Gateway {
 	var goProxy *httputil.ReverseProxy
 	if goProxyURL != nil {
 		goProxy = httputil.NewSingleHostReverseProxy(goProxyURL)
@@ -26,7 +27,8 @@ func NewGateway(r resolver.IResolver, goProxyURL *url.URL) *Gateway {
 				return new(resolver.NPMRequest)
 			},
 		},
-		goProxy: goProxy,
+		goProxy:      goProxy,
+		artifactRepo: artifactRepo,
 	}
 }
 

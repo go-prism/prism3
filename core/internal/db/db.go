@@ -7,6 +7,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/plugin/dbresolver"
 )
 import "gorm.io/driver/postgres"
@@ -85,6 +86,31 @@ func (db *Database) defaults(superuser string) error {
 	}).Error
 	if err != nil {
 		log.WithError(err).Error("failed to create default superuser rolebinding")
+		return err
+	}
+	// create Go remote
+	defaultGoRemote := &model.Remote{
+		ID:          GoRemote,
+		Name:        "go",
+		URI:         "",
+		Archetype:   model.ArchetypeGo,
+		Enabled:     true,
+		Security:    &model.RemoteSecurity{},
+		TransportID: TransportProfileDefault,
+	}
+	if err := db.db.Clauses(clause.OnConflict{DoNothing: true}).Create(defaultGoRemote).Error; err != nil {
+		log.WithError(err).Error("failed to create default Go remote")
+		return err
+	}
+	// create Go refraction
+	err = db.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.Refraction{
+		ID:        GoRefraction,
+		Name:      "go",
+		Archetype: model.ArchetypeGo,
+		Remotes:   []*model.Remote{defaultGoRemote},
+	}).Error
+	if err != nil {
+		log.WithError(err).Error("failed to create default Go remote")
 		return err
 	}
 	return nil
