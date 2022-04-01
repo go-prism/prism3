@@ -7,7 +7,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/impl/helmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
-	"gitlab.com/go-prism/prism3/core/internal/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 )
 

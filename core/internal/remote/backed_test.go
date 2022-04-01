@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
-	"gitlab.com/go-prism/prism3/core/internal/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"testing"
 )
 

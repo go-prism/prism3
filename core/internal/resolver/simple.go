@@ -10,7 +10,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
-	"gitlab.com/go-prism/prism3/core/internal/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 	"time"
 )

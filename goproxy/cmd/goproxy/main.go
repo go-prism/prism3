@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/goproxy/goproxy"
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
@@ -8,6 +9,7 @@ import (
 	"gitlab.com/autokubeops/serverless"
 	"gitlab.com/av1o/cap10-ingress/pkg/logging"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/goproxy/internal/cache"
 	stdlog "log"
 	"net/http"
@@ -16,7 +18,9 @@ import (
 type environment struct {
 	Port int `envconfig:"PORT" default:"8080"`
 	Log  logging.Config
-	Dev  struct {
+
+	S3  storage.S3Options
+	Dev struct {
 		Handlers bool `split_words:"true" default:"true"`
 	}
 	Flag flag.Options
@@ -31,15 +35,20 @@ func main() {
 	logging.Init(&e.Log)
 	flag.Init(e.Flag)
 
-	// configure routing
 	logger := log.New()
+	s3, err := storage.NewS3(context.Background(), e.S3)
+	if err != nil {
+		log.WithError(err).Fatal("failed to connect to object storage")
+		return
+	}
 
+	// configure routing
 	router := mux.NewRouter()
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
 	router.PathPrefix("/").Handler(&goproxy.Goproxy{
-		Cacher:        &cache.Cacher{DirCacher: goproxy.DirCacher("/tmp/")},
+		Cacher:        cache.NewCacher(s3),
 		ProxiedSUMDBs: nil,
 		Transport:     nil,
 		ErrorLogger:   stdlog.New(logger.WriterLevel(log.ErrorLevel), "", 0),

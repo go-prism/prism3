@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/go-prism/prism3/core/internal/permissions"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"runtime/debug"
 
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
-	"gitlab.com/go-prism/prism3/core/internal/storage"
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {

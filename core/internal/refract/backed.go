@@ -5,7 +5,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/remote"
-	"gitlab.com/go-prism/prism3/core/internal/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 )
 
