@@ -1,0 +1,49 @@
+image:
+  pullPolicy: Never
+podAnnotations:
+  app.kubernetes.io/name: goproxy
+  app.kubernetes.io/part-of: prism3
+env:
+  PRISM_S3_REGION: "us-east-1"
+  PRISM_S3_PATH_STYLE: "true"
+  PRISM_S3_ENDPOINT: http://minio.minio.svc.cluster.local:9000
+  PRISM_S3_BUCKET: prism
+  PRISM_LOG_DEBUG: "true"
+  PRISM_PUBLIC_URL: https://prism3.devel
+  AWS_ACCESS_KEY_ID: username
+  AWS_SECRET_ACCESS_KEY: password
+security:
+  podContext:
+    fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+  containerContext:
+    runAsNonRoot: true
+    runAsGroup: 1001
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+service:
+  externalPort: 8080
+  internalPort: 8080
+ingress:
+  enabled: false
+prometheus:
+  metrics: false
+livenessProbe:
+  path: "/healthz"
+readinessProbe:
+  path: "/healthz"
+volumes:
+  - name: tmp
+    mountPath: /tmp
+    config:
+      emptyDir: {}
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi

@@ -22,7 +22,7 @@ deploy:
     releases:
       - name: core3
         namespace: prism
-        remoteChart: https://av1o.gitlab.io/charts/auto-deploy-app-0.15.3.tgz
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
         skipBuildDependencies: true
         upgradeOnChange: true
         artifactOverrides:

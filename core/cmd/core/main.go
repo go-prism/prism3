@@ -22,6 +22,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -40,9 +41,13 @@ type environment struct {
 	}
 	S3  storage.S3Options
 	Dev struct {
-		Handlers bool `split_words:"true"`
+		Handlers bool `split_words:"true" default:"true"`
 	}
 	Flag flag.Options
+
+	Plugin struct {
+		GoURL string `split_words:"true"`
+	}
 }
 
 func main() {
@@ -71,8 +76,17 @@ func main() {
 		return
 	}
 
+	var goProxyURL *url.URL
+	if e.Plugin.GoURL != "" {
+		goProxyURL, err = url.Parse(e.Plugin.GoURL)
+		if err != nil {
+			log.WithError(err).Fatal("failed to parse GoProxy URL")
+			return
+		}
+	}
+
 	// configure graphql
-	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL))
+	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL)
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
@@ -112,6 +126,9 @@ func main() {
 		Methods(http.MethodGet)
 	// pypi
 	router.HandleFunc("/api/pypi/{bucket}/simple/{package}/", h.ServePyPi).
+		Methods(http.MethodGet)
+	// go
+	router.PathPrefix("/api/go").HandlerFunc(h.ServeGo).
 		Methods(http.MethodGet)
 
 	// start serving

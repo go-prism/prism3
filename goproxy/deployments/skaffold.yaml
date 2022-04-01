@@ -1,0 +1,29 @@
+apiVersion: skaffold/v2beta15
+kind: Config
+metadata:
+  name: goproxy
+build:
+  artifacts:
+    - image: dev.local/prism3/goproxy
+      docker:
+        buildArgs:
+          GITLAB_PREFIX: "harbor.dcas.dev/"
+  local:
+    push: false
+deploy:
+  kubectl:
+    defaultNamespace: prism
+  kubeContext: minikube
+  helm:
+    releases:
+      - name: goproxy3
+        namespace: prism
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+        skipBuildDependencies: true
+        upgradeOnChange: true
+        artifactOverrides:
+          image: dev.local/prism3/goproxy
+        valuesFiles:
+          - deployments/values.yaml
+        imageStrategy:
+          helm: {}

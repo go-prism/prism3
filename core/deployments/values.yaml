@@ -12,6 +12,7 @@ env:
   PRISM_S3_BUCKET: prism
   PRISM_LOG_DEBUG: "true"
   PRISM_PUBLIC_URL: https://prism3.devel
+  PRISM_PLUGIN_GO_URL: http://goproxy3-auto-deploy:8080
   AWS_ACCESS_KEY_ID: username
   AWS_SECRET_ACCESS_KEY: password
   HELM_CACHE_HOME: /tmp

@@ -4,10 +4,16 @@ import (
 	"context"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"io"
+	"net/http/httputil"
+	"net/url"
 	"sync"
 )
 
-func NewGateway(r resolver.IResolver) *Gateway {
+func NewGateway(r resolver.IResolver, goProxyURL *url.URL) *Gateway {
+	var goProxy *httputil.ReverseProxy
+	if goProxyURL != nil {
+		goProxy = httputil.NewSingleHostReverseProxy(goProxyURL)
+	}
 	return &Gateway{
 		resolver: r,
 		pool: &sync.Pool{
@@ -20,6 +26,7 @@ func NewGateway(r resolver.IResolver) *Gateway {
 				return new(resolver.NPMRequest)
 			},
 		},
+		goProxy: goProxy,
 	}
 }
 
