@@ -23,10 +23,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 interface Props {
 	title: string;
-	icon: Icon
+	icon: Icon;
+	colour?: string;
 }
 
-const InfoCard: React.FC<Props> = ({title, children, ...props}): JSX.Element => {
+const InfoCard: React.FC<Props> = ({title, colour, children, ...props}): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
@@ -37,7 +38,7 @@ const InfoCard: React.FC<Props> = ({title, children, ...props}): JSX.Element => 
 		<CardContent>
 			<div className={classes.header}>
 				<props.icon
-					color={theme.palette.info.main}
+					color={colour || theme.palette.info.main}
 				/>
 				<Typography
 					className={classes.title}

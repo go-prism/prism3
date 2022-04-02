@@ -65,8 +65,9 @@ const Remotes: React.FC = (): JSX.Element => {
 				Failed to load remotes.<br/>
 				{getGraphErrorMessage(error)}
 			</Alert>}
-			{!loading && error == null && items.length === 0 && <InfoCard
+			{!loading && error == null && !id && <InfoCard
 				title="Remotes"
+				colour={theme.palette.secondary.main}
 				icon={ArrowsRight}>
 				<Typography
 					color="textSecondary">

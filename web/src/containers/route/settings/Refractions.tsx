@@ -68,8 +68,9 @@ const Refractions: React.FC = (): JSX.Element => {
 					Failed to load refractions.<br/>
 					{getGraphErrorMessage(error)}
 				</Alert>}
-				{!loading && error == null && items.length === 0 && <InfoCard
+				{!loading && error == null && !id && <InfoCard
 					title="Refractions"
+					colour={theme.palette.info.main}
 					icon={ArrowsSplit}>
 					<Typography
 						color="textSecondary">

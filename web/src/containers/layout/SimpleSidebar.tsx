@@ -50,7 +50,7 @@ export interface SidebarItem {
 
 interface SimpleSidebarProps {
 	items: SidebarItem[];
-	onSelection?: (val: SidebarItem) => void;
+	onSelection?: (val: SidebarItem | null) => void;
 	header: string;
 	headerTo?: string;
 	icon: Icon;
@@ -63,6 +63,11 @@ const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header
 	const [selected, setSelected] = useState<SidebarItem | null>(null);
 
 	const onSetSelection = (val: SidebarItem): void => {
+		if (selected?.id === val.id) {
+			onSelection?.(null);
+			setSelected(() => null);
+			return;
+		}
 		onSelection?.(val);
 		setSelected(() => val);
 	}

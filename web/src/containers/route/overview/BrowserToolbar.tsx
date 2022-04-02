@@ -16,7 +16,7 @@ import {makeStyles} from "tss-react/mui";
 import React, {useEffect, useRef, useState} from "react";
 import {ChevronDown} from "tabler-icons-react";
 import {gql, useQuery} from "@apollo/client";
-import {useHistory} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import {Refraction} from "../../../graph/types";
 import {toTitleCase} from "../../../utils/format";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
@@ -105,7 +105,9 @@ const BrowserToolbar: React.FC<Props> = ({id}): JSX.Element => {
 				ref={anchorRef}>
 				<Button
 					className={classes.button}
-					onClick={() => history.push(`/refract/${selected?.id}/-/edit`)}>
+					disabled={selected == null}
+					component={Link}
+					to={`/refract/${selected?.id}/-/edit`}>
 					{selected?.name || ""}
 				</Button>
 				<Button
