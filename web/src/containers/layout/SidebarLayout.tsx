@@ -2,6 +2,7 @@ import {Box, Grid, GridSize} from "@mui/material";
 import React, {ReactNode} from "react";
 import {ErrorBoundary} from "react-error-boundary";
 import {useTheme} from "@mui/material/styles";
+import {useLocation} from "react-router-dom";
 import Error from "../alert/Error";
 
 interface SidebarLayoutProps {
@@ -14,11 +15,15 @@ const DEFAULT_WIDTH = 2;
 
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, sidebarWidth = DEFAULT_WIDTH, children}): JSX.Element => {
 	const theme = useTheme();
+	const location = useLocation();
+
+	const navHeight = location.pathname.startsWith("/artifacts/-/") ? 92 : 52;
+
 	return (
 		<Grid
 			container>
 			<Grid
-				style={{backgroundColor: theme.palette.grey["200"], height: "calc(100vh - 52px)", padding: theme.spacing(1)}}
+				style={{backgroundColor: theme.palette.grey["200"], height: `calc(100vh - ${navHeight}px)`, padding: theme.spacing(1)}}
 				item
 				xs={sidebarWidth || DEFAULT_WIDTH}>
 				<ErrorBoundary

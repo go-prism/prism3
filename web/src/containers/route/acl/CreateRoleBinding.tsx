@@ -42,6 +42,8 @@ import getErrorMessage from "../../../selectors/getErrorMessage";
 import {Role} from "../../../graph/types";
 import useCreateRoleBinding from "../../../graph/actions/rbac/useCreateRoleBinding";
 import {toTitleCase} from "../../../utils/format";
+import Flexbox from "../../widgets/Flexbox";
+import {getResourceIcon} from "../../../utils/remote";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -164,7 +166,10 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 										key={r}
 										value={r}
 										onClick={() => setResource(() => r)}>
-										{r}
+										<Flexbox>
+											{getResourceIcon(theme, r)}
+											{toTitleCase(r)}
+										</Flexbox>
 									</MenuItem>)}
 								</Select>
 							</FormControl>
@@ -180,7 +185,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 								fieldProps={{
 									className: classes.formItem,
 									required: role === Role.POWER,
-									label: "Resource name",
+									label: `${toTitleCase(resource || "Resource")} name`,
 									placeholder: "maven-central",
 									variant: "filled",
 									id: "txt-resource",

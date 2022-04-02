@@ -45,6 +45,7 @@ import useGetUsers from "../../../graph/actions/rbac/useGetUsers";
 import {Role} from "../../../graph/types";
 import InlineNotFound from "../../widgets/InlineNotFound";
 import {toTitleCase} from "../../../utils/format";
+import {getResourceIcon, getResourceName} from "../../../utils/remote";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	icon: {
@@ -157,7 +158,7 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 							</TableCell>
 						</TableRow>}
 						{loading && loadingItems()}
-						{!loading && roles.length === 0 && <TableRow>
+						{error == null && !loading && roles.length === 0 && <TableRow>
 							<TableCell colSpan={3}>
 								<InlineNotFound/>
 							</TableCell>
@@ -165,7 +166,10 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 						{!loading && roles.map(r => <TableRow
 							key={r.id}>
 							<TableCell>{parseUsername(r.subject)}</TableCell>
-							<TableCell>{r.resource || "All resources"}</TableCell>
+							<TableCell>{r.resource ? <Flexbox>
+								{getResourceIcon(theme, r.resource)}
+								{getResourceName(r.resource)}
+							</Flexbox> : "All resources"}</TableCell>
 						</TableRow>)}
 					</TableBody>
 				</Table>

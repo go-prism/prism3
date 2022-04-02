@@ -61,7 +61,7 @@ const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element
 			{
 				install: <div>
 					<CodeBlock
-						code={`helm install my-app ${API_URL}/api/-/${refraction}/${pkgName}-${pkgVersion}.tgz`}
+						code={`helm install my-app ${API_URL}/api/v1/${refraction}/-/${pkgName}-${pkgVersion}.tgz`}
 						language="bash"
 					/>
 				</div>,

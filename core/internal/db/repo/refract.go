@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -30,6 +31,12 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	if err := r.db.Where("id = ?", id).First(&ref).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to fetch refraction")
 		return nil, err
+	}
+	// block changes to Go archetypes since
+	// they must be managed by Prism
+	if ref.Archetype == model.ArchetypeGo {
+		log.WithContext(ctx).WithError(permissions.ErrForbidden).Error("rejecting request to modify Go refraction")
+		return nil, permissions.ErrForbidden
 	}
 	// fetch the remotes
 	var remotes []*model.Remote

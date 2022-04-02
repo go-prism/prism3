@@ -32,8 +32,9 @@ import {Artifact, Refraction} from "../../../graph/types";
 import RefractHeader from "../../widgets/RefractHeader";
 import InlineNotFound from "../../widgets/InlineNotFound";
 import ObjectInfo from "./ObjectInfo";
+import BrowserToolbar from "./BrowserToolbar";
 
-interface OverviewParams {
+export interface OverviewParams {
 	ref?: string;
 }
 
@@ -174,47 +175,46 @@ const Browser: React.FC = (): JSX.Element => {
 		/>;
 	}
 	return (
-		<SidebarLayout
-			sidebar={<div
-				style={{height: "calc(100vh - 112px)", maxHeight: "calc(100vh - 112px)"}}>
-				{loading && <ListItemSkeleton icon/>}
-				{!loading && error != null && <Alert
-					severity="error">
-					Failed to load data.
-				</Alert>}
-				{!loading && error == null && flattenedData.length === 0 && <InlineNotFound/>}
-				{!loading && error == null && flattenedData.length > 0 && <AutoSizer>
-					{({height, width}) => (
-						<FixedSizeList
-							itemCount={flattenedData.length}
-							itemSize={36}
-							width={width}
-							height={height}
-							itemKey={i => flattenedData[i].node.id}>
-							{Row}
-						</FixedSizeList>)}
-				</AutoSizer>}
-			</div>}>
-			<div
-				style={{margin: theme.spacing(1)}}>
-				<RefractHeader
-					refraction={data?.getRefraction ?? null}
-					loading={loading}
-				/>
-				{selectedItem == null && error == null && <Alert
-					severity="info">
-					Nothing has been selected
-				</Alert>}
-				{!loading && error != null && <Alert
-					severity="error">
-					Failed to load refractions.
-				</Alert>}
-				{selectedItem != null && data?.getRefraction != null && <ObjectInfo
-					item={selectedItem}
-					refraction={data.getRefraction}
-				/>}
-			</div>
-		</SidebarLayout>
+		<>
+			<BrowserToolbar id={ref || ""}/>
+			<SidebarLayout
+				sidebar={<div
+					style={{height: "calc(100vh - 112px)", maxHeight: "calc(100vh - 112px)"}}>
+					{loading && <ListItemSkeleton icon/>}
+					{!loading && error != null && <Alert
+						severity="error">
+						Failed to load data.
+					</Alert>}
+					{!loading && error == null && flattenedData.length === 0 && <InlineNotFound/>}
+					{!loading && error == null && flattenedData.length > 0 && <AutoSizer>
+						{({height, width}) => (
+							<FixedSizeList
+								itemCount={flattenedData.length}
+								itemSize={36}
+								width={width}
+								height={height}
+								itemKey={i => flattenedData[i].node.id}>
+								{Row}
+							</FixedSizeList>)}
+					</AutoSizer>}
+				</div>}>
+				<div
+					style={{margin: theme.spacing(1)}}>
+					<RefractHeader
+						refraction={data?.getRefraction ?? null}
+						loading={loading}
+					/>
+					{!loading && error != null && <Alert
+						severity="error">
+						Failed to load refractions.
+					</Alert>}
+					{selectedItem != null && data?.getRefraction != null && <ObjectInfo
+						item={selectedItem}
+						refraction={data.getRefraction}
+					/>}
+				</div>
+			</SidebarLayout>
+		</>
 	);
 };
 export default Browser;

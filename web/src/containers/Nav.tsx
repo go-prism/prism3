@@ -64,10 +64,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	avatar: {
 		width: 24,
 		height: 24,
-		borderRadius: 100,
-		margin: 12,
-		padding: 6,
-		backgroundColor: theme.palette.background.default
+		margin: theme.spacing(1.5)
 	},
 	appBarShift: {
 		marginLeft: drawerWidth,
@@ -130,14 +127,8 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 						<Typography
 							className={classes.brand}
 							variant="h6"
-							color="textPrimary">
-							Prism
-						</Typography>
-						<Typography
-							className={classes.title}
-							variant="h6"
 							color="textSecondary">
-							DEV
+							Prism
 						</Typography>
 					</ButtonBase>
 					<div className={classes.grow}/>
