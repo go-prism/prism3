@@ -120,6 +120,7 @@ const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header
 				className={classes.item}
 				component={headerTo ? Link : "div"}
 				to={headerTo}
+				onClick={() => setSelected(null)}
 				button
 				key="header">
 				<ListItemIcon>

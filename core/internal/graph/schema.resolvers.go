@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 	"gitlab.com/av1o/cap10/pkg/client"
-	"gitlab.com/go-prism/prism3/core/internal/permissions"
+	"gitlab.com/go-prism/prism3/core/internal/errors"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"runtime/debug"
 
@@ -165,7 +165,7 @@ func (r *queryResolver) GetUsers(ctx context.Context, role model.Role) ([]*model
 func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.User, error) {
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
-		return nil, permissions.ErrUnauthorised
+		return nil, errors.ErrUnauthorised
 	}
 	return &model.User{
 		Sub: user.Sub,

@@ -9,6 +9,7 @@ container-scanning:
     - job: autobuild golang
 
 production:
+  resource_group: prod-goproxy
   before_script:
     - kubectl config use-context prism/prism3:kube2-prism
   environment:

@@ -18,6 +18,7 @@ container-scanning:
     - job: autobuild node
 
 production:
+  resource_group: prod-web
   before_script:
     - kubectl config use-context prism/prism3:kube2-prism
   environment:

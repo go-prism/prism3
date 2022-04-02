@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/internal/errors"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 )
 
@@ -58,7 +59,7 @@ func (m *Manager) Load(ctx context.Context) error {
 func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID string, verb rbac.Action) error {
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
-		return ErrUnauthorised
+		return errors.ErrUnauthorised
 	}
 	username := NormalUser(user.AsUsername())
 	fields := log.Fields{
@@ -70,7 +71,7 @@ func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID s
 	ok = m.r.IsGrantInheritedStr(username, m.resourceName(resource, resourceID), verb)
 	if !ok {
 		log.WithContext(ctx).WithFields(fields).Warning("blocking user access due to missing RBAC rule")
-		return ErrForbidden
+		return errors.ErrForbidden
 	}
 	return nil
 }
@@ -78,19 +79,19 @@ func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID s
 func (m *Manager) AmI(ctx context.Context, role model.Role) error {
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
-		return ErrUnauthorised
+		return errors.ErrUnauthorised
 	}
 	username := NormalUser(user.AsUsername())
 	log.WithContext(ctx).Debugf("checking user access to role (%s): %s", role, username)
 	userRole := m.r.GetRole(username)
 	if userRole == nil {
 		log.WithContext(ctx).Warning("failed to locate any role for user")
-		return ErrForbidden
+		return errors.ErrForbidden
 	}
 	ok = userRole.HasAncestor(string(role))
 	if !ok {
 		log.WithContext(ctx).WithField("role", role).Warning("unable to find role in any ancestor")
-		return ErrForbidden
+		return errors.ErrForbidden
 	}
 	return nil
 }

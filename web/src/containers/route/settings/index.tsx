@@ -46,16 +46,6 @@ const Settings: React.FC = (): JSX.Element => {
 			to: "/settings/security/transport"
 		},
 		{
-			id: "div-lang",
-			label: "Framework",
-			type: "header"
-		},
-		{
-			id: "go",
-			label: "GoProxy",
-			to: "/settings/fwk/go"
-		},
-		{
 			id: "div-sys",
 			label: "System",
 			type: "header"
@@ -77,6 +67,7 @@ const Settings: React.FC = (): JSX.Element => {
 			sidebarWidth={2}
 			sidebar={<div>
 				<SimpleSidebar
+					headerTo="/settings"
 					items={settings}
 					header="Settings"
 					icon={SettingsIcon}
