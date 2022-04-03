@@ -10,12 +10,14 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/bluele/gcache v0.0.2
+	github.com/djcass44/go-utils v0.2.1-0.20210516001550-3d288882b7f4
 	github.com/euroteltr/rbac v1.0.9
 	github.com/ghodss/yaml v1.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/lpar/problem v0.0.0-20200522200938-32704d5be676
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/vektah/gqlparser/v2 v2.4.0
@@ -57,7 +59,6 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/djcass44/go-tracer v0.3.0 // indirect
-	github.com/djcass44/go-utils v0.2.1-0.20210516001550-3d288882b7f4 // indirect
 	github.com/docker/cli v20.10.11+incompatible // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.12+incompatible // indirect

@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/djcass44/go-utils/pkg/httputils"
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/lpar/problem"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"io"
 	"net/http"
 	"strings"
@@ -46,14 +47,9 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string) (string, erro
 		"path":   path,
 		"target": target,
 	}).Infof("probing remote")
-	resp, err := r.Do(ctx, http.MethodHead, target)
+	_, err := r.Do(ctx, http.MethodHead, target)
 	if err != nil {
 		return "", err
-	}
-	// determine whether the request was a success
-	// todo handle more than just '200 OK'
-	if resp.StatusCode != http.StatusOK {
-		return "", errs.ErrRequestFailed
 	}
 	// save to the cache
 	_ = r.cache.Set(path, target, ttlcache.DefaultTTL)
@@ -80,7 +76,7 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string) (*http.
 	req, err := http.NewRequestWithContext(ctx, method, target, nil)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to prepare request")
-		return nil, err
+		return nil, problem.New(http.StatusBadRequest).Errorf("remote request cannot be created")
 	}
 	start := time.Now()
 	// execute the request
@@ -100,9 +96,8 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string) (*http.
 		"dur":    time.Since(start),
 		"method": method,
 	}).Infof("remote request completed")
-	// todo handle more than just '200 OK'
-	if resp.StatusCode != http.StatusOK {
-		return nil, errs.ErrRequestFailed
+	if !httputils.IsHTTPSuccess(resp.StatusCode) {
+		return nil, problem.New(resp.StatusCode).Errorf("failed to retrieve object from remote")
 	}
 	return resp, nil
 }

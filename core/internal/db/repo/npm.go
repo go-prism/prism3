@@ -34,7 +34,7 @@ func (r *NPMPackageRepo) GetPackage(ctx context.Context, pkg string) (string, er
 	var result string
 	if err := r.db.Model(&schemas.NPMPackage{}).Where("name = ?", pkg).Select("document::text").First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
-		return "", err
+		return "", returnErr(err, "failed to find package")
 	}
 	return result, nil
 }
@@ -47,7 +47,7 @@ func (r *NPMPackageRepo) GetPackageVersion(ctx context.Context, pkg, version str
 	var result string
 	if err := r.db.Model(&schemas.NPMPackage{}).Where("name = ?", pkg).Select("document->'versions'->>?", version).First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
-		return "", err
+		return "", returnErr(err, "failed to find package")
 	}
 	return result, nil
 }

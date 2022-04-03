@@ -2,27 +2,36 @@ package v1
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
+func (*Gateway) getPath(uri *url.URL) (string, bool) {
+	paths := strings.SplitN(uri.Path, "/-/", 2)
+	if len(paths) < 2 {
+		return "", false
+	}
+	return paths[1], true
+}
+
 func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 	bucket := mux.Vars(r)["bucket"]
-	paths := strings.SplitN(r.URL.Path, "/-/", 2)
-	if len(paths) < 2 {
-		http.Error(w, "missing path", http.StatusBadRequest)
+	path, ok := g.getPath(r.URL)
+	if !ok {
+		_ = problem.MustWrite(w, problem.New(http.StatusBadRequest).Errorf("malformed path"))
 		return
 	}
 	req := g.pool.Get().(*resolver.Request)
-	req.New(bucket, paths[1])
+	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve
 	reader, err := g.Serve(r.Context(), req)
 	if err != nil {
-		// todo figure out the code and appropriate message
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = problem.MustWrite(w, err)
 		return
 	}
 	// copy the response back
@@ -31,15 +40,18 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 
 func (g *Gateway) ServeHTTPHelm(w http.ResponseWriter, r *http.Request) {
 	bucket := mux.Vars(r)["bucket"]
-	path := strings.SplitN(r.URL.Path, "/-/", 2)[1]
+	path, ok := g.getPath(r.URL)
+	if !ok {
+		_ = problem.MustWrite(w, problem.New(http.StatusBadRequest).Errorf("malformed path"))
+		return
+	}
 	req := g.pool.Get().(*resolver.Request)
 	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve
 	reader, err := g.ServeHelm(r.Context(), req)
 	if err != nil {
-		// todo figure out the code and appropriate message
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = problem.MustWrite(w, err)
 		return
 	}
 	// copy the response back
@@ -55,8 +67,7 @@ func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
 	// serve
 	reader, err := g.resolver.ResolvePyPi(r.Context(), req)
 	if err != nil {
-		// todo figure out the code and appropriate message
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = problem.MustWrite(w, err)
 		return
 	}
 	// copy the response back

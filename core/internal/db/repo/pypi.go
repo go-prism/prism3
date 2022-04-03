@@ -30,7 +30,7 @@ func (r *PyPackageRepo) GetPackages(ctx context.Context, pkg string) ([]*schemas
 	var results []*schemas.PyPackage
 	if err := r.db.Where("name = ?", pkg).Find(&results).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find packages")
-		return nil, err
+		return nil, returnErr(err, "failed to find packages")
 	}
 	return results, nil
 }
@@ -40,7 +40,7 @@ func (r *PyPackageRepo) GetPackage(ctx context.Context, file string) (string, er
 	var result string
 	if err := r.db.Model(&schemas.PyPackage{}).Where("filename = ?", file).Select("url").First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
-		return "", err
+		return "", returnErr(err, "failed to find package")
 	}
 	return result, nil
 }

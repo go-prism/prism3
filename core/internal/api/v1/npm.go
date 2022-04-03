@@ -3,6 +3,7 @@ package v1
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"io"
 	"net/http"
@@ -48,8 +49,7 @@ func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	// serve
 	reader, err := g.resolver.ResolveNPM(r.Context(), req)
 	if err != nil {
-		// todo figure out the code and appropriate message
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = problem.MustWrite(w, err)
 		return
 	}
 	// copy the response back

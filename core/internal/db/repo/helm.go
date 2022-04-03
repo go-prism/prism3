@@ -28,7 +28,7 @@ func (r *HelmPackageRepo) GetPackage(ctx context.Context, file string) (string, 
 	var result string
 	if err := r.db.Model(&schemas.HelmPackage{}).Where("filename = ?", file).Select("url").First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
-		return "", err
+		return "", returnErr(err, "failed to find package")
 	}
 	return result, nil
 }
