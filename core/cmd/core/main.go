@@ -116,14 +116,8 @@ func main() {
 		HandlerFunc(h.ServeHTTPHelm).
 		Methods(http.MethodGet)
 	// npm
-	router.HandleFunc("/api/npm/{bucket}/{package}", h.ServeHTTPNPM).
-		Methods(http.MethodGet)
-	router.HandleFunc("/api/npm/{bucket}/@{scope}/{package}", h.ServeHTTPNPM).
-		Methods(http.MethodGet)
-	router.HandleFunc("/api/npm/{bucket}/{package}/{version}", h.ServeHTTPNPM).
-		Methods(http.MethodGet)
-	router.HandleFunc("/api/npm/{bucket}/@{scope}/{package}/{version}", h.ServeHTTPNPM).
-		Methods(http.MethodGet)
+	npmRouter := router.PathPrefix("/api/npm").Subrouter()
+	h.RouteNPM(npmRouter)
 	// pypi
 	router.HandleFunc("/api/pypi/{bucket}/simple/{package}/", h.ServePyPi).
 		Methods(http.MethodGet)

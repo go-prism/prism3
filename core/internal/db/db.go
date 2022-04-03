@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/Unleash/unleash-client-go/v3"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -15,12 +16,13 @@ import "gorm.io/driver/postgres"
 func NewDatabase(dsn string, replicas ...string) (*Database, error) {
 	// configure primary
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		SkipDefaultTransaction: flag.IsEnabled(features.DBSkipDefaultTransaction),
+		SkipDefaultTransaction: flag.IsEnabled(features.DBSkipDefaultTransaction, unleash.WithFallback(true)),
 	})
 	if err != nil {
 		log.WithError(err).Error("failed to open database connection")
 		return nil, err
 	}
+	log.Debugf("default transactions: %v", database.SkipDefaultTransaction)
 	// configure read-replicas
 	var r []gorm.Dialector
 	for i := range replicas {

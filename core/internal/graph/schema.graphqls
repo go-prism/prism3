@@ -38,7 +38,7 @@ type Artifact {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     createdAt: Int!
     updatedAt: Int!
-    uri: String!
+    uri: String! @goTag(key: "gorm", value: "index")
     downloads: Int!
     remoteID: ID! @goTag(key: "gorm", value: "index")
     slices: Strings!
