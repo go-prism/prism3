@@ -3,8 +3,7 @@ package npmapi
 import (
 	"context"
 	"fmt"
-	cache "github.com/Code-Hex/go-generics-cache"
-	"github.com/Code-Hex/go-generics-cache/policy/lfu"
+	"github.com/jellydator/ttlcache/v3"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
@@ -19,18 +18,18 @@ func NewProvider(repos *repo.Repos, publicURL string) *Provider {
 	return &Provider{
 		publicURL:       publicURL,
 		repos:           repos,
-		pkgCache:        cache.New(cache.AsLFU[string, string](lfu.WithCapacity(1000))),
-		pkgVersionCache: cache.New(cache.AsLFU[string, string](lfu.WithCapacity(1000))),
+		pkgCache:        ttlcache.New[string, string](ttlcache.WithCapacity[string, string](1000), ttlcache.WithTTL[string, string](time.Minute*5)),
+		pkgVersionCache: ttlcache.New[string, string](ttlcache.WithCapacity[string, string](1000)),
 	}
 }
 
 func (p *Provider) Package(ctx context.Context, ref *refract.Refraction, pkg string) (io.Reader, error) {
 	log.WithContext(ctx).WithField("package", pkg).Info("retrieving NPM package manifest")
 	// check the cache
-	data, ok := p.pkgCache.Get(pkg)
-	if ok {
+	item := p.pkgCache.Get(pkg)
+	if item != nil {
 		log.WithContext(ctx).WithField("package", pkg).Info("found NPM manifest in cache")
-		return strings.NewReader(data), nil
+		return strings.NewReader(item.Value()), nil
 	}
 	p.fetch(ctx, ref, pkg)
 	// fetch the package since we know it's in the cache
@@ -40,7 +39,7 @@ func (p *Provider) Package(ctx context.Context, ref *refract.Refraction, pkg str
 	}
 	// we can only cache temporarily otherwise
 	// we'll miss new versions
-	p.pkgCache.Set(pkg, data, cache.WithExpiration(time.Minute*5))
+	p.pkgCache.Set(pkg, data, ttlcache.DefaultTTL)
 	return strings.NewReader(data), nil
 }
 
@@ -51,13 +50,13 @@ func (p *Provider) PackageVersion(ctx context.Context, ref *refract.Refraction, 
 	}).Info("retrieving NPM package manifest")
 	// check the cache
 	key := filepath.Join(pkg, version)
-	data, ok := p.pkgVersionCache.Get(key)
-	if ok {
+	item := p.pkgVersionCache.Get(key)
+	if item != nil {
 		log.WithContext(ctx).WithFields(log.Fields{
 			"package": pkg,
 			"version": version,
 		}).Info("found NPM manifest in cache")
-		return strings.NewReader(data), nil
+		return strings.NewReader(item.Value()), nil
 	}
 	// check the database
 	data, err := p.repos.NPMPackageRepo.GetPackageVersion(ctx, pkg, version)
@@ -70,7 +69,7 @@ func (p *Provider) PackageVersion(ctx context.Context, ref *refract.Refraction, 
 	if err != nil {
 		return nil, err
 	}
-	p.pkgVersionCache.Set(key, data)
+	p.pkgVersionCache.Set(key, data, ttlcache.DefaultTTL)
 	return strings.NewReader(data), nil
 }
 

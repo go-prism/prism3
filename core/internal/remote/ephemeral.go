@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bluele/gcache"
+	"github.com/jellydator/ttlcache/v3"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"io"
@@ -16,14 +16,14 @@ import (
 type EphemeralRemote struct {
 	root   string
 	client *http.Client
-	cache  gcache.Cache
+	cache  *ttlcache.Cache[string, string]
 }
 
 func NewEphemeralRemote(root string) *EphemeralRemote {
 	return &EphemeralRemote{
 		root:   root,
 		client: http.DefaultClient,
-		cache:  gcache.New(1000).ARC().Build(),
+		cache:  ttlcache.New[string, string](ttlcache.WithCapacity[string, string](1000)),
 	}
 }
 
@@ -33,12 +33,12 @@ func (r *EphemeralRemote) String() string {
 
 func (r *EphemeralRemote) Exists(ctx context.Context, path string) (string, error) {
 	// check the cache
-	res, err := r.cache.GetIFPresent(path)
-	if err == nil {
+	res := r.cache.Get(path)
+	if res != nil {
 		log.WithContext(ctx).WithFields(log.Fields{
 			"path": path,
 		}).Info("located cached result")
-		return res.(string), nil
+		return res.Value(), nil
 	}
 
 	target := fmt.Sprintf("%s/%s", r.root, path)
@@ -56,7 +56,7 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string) (string, erro
 		return "", errs.ErrRequestFailed
 	}
 	// save to the cache
-	_ = r.cache.Set(path, target)
+	_ = r.cache.Set(path, target, ttlcache.DefaultTTL)
 	return target, nil
 }
 

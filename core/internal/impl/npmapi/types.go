@@ -1,7 +1,7 @@
 package npmapi
 
 import (
-	cache "github.com/Code-Hex/go-generics-cache"
+	"github.com/jellydator/ttlcache/v3"
 	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 )
 
@@ -10,6 +10,6 @@ type Provider struct {
 	repos     *repo.Repos
 
 	// caches
-	pkgCache        *cache.Cache[string, string]
-	pkgVersionCache *cache.Cache[string, string]
+	pkgCache        *ttlcache.Cache[string, string]
+	pkgVersionCache *ttlcache.Cache[string, string]
 }
