@@ -55,12 +55,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateRefraction  func(childComplexity int, input model.NewRefract) int
-		CreateRemote      func(childComplexity int, input model.NewRemote) int
-		CreateRoleBinding func(childComplexity int, input model.NewRoleBinding) int
-		DeleteRefraction  func(childComplexity int, id string) int
-		DeleteRemote      func(childComplexity int, id string) int
-		PatchRefraction   func(childComplexity int, id string, input model.PatchRefract) int
+		CreateRefraction       func(childComplexity int, input model.NewRefract) int
+		CreateRemote           func(childComplexity int, input model.NewRemote) int
+		CreateRoleBinding      func(childComplexity int, input model.NewRoleBinding) int
+		CreateTransportProfile func(childComplexity int, input model.NewTransportProfile) int
+		DeleteRefraction       func(childComplexity int, id string) int
+		DeleteRemote           func(childComplexity int, id string) int
+		PatchRefraction        func(childComplexity int, id string, input model.PatchRefract) int
 	}
 
 	Overview struct {
@@ -158,6 +159,7 @@ type MutationResolver interface {
 	PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error)
 	DeleteRefraction(ctx context.Context, id string) (bool, error)
 	CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error)
+	CreateTransportProfile(ctx context.Context, input model.NewTransportProfile) (*model.TransportSecurity, error)
 }
 type QueryResolver interface {
 	ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error)
@@ -273,6 +275,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateRoleBinding(childComplexity, args["input"].(model.NewRoleBinding)), true
+
+	case "Mutation.createTransportProfile":
+		if e.complexity.Mutation.CreateTransportProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTransportProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTransportProfile(childComplexity, args["input"].(model.NewTransportProfile)), true
 
 	case "Mutation.deleteRefraction":
 		if e.complexity.Mutation.DeleteRefraction == nil {
@@ -874,7 +888,7 @@ type Artifact {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     createdAt: Int!
     updatedAt: Int!
-    uri: String!
+    uri: String! @goTag(key: "gorm", value: "index")
     downloads: Int!
     remoteID: ID! @goTag(key: "gorm", value: "index")
     slices: Strings!
@@ -986,6 +1000,17 @@ input NewRoleBinding {
     resource: String!
 }
 
+input NewTransportProfile {
+    name: String!
+    ca: String!
+    cert: String!
+    key: String!
+    skipTLSVerify: Boolean! = false
+    httpProxy: String!
+    httpsProxy: String!
+    noProxy: String!
+}
+
 type Mutation {
     createRemote(input: NewRemote!): Remote!
     deleteRemote(id: ID!): Boolean!
@@ -995,6 +1020,8 @@ type Mutation {
     deleteRefraction(id: ID!): Boolean!
 
     createRoleBinding(input: NewRoleBinding!): RoleBinding!
+
+    createTransportProfile(input: NewTransportProfile!): TransportSecurity!
 }
 `, BuiltIn: false},
 }
@@ -1041,6 +1068,21 @@ func (ec *executionContext) field_Mutation_createRoleBinding_args(ctx context.Co
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNewRoleBinding2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewRoleBinding(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createTransportProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.NewTransportProfile
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNNewTransportProfile2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewTransportProfile(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1771,6 +1813,48 @@ func (ec *executionContext) _Mutation_createRoleBinding(ctx context.Context, fie
 	res := resTmp.(*model.RoleBinding)
 	fc.Result = res
 	return ec.marshalNRoleBinding2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createTransportProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createTransportProfile_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTransportProfile(rctx, args["input"].(model.NewTransportProfile))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.TransportSecurity)
+	fc.Result = res
+	return ec.marshalNTransportSecurity2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurity(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Overview_remotes(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
@@ -5311,6 +5395,89 @@ func (ec *executionContext) unmarshalInputNewRoleBinding(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputNewTransportProfile(ctx context.Context, obj interface{}) (model.NewTransportProfile, error) {
+	var it model.NewTransportProfile
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["skipTLSVerify"]; !present {
+		asMap["skipTLSVerify"] = false
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "ca":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ca"))
+			it.Ca, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "cert":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("cert"))
+			it.Cert, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "key":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+			it.Key, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "skipTLSVerify":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skipTLSVerify"))
+			it.SkipTLSVerify, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "httpProxy":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("httpProxy"))
+			it.HTTPProxy, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "httpsProxy":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("httpsProxy"))
+			it.HTTPSProxy, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "noProxy":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("noProxy"))
+			it.NoProxy, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPatchRefract(ctx context.Context, obj interface{}) (model.PatchRefract, error) {
 	var it model.PatchRefract
 	asMap := map[string]interface{}{}
@@ -5513,6 +5680,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createRoleBinding":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createRoleBinding(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createTransportProfile":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTransportProfile(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -7078,6 +7255,11 @@ func (ec *executionContext) unmarshalNNewRoleBinding2gitlabᚗcomᚋgoᚑprism�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNNewTransportProfile2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐNewTransportProfile(ctx context.Context, v interface{}) (model.NewTransportProfile, error) {
+	res, err := ec.unmarshalInputNewTransportProfile(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNOverview2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐOverview(ctx context.Context, sel ast.SelectionSet, v model.Overview) graphql.Marshaler {
 	return ec._Overview(ctx, sel, &v)
 }
@@ -7334,6 +7516,10 @@ func (ec *executionContext) marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3�
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalNTransportSecurity2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurity(ctx context.Context, sel ast.SelectionSet, v model.TransportSecurity) graphql.Marshaler {
+	return ec._TransportSecurity(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNTransportSecurity2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurityᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TransportSecurity) graphql.Marshaler {

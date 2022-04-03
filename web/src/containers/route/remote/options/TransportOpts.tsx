@@ -7,9 +7,10 @@ import {TransportSecurity} from "../../../../graph/types";
 
 interface Props {
 	onSelect: (val: TransportSecurity) => void;
+	disabled?: boolean;
 }
 
-const TransportOpts: React.FC<Props> = ({onSelect}): JSX.Element => {
+const TransportOpts: React.FC<Props> = ({onSelect, disabled}): JSX.Element => {
 	// hooks
 	const theme = useTheme();
 	const {data, loading, error} = useListTransports();
@@ -42,14 +43,15 @@ const TransportOpts: React.FC<Props> = ({onSelect}): JSX.Element => {
 				secondary="Settings used by Prism when establishing an HTTP(S) connection to the remote."
 			/>
 			{data?.listTransports != null && data.listTransports.length > 0 && <Select
+				disabled={disabled}
 				value={selected?.id || data.listTransports[0].id}
 				variant="filled"
 				style={{minWidth: 300}}>
 				{data.listTransports.map(t => <MenuItem
 					key={t.id}
+					disabled={disabled}
 					selected={selected?.id === t.id}
 					onClick={() => {
-						console.log(t.id);
 						setSelected(t);
 						onSelect(t);
 					}}

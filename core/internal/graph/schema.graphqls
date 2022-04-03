@@ -150,6 +150,17 @@ input NewRoleBinding {
     resource: String!
 }
 
+input NewTransportProfile {
+    name: String!
+    ca: String!
+    cert: String!
+    key: String!
+    skipTLSVerify: Boolean! = false
+    httpProxy: String!
+    httpsProxy: String!
+    noProxy: String!
+}
+
 type Mutation {
     createRemote(input: NewRemote!): Remote!
     deleteRemote(id: ID!): Boolean!
@@ -159,4 +170,6 @@ type Mutation {
     deleteRefraction(id: ID!): Boolean!
 
     createRoleBinding(input: NewRoleBinding!): RoleBinding!
+
+    createTransportProfile(input: NewTransportProfile!): TransportSecurity!
 }

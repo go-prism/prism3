@@ -5,7 +5,11 @@ import {Link} from "react-router-dom";
 import {Icon} from "tabler-icons-react";
 import {ListItemSkeleton} from "jmp-coreui";
 
-const useStyles = makeStyles()((theme: Theme) => ({
+interface StyleProps {
+	colour?: string;
+}
+
+const useStyles = makeStyles<StyleProps>()((theme: Theme, props) => ({
 	title: {
 		color: theme.palette.grey["700"],
 		fontWeight: 500,
@@ -13,7 +17,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	item: {
 		borderRadius: theme.spacing(1),
-		color: theme.palette.primary.main
+		color: props.colour || theme.palette.primary.main
 	},
 	itemHeader: {
 		textTransform: "uppercase",
@@ -30,7 +34,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		display: "flex",
 		justifyContent: "center",
 		alignItems: "center",
-		backgroundColor: theme.palette.primary.main,
+		backgroundColor: props.colour || theme.palette.primary.main,
 		width: 48,
 		height: 48,
 		borderRadius: theme.spacing(0.75)
@@ -53,13 +57,14 @@ interface SimpleSidebarProps {
 	onSelection?: (val: SidebarItem | null) => void;
 	header: string;
 	headerTo?: string;
+	colour?: string;
 	icon: Icon;
 	loading?: boolean;
 }
 
-const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header, headerTo, loading, ...props}): JSX.Element => {
+const SimpleSidebar: React.FC<SimpleSidebarProps> = ({items, onSelection, header, headerTo, colour, loading, ...props}): JSX.Element => {
 	// hooks
-	const {classes} = useStyles();
+	const {classes} = useStyles({colour});
 	const [selected, setSelected] = useState<SidebarItem | null>(null);
 
 	const onSetSelection = (val: SidebarItem): void => {

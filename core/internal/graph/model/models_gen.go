@@ -14,7 +14,7 @@ type Artifact struct {
 	ID        string              `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	CreatedAt int64               `json:"createdAt"`
 	UpdatedAt int64               `json:"updatedAt"`
-	URI       string              `json:"uri"`
+	URI       string              `json:"uri" gorm:"index"`
 	Downloads int64               `json:"downloads"`
 	RemoteID  string              `json:"remoteID" gorm:"index"`
 	Slices    datatypes.JSONArray `json:"slices"`
@@ -37,6 +37,17 @@ type NewRoleBinding struct {
 	Subject  string `json:"subject"`
 	Role     Role   `json:"role"`
 	Resource string `json:"resource"`
+}
+
+type NewTransportProfile struct {
+	Name          string `json:"name"`
+	Ca            string `json:"ca"`
+	Cert          string `json:"cert"`
+	Key           string `json:"key"`
+	SkipTLSVerify bool   `json:"skipTLSVerify"`
+	HTTPProxy     string `json:"httpProxy"`
+	HTTPSProxy    string `json:"httpsProxy"`
+	NoProxy       string `json:"noProxy"`
 }
 
 type Overview struct {

@@ -6,13 +6,13 @@ package graph
 import (
 	"context"
 	"fmt"
-	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/go-prism/prism3/core/internal/errors"
-	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"runtime/debug"
 
+	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
@@ -63,6 +63,13 @@ func (r *mutationResolver) CreateRoleBinding(ctx context.Context, input model.Ne
 		_ = r.authz.Load(context.TODO())
 	}()
 	return rb, nil
+}
+
+func (r *mutationResolver) CreateTransportProfile(ctx context.Context, input model.NewTransportProfile) (*model.TransportSecurity, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
+	return r.repos.TransportRepo.CreateTransport(ctx, &input)
 }
 
 func (r *queryResolver) ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error) {

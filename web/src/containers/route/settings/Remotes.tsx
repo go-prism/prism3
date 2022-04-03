@@ -46,6 +46,7 @@ const Remotes: React.FC = (): JSX.Element => {
 				items={items}
 				header="Remotes"
 				headerTo="/remotes"
+				colour={theme.palette.secondary.main}
 				icon={ArrowsRight}
 				loading={loading}
 			/>}>

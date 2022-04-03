@@ -219,6 +219,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 				primary: "HTTP/TLS/Proxy options",
 				secondary: "Configure how Prism communicates with remotes.",
 				children: data?.getRemote == null ? "" : <TransportOpts
+					disabled={readOnly}
 					onSelect={() => {}}
 				/>
 			}

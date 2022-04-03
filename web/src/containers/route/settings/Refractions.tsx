@@ -48,6 +48,7 @@ const Refractions: React.FC = (): JSX.Element => {
 				items={items}
 				header="Refractions"
 				headerTo="/refract"
+				colour={theme.palette.info.main}
 				icon={ArrowsSplit}
 				loading={loading}
 			/>}>
