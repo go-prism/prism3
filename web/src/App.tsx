@@ -19,6 +19,7 @@ import Browser from "./containers/route/overview/Browser";
 import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Profile from "./containers/route/Profile";
 import Dashboard from "./containers/route/Dashboard";
+import CreateTransport from "./containers/route/settings/CreateTransport";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -116,6 +117,11 @@ const App: React.FC = (): JSX.Element => {
 									path="/settings/acl/new"
 									exact
 									component={CreateRoleBinding}
+								/>
+								<Route
+									path="/settings/transport/new"
+									exact
+									component={CreateTransport}
 								/>
 								<Route
 									path="/remotes/new"

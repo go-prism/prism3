@@ -75,18 +75,22 @@ const Settings: React.FC = (): JSX.Element => {
 			</div>}>
 			<Switch>
 				<Route
+					exact
 					path="/settings/security/transport"
 					component={Transports}
 				/>
 				<Route
+					exact
 					path="/settings/fwk/go"
 					component={GoLangSettings}
 				/>
 				<Route
+					exact
 					path="/settings/sys/about"
 					component={Info}
 				/>
 				<Route
+					exact
 					path="/settings/sys/acl"
 					component={AccessControlSettings}
 				/>

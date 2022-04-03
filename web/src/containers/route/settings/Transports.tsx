@@ -31,9 +31,9 @@ import {
 import {makeStyles} from "tss-react/mui";
 import {ListItemSkeleton} from "jmp-coreui";
 import {ChevronDown, ChevronUp} from "tabler-icons-react";
-import {useHistory, useLocation} from "react-router-dom";
+import {Link, useHistory, useLocation} from "react-router-dom";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
-import useListTransports from "../../../graph/actions/remote/useListTransports";
+import useListTransports from "../../../graph/actions/transport/useListTransports";
 import {TransportSecurity} from "../../../graph/types";
 import ClientConfig from "../remote/options/ClientConfig";
 import Header from "../../layout/Header";
@@ -116,7 +116,9 @@ const Transports: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							variant="contained"
-							color="primary">
+							color="primary"
+							component={Link}
+							to="/settings/transport/new">
 							New
 						</Button>
 					</div>}

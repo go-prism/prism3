@@ -6,10 +6,10 @@ package graph
 import (
 	"context"
 	"fmt"
-	"gitlab.com/go-prism/prism3/core/internal/errors"
 	"runtime/debug"
 
 	"gitlab.com/av1o/cap10/pkg/client"
+	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
@@ -172,7 +172,7 @@ func (r *queryResolver) GetUsers(ctx context.Context, role model.Role) ([]*model
 func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.User, error) {
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
-		return nil, errors.ErrUnauthorised
+		return nil, errs.ErrUnauthorised
 	}
 	return &model.User{
 		Sub: user.Sub,

@@ -1,7 +1,7 @@
 import {Alert, CircularProgress, List, ListItem, ListItemText, MenuItem, Select} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useTheme} from "@mui/material/styles";
-import useListTransports from "../../../../graph/actions/remote/useListTransports";
+import useListTransports from "../../../../graph/actions/transport/useListTransports";
 import {getGraphErrorMessage} from "../../../../selectors/getErrorMessage";
 import {TransportSecurity} from "../../../../graph/types";
 
