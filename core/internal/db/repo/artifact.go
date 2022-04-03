@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gorm.io/gorm"
@@ -24,6 +25,7 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 	})
 	if err := tx.Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to update artifact")
+		sentry.CaptureException(err)
 		return err
 	}
 	// if we changed something, don't bother
@@ -42,6 +44,7 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 	}
 	if err := r.db.Create(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to create artifact")
+		sentry.CaptureException(err)
 		return err
 	}
 	return nil
@@ -51,6 +54,7 @@ func (r *ArtifactRepo) ListArtifacts(ctx context.Context, remotes []string) ([]*
 	var result []*model.Artifact
 	if err := r.db.Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Order("uri asc").Find(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to list artifacts")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return result, nil
@@ -60,6 +64,7 @@ func (r *ArtifactRepo) Count(ctx context.Context) (int64, error) {
 	var result int64
 	if err := r.db.Model(&model.Artifact{}).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count artifacts")
+		sentry.CaptureException(err)
 		return 0, err
 	}
 	return result, nil
@@ -69,6 +74,7 @@ func (r *ArtifactRepo) CountArtifactsByRemote(ctx context.Context, remote string
 	var result int64
 	if err := r.db.Model(&model.Artifact{}).Where("remoteID = ?", remote).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count artifacts")
+		sentry.CaptureException(err)
 		return 0, err
 	}
 	return result, nil
@@ -78,6 +84,7 @@ func (r *ArtifactRepo) Downloads(ctx context.Context) (int64, error) {
 	var result int64
 	if err := r.db.Model(&model.Artifact{}).Select("COALESCE(SUM(downloads), 0)").Scan(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to aggregate downloads")
+		sentry.CaptureException(err)
 		return 0, err
 	}
 	return result, nil

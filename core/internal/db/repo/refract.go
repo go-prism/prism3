@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -30,6 +31,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	var ref model.Refraction
 	if err := r.db.Where("id = ?", id).First(&ref).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to fetch refraction")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	// block changes to Go archetypes since
@@ -42,6 +44,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	var remotes []*model.Remote
 	if err := r.db.Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve remotes")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	// update the refraction
@@ -51,6 +54,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	// save the changes
 	if err := r.db.Save(&ref).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to update refraction")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return &ref, nil
@@ -60,6 +64,7 @@ func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract
 	var remotes []*model.Remote
 	if err := r.db.Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve remotes")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	result := model.Refraction{
@@ -71,6 +76,7 @@ func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract
 	}
 	if err := r.db.Create(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to create refraction")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return &result, nil
@@ -80,6 +86,7 @@ func (r *RefractRepo) GetRefractionByName(ctx context.Context, name string) (*mo
 	var result model.Refraction
 	if err := r.db.Preload("Remotes").Preload("Remotes.Security").Preload("Remotes.Transport").Where("name = ?", name).First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to get refraction")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return &result, nil
@@ -89,6 +96,7 @@ func (r *RefractRepo) GetRefraction(ctx context.Context, id string) (*model.Refr
 	var result model.Refraction
 	if err := r.db.Preload("Remotes").Where("id = ?", id).First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to get refraction")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return &result, nil
@@ -98,6 +106,7 @@ func (r *RefractRepo) ListNames(ctx context.Context) ([]*ResourceName, error) {
 	var results []string
 	if err := r.db.Model(&model.Refraction{}).Select("name").Find(&results).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to fetch refraction names")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	resources := make([]*ResourceName, len(results))
@@ -114,6 +123,7 @@ func (r *RefractRepo) ListRefractions(ctx context.Context) ([]*model.Refraction,
 	var result []*model.Refraction
 	if err := r.db.Preload("Remotes").Find(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to list refractions")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return result, nil
@@ -123,6 +133,7 @@ func (r *RefractRepo) Count(ctx context.Context) (int64, error) {
 	var result int64
 	if err := r.db.Model(&model.Refraction{}).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count refractions")
+		sentry.CaptureException(err)
 		return 0, err
 	}
 	return result, nil

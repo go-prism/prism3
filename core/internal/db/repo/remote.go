@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/db"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -22,6 +23,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 		r.db.Where("id = ?", db.TransportProfileDefault).First(&transport)
 	} else if err := r.db.Where("id = ?", in.Transport).First(&transport).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find transport")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	result := model.Remote{
@@ -40,6 +42,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 	}
 	if err := r.db.Create(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to create remote")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return &result, nil
@@ -49,6 +52,7 @@ func (r *RemoteRepo) GetRemote(ctx context.Context, id string) (*model.Remote, e
 	var result model.Remote
 	if err := r.db.Preload("Security").Preload("Transport").Where("id = ?", id).First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to get remote")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return &result, nil
@@ -62,6 +66,7 @@ func (r *RemoteRepo) ListRemotes(ctx context.Context, arch model.Archetype) ([]*
 	}
 	if err := tx.Find(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to list remotes")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	return result, nil
@@ -71,6 +76,7 @@ func (r *RemoteRepo) Count(ctx context.Context) (int64, error) {
 	var result int64
 	if err := r.db.Model(&model.Remote{}).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count remotes")
+		sentry.CaptureException(err)
 		return 0, err
 	}
 	return result, nil

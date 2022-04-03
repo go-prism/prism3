@@ -5,6 +5,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
@@ -19,6 +20,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/errtack"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"net/http"
@@ -43,7 +45,8 @@ type environment struct {
 	Dev struct {
 		Handlers bool `split_words:"true" default:"true"`
 	}
-	Flag flag.Options
+	Flag   flag.Options
+	Sentry errtack.Options
 
 	Plugin struct {
 		GoURL string `split_words:"true"`
@@ -58,6 +61,11 @@ func main() {
 	}
 	logging.Init(&e.Log)
 	flag.Init(e.Flag)
+
+	// setup sentry
+	if e.Sentry.DSN != "" {
+		_ = errtack.Init(e.Sentry)
+	}
 
 	// configure database
 	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)
@@ -102,6 +110,7 @@ func main() {
 
 	// configure routing
 	router := mux.NewRouter()
+	router.Use(sentryhttp.New(sentryhttp.Options{Repanic: true}).Handle)
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})

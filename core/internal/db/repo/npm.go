@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
 	"gorm.io/datatypes"
@@ -24,6 +25,7 @@ func (r *NPMPackageRepo) Insert(ctx context.Context, pkg, data string) error {
 	})
 	if err := tx.Model(&schemas.NPMPackage{}).Create(&schemas.NPMPackage{Name: pkg, Document: datatypes.JSON(data)}).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to upsert package")
+		sentry.CaptureException(err)
 		return err
 	}
 	return nil
@@ -34,6 +36,7 @@ func (r *NPMPackageRepo) GetPackage(ctx context.Context, pkg string) (string, er
 	var result string
 	if err := r.db.Model(&schemas.NPMPackage{}).Where("name = ?", pkg).Select("document::text").First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
+		sentry.CaptureException(err)
 		return "", returnErr(err, "failed to find package")
 	}
 	return result, nil
@@ -47,6 +50,7 @@ func (r *NPMPackageRepo) GetPackageVersion(ctx context.Context, pkg, version str
 	var result string
 	if err := r.db.Model(&schemas.NPMPackage{}).Where("name = ?", pkg).Select("document->'versions'->>?", version).First(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
+		sentry.CaptureException(err)
 		return "", returnErr(err, "failed to find package")
 	}
 	return result, nil
@@ -56,6 +60,7 @@ func (r *NPMPackageRepo) Count(ctx context.Context) (int64, error) {
 	var result int64
 	if err := r.db.Model(&schemas.NPMPackage{}).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count NPM packages")
+		sentry.CaptureException(err)
 		return 0, err
 	}
 	return result, nil

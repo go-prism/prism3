@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/Unleash/unleash-client-go/v3"
+	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -20,6 +21,7 @@ func NewDatabase(dsn string, replicas ...string) (*Database, error) {
 	})
 	if err != nil {
 		log.WithError(err).Error("failed to open database connection")
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	log.Debugf("default transactions: %v", database.SkipDefaultTransaction)
@@ -35,6 +37,7 @@ func NewDatabase(dsn string, replicas ...string) (*Database, error) {
 		Replicas: r,
 		Policy:   dbresolver.RandomPolicy{},
 	})); err != nil {
+		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to establish database replica connections")
 	}
 	log.Info("established database connection")
@@ -63,9 +66,11 @@ func (db *Database) Init(superuser string) error {
 	)
 	if err != nil {
 		log.WithError(err).Error("failed to run auto-migration")
+		sentry.CaptureException(err)
 		return err
 	}
 	if err := db.defaults(superuser); err != nil {
+		sentry.CaptureException(err)
 		return err
 	}
 	return nil
