@@ -5,7 +5,7 @@ variables:
 
 container-scanning:
   needs:
-    - job: autobuild golang
+    - job: build golang
 
 production:
   resource_group: prod-goproxy
@@ -16,7 +16,7 @@ production:
     kubernetes:
       namespace: prism
   needs:
-    - job: autobuild golang
+    - job: build golang
     - job: container-scanning
       optional: true
 
