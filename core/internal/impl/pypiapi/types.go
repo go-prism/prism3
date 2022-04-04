@@ -1,8 +1,8 @@
 package pypiapi
 
 import (
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 )
 
 type Index struct {

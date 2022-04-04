@@ -4,10 +4,9 @@ package model
 
 import (
 	"fmt"
+	"gitlab.com/go-prism/prism3/core/pkg/db/datatypes"
 	"io"
 	"strconv"
-
-	"gitlab.com/go-prism/prism3/core/internal/db/datatypes"
 )
 
 type Artifact struct {

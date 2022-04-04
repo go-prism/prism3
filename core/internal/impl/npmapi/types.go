@@ -2,7 +2,7 @@ package npmapi
 
 import (
 	"github.com/jellydator/ttlcache/v3"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 )
 
 type Provider struct {

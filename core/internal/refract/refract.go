@@ -3,19 +3,19 @@ package refract
 import (
 	"context"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/go-prism/prism3/core/internal/remote"
+	remote2 "gitlab.com/go-prism/prism3/core/pkg/remote"
 	"io"
 	"sync"
 	"time"
 )
 
-func NewSimple(name string, remotes []remote.Remote) *Refraction {
+func NewSimple(name string, remotes []remote2.Remote) *Refraction {
 	return &Refraction{
 		name:    name,
 		remotes: remotes,
 		rp: &sync.Pool{
 			New: func() any {
-				return remote.NewEphemeralRemote("")
+				return remote2.NewEphemeralRemote("")
 			},
 		},
 	}
@@ -25,7 +25,7 @@ func (r *Refraction) String() string {
 	return r.name
 }
 
-func (r *Refraction) Remotes() []remote.Remote {
+func (r *Refraction) Remotes() []remote2.Remote {
 	return r.remotes
 }
 

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"gitlab.com/go-prism/prism3/core/pkg/db/datatypes"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -14,7 +15,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"gitlab.com/go-prism/prism3/core/internal/db/datatypes"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 )
 

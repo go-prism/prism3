@@ -2,9 +2,9 @@ package refract
 
 import (
 	"context"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
-	"gitlab.com/go-prism/prism3/core/internal/remote"
+	repo2 "gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	remote2 "gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 )
@@ -14,10 +14,10 @@ type BackedRefraction struct {
 	rf  *Refraction
 }
 
-func NewBackedRefraction(mod *model.Refraction, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRefraction {
-	remotes := make([]remote.Remote, len(mod.Remotes))
+func NewBackedRefraction(mod *model.Refraction, store storage.Reader, onCreate repo2.CreateArtifactFunc, getPyPi, getHelm repo2.GetPackageFunc) *BackedRefraction {
+	remotes := make([]remote2.Remote, len(mod.Remotes))
 	for i := range mod.Remotes {
-		remotes[i] = remote.NewBackedRemote(mod.Remotes[i], store, onCreate, getPyPi, getHelm)
+		remotes[i] = remote2.NewBackedRemote(mod.Remotes[i], store, onCreate, getPyPi, getHelm)
 	}
 	return &BackedRefraction{
 		mod: mod,

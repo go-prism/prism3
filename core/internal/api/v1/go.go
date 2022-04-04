@@ -3,7 +3,7 @@ package v1
 import (
 	"context"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/go-prism/prism3/core/internal/db"
+	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"net/http"
 	"path/filepath"
 	"strings"

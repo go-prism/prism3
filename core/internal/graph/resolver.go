@@ -3,8 +3,8 @@ package graph
 import (
 	"context"
 	"github.com/bluele/gcache"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/permissions"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"time"
 )

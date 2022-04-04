@@ -2,7 +2,7 @@ package refract
 
 import (
 	"errors"
-	"gitlab.com/go-prism/prism3/core/internal/remote"
+	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"sync"
 )
 

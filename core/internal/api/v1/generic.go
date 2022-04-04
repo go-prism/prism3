@@ -2,8 +2,8 @@ package v1
 
 import (
 	"context"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"io"
 	"net/http/httputil"
 	"net/url"

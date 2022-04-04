@@ -1,0 +1,13 @@
+global:
+  imageRegistry: harbor.dcas.dev/docker.io
+architecture: standalone
+auth:
+  enabled: true
+  password: password
+master:
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi

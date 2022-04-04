@@ -2,7 +2,7 @@ package helmapi
 
 import (
 	"errors"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"helm.sh/helm/v3/pkg/chart"
 )
 

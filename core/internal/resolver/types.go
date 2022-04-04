@@ -3,10 +3,10 @@ package resolver
 import (
 	"context"
 	"github.com/bluele/gcache"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/impl/helmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 )

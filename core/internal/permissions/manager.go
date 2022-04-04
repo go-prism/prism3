@@ -6,9 +6,9 @@ import (
 	"github.com/euroteltr/rbac"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/av1o/cap10/pkg/client"
-	"gitlab.com/go-prism/prism3/core/internal/db/repo"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 )
 
 func NewManager(repos *repo.Repos) *Manager {
