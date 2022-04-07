@@ -1,0 +1,71 @@
+podAnnotations:
+  app.kubernetes.io/name: batch
+  app.kubernetes.io/part-of: prism
+env:
+  HELM_CACHE_HOME: /tmp
+  HELM_CONFIG_HOME: /tmp
+  HELM_DATA_HOME: /tmp
+  GOGC: 50
+security:
+  podContext:
+    fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
+  containerContext:
+    runAsNonRoot: true
+    runAsGroup: 1001
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+service:
+  externalPort: 8080
+  internalPort: 8080
+ingress:
+  enabled: false
+prometheus:
+  metrics: true
+  serviceMonitor:
+    enabled: true
+livenessProbe:
+  path: "/healthz"
+readinessProbe:
+  path: "/healthz"
+volumes:
+  - name: tmp
+    mountPath: /tmp
+    config:
+      emptyDir: {}
+resources:
+  requests:
+    cpu: 200m
+    memory: 500Mi
+networkPolicy:
+  enabled: true
+  spec:
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: batch
+        app.kubernetes.io/part-of: prism
+    ingress:
+      - ports:
+          - port: 8080
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: ingress-nginx
+          - podSelector:
+              matchLabels:
+                app: prometheus
+            namespaceSelector:
+              matchLabels:
+                meta.kubernetes.io/name: openshift-monitoring

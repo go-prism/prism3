@@ -1,0 +1,25 @@
+variables:
+  AUTO_CNB_RUN_IMAGE: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+  BUILD_KANIKO_DISABLED: "true"
+  PROJECT_PATH: "batch"
+  HELM_UPGRADE_VALUES_FILE: ".gitlab/values/batch.yaml"
+
+container-scanning:
+  needs:
+    - job: autobuild golang
+
+production:
+  resource_group: prod-batch
+  before_script:
+    - kubectl config use-context prism/prism3:kube2-prism
+  environment:
+    name: prod-batch
+    kubernetes:
+      namespace: prism
+  needs:
+    - job: autobuild golang
+    - job: container-scanning
+      optional: true
+
+include:
+  - remote: 'https://gitlab.dcas.dev/open-source/gitlab-ci-templates/-/raw/master/auto/Auto-GoMod.gitlab-ci.yml'
