@@ -2,26 +2,18 @@ package helmidx
 
 import (
 	"context"
+	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/hibiken/asynq"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/go-prism/prism3/batch/internal/task"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	helmrepo "helm.sh/helm/v3/pkg/repo"
 	"io"
 )
-
-const TypeHelmRepository = "index:helm:repository"
-
-func NewIndexRepositoryTask(remote string) (*asynq.Task, error) {
-	payload, err := task.Serialise(&HelmPayload{RemoteID: remote})
-	if err != nil {
-		return nil, err
-	}
-	return asynq.NewTask(TypeHelmRepository, payload), nil
-}
 
 func NewHelmProcessor(repos *repo.Repos, store storage.Reader) *HelmProcessor {
 	return &HelmProcessor{
@@ -31,7 +23,8 @@ func NewHelmProcessor(repos *repo.Repos, store storage.Reader) *HelmProcessor {
 }
 
 func (p *HelmProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
-	payload, err := task.Deserialise[HelmPayload](t.Payload())
+	var payload tasks.HelmRepositoryPayload
+	err := tasks.Deserialise(t.Payload(), &payload)
 	if err != nil {
 		return err
 	}
@@ -55,5 +48,28 @@ func (p *HelmProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	log.WithContext(ctx).Infof("parsed %d entries", len(index.Entries))
+	// collect packages
+	var packages []*schemas.HelmPackage
+	for _, e := range index.Entries {
+		for _, ee := range e {
+			if len(ee.URLs) > 0 {
+				packages = append(packages, &schemas.HelmPackage{
+					Filename:    fmt.Sprintf("%s-%s.tgz", ee.Name, ee.Version),
+					URL:         ee.URLs[0],
+					Name:        ee.Name,
+					Version:     ee.Version,
+					Digest:      ee.Digest,
+					Icon:        ee.Icon,
+					APIVersion:  ee.APIVersion,
+					AppVersion:  ee.AppVersion,
+					KubeVersion: ee.KubeVersion,
+					Type:        ee.Type,
+					RemoteID:    r.ID,
+				})
+			}
+		}
+	}
+	// batch-insert all packages
+	_ = p.repos.HelmPackageRepo.BatchInsert(ctx, packages)
 	return nil
 }

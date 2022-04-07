@@ -43,7 +43,7 @@ func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, er
 		return nil, err
 	}
 	refraction := ref.(*refract.BackedRefraction)
-	return r.helm.Serve(ctx, refraction.Refraction())
+	return r.helm.Serve(ctx, refraction)
 }
 
 func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {

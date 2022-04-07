@@ -15,8 +15,8 @@ type Artifact struct {
 	UpdatedAt int64               `json:"updatedAt"`
 	URI       string              `json:"uri" gorm:"index"`
 	Downloads int64               `json:"downloads"`
-	RemoteID string              `json:"remoteID" gorm:"index"`
-	Slices   datatypes.JSONArray `json:"slices"`
+	RemoteID  string              `json:"remoteID" gorm:"index"`
+	Slices    datatypes.JSONArray `json:"slices"`
 }
 
 type NewRefract struct {

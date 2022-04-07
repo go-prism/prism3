@@ -8,6 +8,7 @@ import (
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/hibiken/asynq"
 	"github.com/kelseyhightower/envconfig"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
@@ -51,6 +52,10 @@ type environment struct {
 	Plugin struct {
 		GoURL string `split_words:"true"`
 	}
+	Redis struct {
+		Addr     string `split_words:"true" required:"true"`
+		Password string `split_words:"true"`
+	}
 }
 
 func main() {
@@ -93,9 +98,14 @@ func main() {
 		}
 	}
 
+	batchClient := asynq.NewClient(asynq.RedisClientOpt{
+		Addr:     e.Redis.Addr,
+		Password: e.Redis.Password,
+	})
+
 	// configure graphql
 	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3)}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3, batchClient)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,

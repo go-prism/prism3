@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"github.com/bluele/gcache"
+	"github.com/hibiken/asynq"
 	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
@@ -24,15 +25,18 @@ type Resolver struct {
 	store storage.Reader
 	authz *permissions.Manager
 
+	client *asynq.Client
+
 	// caches
 	storeSizeCache gcache.Cache
 }
 
-func NewResolver(repos *repo.Repos, store storage.Reader) *Resolver {
+func NewResolver(repos *repo.Repos, store storage.Reader, client *asynq.Client) *Resolver {
 	r := &Resolver{
-		repos: repos,
-		store: store,
-		authz: permissions.NewManager(repos),
+		repos:  repos,
+		store:  store,
+		authz:  permissions.NewManager(repos),
+		client: client,
 	}
 	_ = r.authz.Load(context.TODO())
 	r.storeSizeCache = gcache.New(10).ARC().LoaderFunc(r.getStoreSize).Expiration(time.Minute * 5).Build()

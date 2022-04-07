@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"runtime/debug"
 
 	"gitlab.com/av1o/cap10/pkg/client"
@@ -19,7 +20,16 @@ func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemo
 	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
 		return nil, err
 	}
-	return r.repos.RemoteRepo.CreateRemote(ctx, &input)
+	rem, err := r.repos.RemoteRepo.CreateRemote(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+	task, err := tasks.NewTask[tasks.IndexRemotePayload](tasks.TypeIndexRemote, &tasks.IndexRemotePayload{RemoteID: rem.ID})
+	if err != nil {
+		return nil, err
+	}
+	_, _ = r.client.Enqueue(task)
+	return rem, err
 }
 
 func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, error) {

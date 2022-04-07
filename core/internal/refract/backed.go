@@ -40,3 +40,7 @@ func (b *BackedRefraction) Download(ctx context.Context, path string) (io.Reader
 func (b *BackedRefraction) Refraction() *Refraction {
 	return b.rf
 }
+
+func (b *BackedRefraction) Model() *model.Refraction {
+	return b.mod
+}

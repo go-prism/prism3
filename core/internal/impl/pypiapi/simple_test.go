@@ -5,7 +5,7 @@ import (
 	"context"
 	_ "embed"
 	"github.com/stretchr/testify/assert"
-	"gitlab.com/go-prism/prism3/core/internal/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"html/template"
 	"strings"
 	"testing"

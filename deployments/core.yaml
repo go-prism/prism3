@@ -5,7 +5,7 @@ podAnnotations:
   app.kubernetes.io/part-of: prism3
 env:
   PRISM_AUTH_SUPER_USER: "C=AU,CN=dcas.dev Root CA,L=Canberra,O=dcas.dev,ST=ACT/C=AU,CN=Django Cass,L=Canberra,O=dcas.dev,ST=ACT,emailAddress=django@dcas.dev"
-  PRISM_DB_DSN: "user=devstack password=password dbname=prism host=cockroachdb-public.cockroachdb.svc.cluster.local port=26257 sslmode=require"
+  PRISM_DB_DSN: "user=prism password=password dbname=prism host=postgresql port=5432 sslmode=disable"
   PRISM_S3_REGION: "us-east-1"
   PRISM_S3_PATH_STYLE: "true"
   PRISM_S3_ENDPOINT: http://minio.minio.svc.cluster.local:9000
@@ -13,6 +13,8 @@ env:
   PRISM_LOG_DEBUG: "true"
   PRISM_PUBLIC_URL: https://prism3.devel
   PRISM_PLUGIN_GO_URL: http://goproxy3-auto-deploy:8080
+  PRISM_REDIS_ADDR: redis-master:6379
+  PRISM_REDIS_PASSWORD: password
   AWS_ACCESS_KEY_ID: username
   AWS_SECRET_ACCESS_KEY: password
   HELM_CACHE_HOME: /tmp

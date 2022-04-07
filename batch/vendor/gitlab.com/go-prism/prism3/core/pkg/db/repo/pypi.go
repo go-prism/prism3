@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/go-prism/prism3/core/internal/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

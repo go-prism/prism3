@@ -1,0 +1,8 @@
+global:
+  imageRegistry: harbor.dcas.dev/docker.io
+  postgresql:
+    auth:
+      postgresPassword: hunter2
+      username: prism
+      password: password
+      database: prism

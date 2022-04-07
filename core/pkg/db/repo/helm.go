@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
-	"gitlab.com/go-prism/prism3/core/internal/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -32,6 +32,16 @@ func (r *HelmPackageRepo) GetPackage(ctx context.Context, file string) (string, 
 		log.WithContext(ctx).WithError(err).Error("failed to find package")
 		sentry.CaptureException(err)
 		return "", returnErr(err, "failed to find package")
+	}
+	return result, nil
+}
+
+func (r *HelmPackageRepo) GetPackagesInRemotes(ctx context.Context, remotes []string) ([]*schemas.HelmPackage, error) {
+	var result []*schemas.HelmPackage
+	if err := r.db.Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Find(&result).Error; err != nil {
+		log.WithContext(ctx).WithError(err).Error("failed to list helm packages")
+		sentry.CaptureException(err)
+		return nil, err
 	}
 	return result, nil
 }

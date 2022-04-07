@@ -502,13 +502,14 @@ gitlab.com/go-prism/prism3/core/internal/errs
 gitlab.com/go-prism/prism3/core/internal/features
 gitlab.com/go-prism/prism3/core/internal/graph/model
 gitlab.com/go-prism/prism3/core/internal/policy
-gitlab.com/go-prism/prism3/core/internal/schemas
 gitlab.com/go-prism/prism3/core/pkg/db
 gitlab.com/go-prism/prism3/core/pkg/db/datatypes
 gitlab.com/go-prism/prism3/core/pkg/db/repo
 gitlab.com/go-prism/prism3/core/pkg/flag
 gitlab.com/go-prism/prism3/core/pkg/remote
+gitlab.com/go-prism/prism3/core/pkg/schemas
 gitlab.com/go-prism/prism3/core/pkg/storage
+gitlab.com/go-prism/prism3/core/pkg/tasks
 # go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5
 ## explicit; go 1.13
 go.starlark.net/internal/compile

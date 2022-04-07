@@ -9,10 +9,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
 	"gitlab.com/av1o/cap10-ingress/pkg/logging"
+	"gitlab.com/go-prism/prism3/batch/internal/task"
 	"gitlab.com/go-prism/prism3/batch/internal/task/helmidx"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"net/http"
 	"time"
 )
@@ -66,9 +68,22 @@ func main() {
 
 	// configure tasks
 	helm := helmidx.NewHelmProcessor(repos, s3)
+	rp := task.NewRemoteProcessor(client, repos, helm)
 
 	handler := asynq.NewServeMux()
-	handler.Handle(helmidx.TypeHelmRepository, helm)
+	handler.Handle(tasks.TypeHelmRepository, helm)
+	handler.HandleFunc(tasks.TypeIndexRemote, rp.HandleIndexTask)
+	handler.HandleFunc(tasks.TypeIndexRemoteAll, rp.HandleIndexAllTask)
+
+	mgr, err := asynq.NewPeriodicTaskManager(asynq.PeriodicTaskManagerOpts{
+		PeriodicTaskConfigProvider: task.NewStaticConfigProvider(rp),
+		RedisConnOpt:               redisOpt,
+		SyncInterval:               time.Minute,
+	})
+	if err != nil {
+		log.WithError(err).Fatal("failed to start cron scheduler")
+		return
+	}
 
 	go func() {
 		if err := srv.Run(handler); err != nil {
@@ -77,12 +92,9 @@ func main() {
 	}()
 
 	go func() {
-		time.Sleep(time.Second * 15)
-		t, err := helmidx.NewIndexRepositoryTask("440ca275-111c-432b-a125-b741edf3c1bc")
-		if err != nil {
-			return
+		if err := mgr.Run(); err != nil {
+			log.WithError(err).Fatal("failed to run asynq scheduler")
 		}
-		_, _ = client.Enqueue(t)
 	}()
 
 	h := asynqmon.New(asynqmon.Options{
