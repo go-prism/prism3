@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
-	"github.com/hibiken/asynqmon"
 	"github.com/kelseyhightower/envconfig"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
@@ -97,17 +96,11 @@ func main() {
 		}
 	}()
 
-	h := asynqmon.New(asynqmon.Options{
-		RootPath:     "/monitoring",
-		RedisConnOpt: redisOpt,
-	})
-
 	// configure routing
 	router := mux.NewRouter()
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
-	router.PathPrefix(h.RootPath()).Handler(h)
 	serverless.NewBuilder(router).
 		WithPort(e.Port).
 		WithHandlers(e.Dev.Handlers).

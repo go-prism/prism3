@@ -8,7 +8,6 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hibiken/asynq v0.22.1
-	github.com/hibiken/asynqmon v0.6.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/sirupsen/logrus v1.8.1
 	gitlab.com/autokubeops/serverless v0.3.3

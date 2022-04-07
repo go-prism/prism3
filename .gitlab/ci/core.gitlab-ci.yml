@@ -3,6 +3,7 @@ variables:
   BUILD_KANIKO_DISABLED: "true"
   PROJECT_PATH: "core"
   HELM_UPGRADE_VALUES_FILE: ".gitlab/values/core.yaml"
+  CODE_INTELLIGENCE_DISABLED: "true"
 
 container-scanning:
   needs:
