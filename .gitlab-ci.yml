@@ -13,6 +13,21 @@ core:
         - .gitlab/values/core.yaml
         - .gitlab-ci.yml
 
+batch:
+  trigger:
+    strategy: depend
+    include: .gitlab/ci/batch.gitlab-ci.yml
+  rules:
+    - if: '$CI_OPEN_MERGE_REQUESTS != null && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_TAG == null && $CI_COMMIT_BRANCH == null && $CI_OPEN_MERGE_REQUESTS == null'
+      when: never
+    - changes:
+        - "batch/**/*"
+        - .gitlab/ci/batch.gitlab-ci.yml
+        - .gitlab/values/batch.yaml
+        - .gitlab-ci.yml
+
 goproxy:
   trigger:
     strategy: depend
