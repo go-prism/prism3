@@ -3,10 +3,7 @@ import {
 	Alert,
 	Avatar,
 	Box,
-	Card,
-	CardHeader,
 	CircularProgress,
-	Divider,
 	Grid,
 	List,
 	ListItem,
@@ -19,6 +16,7 @@ import {
 	ArrowsRight,
 	ArrowsSplit,
 	Book,
+	Clock,
 	CloudDownload,
 	CloudUpload,
 	Compass,
@@ -36,6 +34,7 @@ import {getRemoteIcon} from "../../utils/remote";
 import Flexbox from "../widgets/Flexbox";
 import {Archetype, useGetOverviewQuery} from "../../generated/graphql";
 import StandardLayout from "../layout/StandardLayout";
+import Widget from "./dashboard/Widget";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -125,83 +124,61 @@ const Dashboard: React.FC = (): JSX.Element => {
 					Prism
 				</Typography>
 			</div>
-			<Typography
-				className={classes.subtitle}
-				color="textSecondary">
-				{data?.getOverview.version}<br/>
-			This instance has been running for {formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0)}
-			</Typography>
 			{error && <Alert
 				sx={{m: 2}}
 				severity="error">
-			Something went wrong loading the dashboard: &quot;{getGraphErrorMessage(error)}&quot;
+				Something went wrong loading the dashboard: &quot;{getGraphErrorMessage(error)}&quot;
 			</Alert>}
 			<Grid
 				sx={{mt: 2}}
 				container
 				spacing={1}>
-				<Grid
-					sx={{overflowY: "auto", maxHeight: 500}}
-					item
-					xs={6}>
-					<Card
-						variant="outlined">
-						<CardHeader
-							sx={{backgroundColor: theme.palette.background.default}}
-							title="System information"
-						/>
-						<Divider/>
-						<List
-							sx={{p: 0.5}}>
-							{item("Artifacts", <ListDetails color={theme.palette.primary.main}/>, data?.getOverview.artifacts.toLocaleString() || 0)}
-							{item("Downloads", <CloudDownload color={theme.palette.success.main}/>, data?.getOverview.downloads.toLocaleString() || 0)}
-							{item("Remotes", <ArrowsRight color={theme.palette.secondary.main}/>, data?.getOverview.remotes.toLocaleString() || 0)}
-							{item("Refractions", <ArrowsSplit color={theme.palette.info.main}/>, data?.getOverview.refractions.toLocaleString() || 0)}
-							{item("NPM Indices", getRemoteIcon(theme, Archetype.Npm), data?.getOverview.packages_npm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
-							{item("PyPi Indices", getRemoteIcon(theme, Archetype.Pip), data?.getOverview.packages_pypi.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
-							{item("Helm Indices", getRemoteIcon(theme, Archetype.Helm), data?.getOverview.packages_helm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
-							{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
-						</List>
-					</Card>
-				</Grid>
-				<Grid
-					sx={{overflowY: "auto", maxHeight: 500}}
-					item
-					xs={6}>
-					<Card
-						variant="outlined">
-						<CardHeader
-							sx={{backgroundColor: theme.palette.background.default}}
-							title="Getting started"
-						/>
-						<Divider/>
-						<List
-							sx={{p: 0.5}}>
-							<ListItem>
-								<ListItemIcon>
-									<Book/>
-								</ListItemIcon>
-								<ListItemText
-									primary={<Link to="/help">
-										Getting started with Prism
-									</Link>}
-									secondary="Learn the fundamentals and get an understanding of what Prism can do for you."
-								/>
-							</ListItem>
-							<ListItem>
-								<ListItemIcon>
-									<Compass/>
-								</ListItemIcon>
-								<ListItemText
-									primary={<Link to="/help/whats-new">
-										What's new with Prism?
-									</Link>}
-									secondary="Take advantage of new features, fixes and workflows."
-								/>
-							</ListItem>
-						</List>
-					</Card>
-				</Grid>
+				<Widget title="Statistics">
+					<List
+						sx={{p: 0.5}}>
+						{item("Artifacts", <ListDetails color={theme.palette.primary.main}/>, data?.getOverview.artifacts.toLocaleString() || 0)}
+						{item("Downloads", <CloudDownload color={theme.palette.success.main}/>, data?.getOverview.downloads.toLocaleString() || 0)}
+						{item("Remotes", <ArrowsRight color={theme.palette.secondary.main}/>, data?.getOverview.remotes.toLocaleString() || 0)}
+						{item("Refractions", <ArrowsSplit color={theme.palette.info.main}/>, data?.getOverview.refractions.toLocaleString() || 0)}
+						{item("NPM Indices", getRemoteIcon(theme, Archetype.Npm), data?.getOverview.packages_npm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+						{item("PyPi Indices", getRemoteIcon(theme, Archetype.Pip), data?.getOverview.packages_pypi.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+						{item("Helm Indices", getRemoteIcon(theme, Archetype.Helm), data?.getOverview.packages_helm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+					</List>
+				</Widget>
+				<Widget title="Getting started">
+					<List
+						sx={{p: 0.5}}>
+						<ListItem>
+							<ListItemIcon>
+								<Book/>
+							</ListItemIcon>
+							<ListItemText
+								primary={<Link to="/help">
+									Getting started with Prism
+								</Link>}
+								secondary="Learn the fundamentals and get an understanding of what Prism can do for you."
+							/>
+						</ListItem>
+						<ListItem>
+							<ListItemIcon>
+								<Compass/>
+							</ListItemIcon>
+							<ListItemText
+								primary={<Link to="/help/whats-new">
+									What's new with Prism?
+								</Link>}
+								secondary="Take advantage of new features, fixes and workflows."
+							/>
+						</ListItem>
+					</List>
+				</Widget>
+				<Widget title="System information">
+					<List
+						sx={{p: 0.5}}>
+						{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
+						{item("Uptime", <Clock color={theme.palette.text.secondary}/>, formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0))}
+					</List>
+				</Widget>
 			</Grid>
 		</div>
 	</StandardLayout>

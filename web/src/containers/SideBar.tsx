@@ -117,8 +117,8 @@ const SideBar: React.FC = (): JSX.Element => {
 		const item = <ListItemButton
 			className={`${classes.itemBase} ${classes.item}`}
 			selected={location.pathname === opt.path}
-			component={opt.path ? Link : undefined}
-			to={opt.path}
+			component={opt.path ? Link : "div"}
+			to={opt.path || ""}
 			onClick={opt.onClick}>
 			<ListItemIcon>
 				<opt.icon color={theme.palette.primary.main}/>
