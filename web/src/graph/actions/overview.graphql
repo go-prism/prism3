@@ -1,0 +1,31 @@
+query getOverview {
+    getOverview {
+        remotes
+        refractions
+        artifacts
+        storage
+        downloads
+        uptime
+        version
+
+        packages_pypi
+        packages_npm
+        packages_helm
+    }
+}
+query overview($refract: ID!) {
+    getRefraction(id: $refract) {
+        id
+        name
+        createdAt
+        updatedAt
+        archetype
+    }
+    listCombinedArtifacts(refract: $refract) {
+        id
+        uri
+        updatedAt
+        createdAt
+        downloads
+    }
+}

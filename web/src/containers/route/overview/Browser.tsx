@@ -22,29 +22,19 @@ import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
 import {useParams} from "react-router";
 import LZString from "lz-string";
-import {gql, useLazyQuery} from "@apollo/client";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {FixedSizeList} from "react-window";
 import FolderTreeItem, {TreeNode} from "../../list/FolderTreeItem";
 import {Node} from "../Overview";
 import SidebarLayout from "../../layout/SidebarLayout";
-import {Artifact, Refraction} from "../../../graph/types";
 import RefractHeader from "../../widgets/RefractHeader";
 import InlineNotFound from "../../widgets/InlineNotFound";
+import {Artifact, Refraction, useOverviewLazyQuery} from "../../../generated/graphql";
 import ObjectInfo from "./ObjectInfo";
 import BrowserToolbar from "./BrowserToolbar";
 
 export interface OverviewParams {
 	ref?: string;
-}
-
-interface QueryData {
-	getRefraction: Refraction;
-	listCombinedArtifacts: Artifact[];
-}
-
-interface QueryVars {
-	refract: string;
 }
 
 const Browser: React.FC = (): JSX.Element => {
@@ -56,24 +46,7 @@ const Browser: React.FC = (): JSX.Element => {
 	// local state
 	const [selected, setSelected] = useState<string>("");
 
-	const [getData, {data, loading, error}] = useLazyQuery<QueryData, QueryVars>(gql`
-        query overview($refract: ID!) {
-	        getRefraction(id: $refract) {
-                id
-                name
-                createdAt
-                updatedAt
-                archetype
-            }
-            listCombinedArtifacts(refract: $refract) {
-                id
-                uri
-                updatedAt
-                createdAt
-                downloads
-            }
-        }
-	`, {variables: {refract: ref || ""}});
+	const [getData, {data, loading, error}] = useOverviewLazyQuery({variables: {refract: ref || ""}});
 
 	const expanded: string[] = useMemo(() => {
 		return LZString.decompressFromEncodedURIComponent(history.location.hash.replace("#", ""))?.split("/") || [];
@@ -112,7 +85,7 @@ const Browser: React.FC = (): JSX.Element => {
 			names.reduce((q, value) => {
 				let temp = q.find(o => o.name === value.first);
 				if (!temp) {
-					q.push(temp = {id: `${value.first}${value.second.id}`, name: value.first, item: value.second, children: []});
+					q.push(temp = {id: `${value.first}${value.second.id}`, name: value.first, item: value.second as Artifact, children: []});
 				}
 				return temp.children;
 			}, r);
@@ -201,7 +174,7 @@ const Browser: React.FC = (): JSX.Element => {
 				<div
 					style={{margin: theme.spacing(1)}}>
 					<RefractHeader
-						refraction={data?.getRefraction ?? null}
+						refraction={data?.getRefraction ? data.getRefraction as Refraction : null}
 						loading={loading}
 					/>
 					{!loading && error != null && <Alert
@@ -209,8 +182,8 @@ const Browser: React.FC = (): JSX.Element => {
 						Failed to load refractions.
 					</Alert>}
 					{selectedItem != null && data?.getRefraction != null && <ObjectInfo
-						item={selectedItem}
-						refraction={data.getRefraction}
+						item={selectedItem as Artifact}
+						refraction={data.getRefraction as Refraction}
 					/>}
 				</div>
 			</SidebarLayout>

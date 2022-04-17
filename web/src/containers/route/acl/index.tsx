@@ -41,11 +41,10 @@ import {Plus} from "tabler-icons-react";
 import {parseUsername} from "../../../utils/parse";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import Flexbox from "../../widgets/Flexbox";
-import useGetUsers from "../../../graph/actions/rbac/useGetUsers";
-import {Role} from "../../../graph/types";
 import InlineNotFound from "../../widgets/InlineNotFound";
 import {toTitleCase} from "../../../utils/format";
 import {getResourceIcon, getResourceName} from "../../../utils/remote";
+import {Role, useGetUsersQuery} from "../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	icon: {
@@ -60,8 +59,8 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	// state
-	const [role, setRole] = useState<Role>(Role.SUPER);
-	const {data, loading, error, refetch} = useGetUsers({role});
+	const [role, setRole] = useState<Role>(Role.Super);
+	const {data, loading, error, refetch} = useGetUsersQuery({variables: {role}});
 
 	const roles = data?.getUsers || [];
 

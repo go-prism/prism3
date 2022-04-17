@@ -23,7 +23,7 @@ import {TabContext, TabPanel} from "@mui/lab";
 import {formatDistanceToNow} from "date-fns";
 import {CirclePlus, Edit, FileDownload} from "tabler-icons-react";
 import {MetadataChip} from "../../../config/types";
-import {Archetype, Artifact, Refraction} from "../../../graph/types";
+import {Archetype, Artifact, Refraction} from "../../../generated/graphql";
 import GoLangInstall from "./info/setup/GoLangInstall";
 import FilePreview from "./info/FilePreview";
 import DefaultInstall from "./info/setup/DefaultInstall";
@@ -106,13 +106,13 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				return <GoLangInstall uri={item.uri}/>;
 			case item.uri.endsWith(".apk"):
 				return <AlpineInstall uri={item.uri} refraction={refraction.name}/>;
-			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.HELM:
+			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.Helm:
 				return <HelmInstall uri={item.uri} refraction={refraction.name}/>;
-			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.NPM:
+			case item.uri.endsWith(".tgz") && refraction.archetype === Archetype.Npm:
 				return <NpmInstall uri={item.uri} refraction={refraction.name}/>;
-			case item.uri.endsWith(".tar.gz") && refraction.archetype === Archetype.PIP:
+			case item.uri.endsWith(".tar.gz") && refraction.archetype === Archetype.Pip:
 				return <PyPiInstall uri={item.uri} refraction={refraction.name} wheel={false}/>;
-			case item.uri.endsWith(".whl") && refraction.archetype === Archetype.PIP:
+			case item.uri.endsWith(".whl") && refraction.archetype === Archetype.Pip:
 				return <PyPiInstall uri={item.uri} refraction={refraction.name} wheel/>;
 			default:
 				return <DefaultInstall uri={item.uri}/>;

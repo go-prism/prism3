@@ -1,0 +1,19 @@
+mutation createRoleBinding($subject: String!, $role: Role!, $resource: String!) {
+    createRoleBinding(input: {subject: $subject, role: $role, resource: $resource}) {
+        id
+    }
+}
+query getCurrentUser {
+    getCurrentUser {
+        sub
+        iss
+    }
+}
+query getUsers($role: Role!) {
+    getUsers(role: $role) {
+        id
+        role
+        subject
+        resource
+    }
+}

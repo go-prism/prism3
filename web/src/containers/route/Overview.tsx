@@ -21,10 +21,10 @@ import {Apps} from "tabler-icons-react";
 import {Typography} from "@mui/material";
 import {TreeNode} from "../list/FolderTreeItem";
 import {getRemoteIcon} from "../../utils/remote";
-import useListRefractions from "../../graph/actions/remote/useListRefractions";
 import SidebarLayout from "../layout/SidebarLayout";
 import SimpleSidebar, {SidebarItem} from "../layout/SimpleSidebar";
 import InfoCard from "../widgets/InfoCard";
+import {useListRefractionsQuery} from "../../generated/graphql";
 
 export interface Node {
 	node: TreeNode;
@@ -38,7 +38,7 @@ const Overview: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	// global state
-	const {data, loading} = useListRefractions();
+	const {data, loading} = useListRefractionsQuery();
 
 	useEffect(() => {
 		window.document.title = "Prism";

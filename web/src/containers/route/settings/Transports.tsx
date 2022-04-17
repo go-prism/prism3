@@ -23,7 +23,7 @@ import {
 	Collapse,
 	IconButton,
 	List,
-	ListItem,
+	ListItemButton,
 	ListItemSecondaryAction,
 	ListItemText,
 	Theme,
@@ -33,10 +33,9 @@ import {ListItemSkeleton} from "jmp-coreui";
 import {ChevronDown, ChevronUp} from "tabler-icons-react";
 import {Link, useHistory, useLocation} from "react-router-dom";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
-import useListTransports from "../../../graph/actions/transport/useListTransports";
-import {TransportSecurity} from "../../../graph/types";
 import ClientConfig from "../remote/options/ClientConfig";
 import Header from "../../layout/Header";
+import {TransportSecurity, useListTransportsQuery} from "../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	card: {
@@ -62,9 +61,8 @@ const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelecte
 	const open = selected === item.id;
 
 	return <div>
-		<ListItem
+		<ListItemButton
 			selected={open}
-			button
 			onClick={() => setSelected(open ? "" : item.id)}
 			dense>
 			<ListItemText>
@@ -77,7 +75,7 @@ const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelecte
 					{open ? <ChevronUp/> : <ChevronDown/>}
 				</IconButton>
 			</ListItemSecondaryAction>
-		</ListItem>
+		</ListItemButton>
 		<Collapse in={open}>
 			<div className={classes.configHolder}>
 				<ClientConfig
@@ -98,7 +96,7 @@ const Transports: React.FC = (): JSX.Element => {
 
 	// global state
 	const selected = location.hash.replace("#", "");
-	const {data, loading, error} = useListTransports();
+	const {data, loading, error} = useListTransportsQuery();
 
 	const setSelected = (val: string): void => {
 		history.push({...location, hash: `#${val}`});
@@ -135,7 +133,7 @@ const Transports: React.FC = (): JSX.Element => {
 				</Alert>}
 				{!loading && error == null && data?.listTransports && <List>
 					{data?.listTransports.map(r => <TransportItem
-						item={r}
+						item={r as TransportSecurity}
 						key={r.id}
 						selected={selected}
 						setSelected={setSelected}

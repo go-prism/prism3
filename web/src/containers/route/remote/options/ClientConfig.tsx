@@ -28,7 +28,7 @@ import {
 	Theme,
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
-import {TransportSecurity} from "../../../../graph/types";
+import {TransportSecurity} from "../../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	text: {

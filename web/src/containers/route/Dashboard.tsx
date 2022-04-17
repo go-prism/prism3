@@ -17,12 +17,11 @@ import {useTheme} from "@mui/material/styles";
 import {formatDistanceStrict} from "date-fns";
 import {ThemedTooltip} from "jmp-coreui";
 import {makeStyles} from "tss-react/mui";
-import useGetOverview from "../../graph/actions/useGetOverview";
 import {formatBytes} from "../../utils/format";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
 import {getRemoteIcon} from "../../utils/remote";
-import {Archetype} from "../../graph/types";
 import Flexbox from "../widgets/Flexbox";
+import {Archetype, useGetOverviewQuery} from "../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -60,7 +59,7 @@ const Dashboard: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
-	const {data, loading, error} = useGetOverview();
+	const {data, loading, error} = useGetOverviewQuery({pollInterval: 5_000});
 
 	useEffect(() => {
 		window.document.title = "Prism";
@@ -149,9 +148,9 @@ const Dashboard: React.FC = (): JSX.Element => {
 		<Grid
 			container
 			spacing={0}>
-			{item("NPM Indices", getRemoteIcon(theme, Archetype.NPM), data?.getOverview.packages_npm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
-			{item("PyPi Indices", getRemoteIcon(theme, Archetype.PIP), data?.getOverview.packages_pypi.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
-			{item("Helm Indices", getRemoteIcon(theme, Archetype.HELM), data?.getOverview.packages_helm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+			{item("NPM Indices", getRemoteIcon(theme, Archetype.Npm), data?.getOverview.packages_npm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+			{item("PyPi Indices", getRemoteIcon(theme, Archetype.Pip), data?.getOverview.packages_pypi.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
+			{item("Helm Indices", getRemoteIcon(theme, Archetype.Helm), data?.getOverview.packages_helm.toLocaleString() || 0, "Indices refer to packages that Prism is aware of, but may not have cached.")}
 		</Grid>
 		<Grid
 			container

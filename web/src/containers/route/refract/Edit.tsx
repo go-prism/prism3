@@ -10,10 +10,14 @@ import getErrorMessage from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
 import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
-import useGetRefraction from "../../../graph/actions/remote/useGetRefraction";
-import {Archetype, Remote} from "../../../graph/types";
-import usePatchRefract from "../../../graph/actions/refract/usePatchRefract";
 import RefractHeader from "../../widgets/RefractHeader";
+import {
+	Archetype,
+	Refraction,
+	Remote,
+	useGetRefractionLazyQuery,
+	usePatchRefractMutation
+} from "../../../generated/graphql";
 import Setup from "./setup/Setup";
 import RemoteSelect from "./RemoteSelect";
 
@@ -61,8 +65,8 @@ const EditRefract: React.FC = (): JSX.Element => {
 	const {id} = useParams<IDParams>();
 
 	// global state
-	const [patchRefraction, {error: patchErr}] = usePatchRefract();
-	const [getRefraction, {data, loading, error}] = useGetRefraction();
+	const [patchRefraction, {error: patchErr}] = usePatchRefractMutation();
+	const [getRefraction, {data, loading}] = useGetRefractionLazyQuery();
 	let refractInfo: object | null = null;
 
 
@@ -84,9 +88,9 @@ const EditRefract: React.FC = (): JSX.Element => {
 		if (data?.getRefraction == null)
 			return;
 		setName({...name, value: data.getRefraction.name});
-		setRemotes(data.getRefraction.remotes);
+		setRemotes(data.getRefraction.remotes as Remote[]);
 		// go refractions are system-managed
-		setReadOnly(data.getRefraction.archetype === Archetype.GO);
+		setReadOnly(data.getRefraction.archetype === Archetype.Go);
 	}, [data?.getRefraction]);
 
 	const handleUpdate = (): void => {
@@ -140,7 +144,7 @@ const EditRefract: React.FC = (): JSX.Element => {
 				id: "getting-setup",
 				primary: "Getting setup",
 				secondary: "Application-specific setup information.",
-				children: data?.getRefraction && <Setup refract={data.getRefraction}/>,
+				children: data?.getRefraction && <Setup refract={data.getRefraction as Refraction}/>,
 				disabled: data?.getRefraction == null
 			}
 		];
@@ -162,7 +166,7 @@ const EditRefract: React.FC = (): JSX.Element => {
 					Refraction updated successfully
 			</Alert>}
 			<RefractHeader
-				refraction={data?.getRefraction ?? null}
+				refraction={data?.getRefraction ? data.getRefraction as Refraction : null}
 				loading={loading}
 			/>
 			<FormGroup
@@ -199,7 +203,7 @@ const EditRefract: React.FC = (): JSX.Element => {
 				{data?.getRefraction && <RemoteSelect
 					arch={data.getRefraction.archetype}
 					setRemotes={setRemotes}
-					defaultRemotes={data.getRefraction.remotes}
+					defaultRemotes={data.getRefraction.remotes as Remote[]}
 					disabled={readOnly}
 				/>}
 				<List>

@@ -24,8 +24,8 @@ import kotlin from "react-syntax-highlighter/dist/esm/languages/hljs/kotlin";
 import groovy from "react-syntax-highlighter/dist/esm/languages/hljs/groovy";
 import {API_URL} from "../../../../../config";
 import {parseMavenPackage} from "../../../../../utils/parse";
-import {Refraction} from "../../../../../graph/types";
 import CodeBlock from "../../../../widgets/CodeBlock";
+import {Refraction} from "../../../../../generated/graphql";
 import LanguageInstall from "./index";
 
 interface JavaInstallProps {

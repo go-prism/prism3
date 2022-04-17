@@ -3,7 +3,7 @@ import React from "react";
 import {makeStyles} from "tss-react/mui";
 import {useTheme} from "@mui/material/styles";
 import {getRemoteIcon} from "../../utils/remote";
-import {Archetype, Refraction} from "../../graph/types";
+import {Archetype, Refraction} from "../../generated/graphql";
 
 const useStyles = makeStyles()(() => ({
 	title: {
@@ -25,7 +25,7 @@ const RefractHeader: React.FC<RefractHeaderProps> = ({refraction, loading}): JSX
 	return (
 		<ListItem>
 			<ListItemIcon>
-				{loading ? <Skeleton variant="circular" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, refraction?.archetype || Archetype.NONE)}
+				{loading ? <Skeleton variant="circular" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, refraction?.archetype || Archetype.Generic)}
 			</ListItemIcon>
 			<ListItemText
 				disableTypography

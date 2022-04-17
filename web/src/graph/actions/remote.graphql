@@ -1,0 +1,38 @@
+mutation createRemote($name: String!, $uri: String!, $archetype: Archetype!, $transport: ID!) {
+    createRemote(input: {name: $name, uri: $uri, archetype: $archetype, transport: $transport}) {
+        id
+    }
+}
+query getRemote($id: ID!) {
+    getRemote(id: $id) {
+        id
+        createdAt
+        updatedAt
+        name
+        uri
+        archetype
+        enabled
+        transport {
+            id
+            name
+            cert
+            key
+            ca
+            skipTLSVerify
+            httpProxy
+            httpsProxy
+            noProxy
+        }
+    }
+}
+query listRemotes($arch: String!) {
+    listRemotes(arch: $arch) {
+        id
+        name
+        updatedAt
+        createdAt
+        uri
+        enabled
+        archetype
+    }
+}

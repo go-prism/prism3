@@ -3,8 +3,6 @@ import {Alert, Button, Typography, useTheme} from "@mui/material";
 import {ArrowsRight} from "tabler-icons-react";
 import {useParams} from "react-router";
 import {Link} from "react-router-dom";
-import useListRemotes from "../../../graph/actions/remote/useListRemotes";
-import {Archetype} from "../../../graph/types";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import SidebarLayout from "../../layout/SidebarLayout";
 import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
@@ -12,6 +10,7 @@ import {getRemoteIcon} from "../../../utils/remote";
 import EditRemote from "../remote/Edit";
 import Header from "../../layout/Header";
 import InfoCard from "../../widgets/InfoCard";
+import {Archetype, useListRemotesLazyQuery} from "../../../generated/graphql";
 import {IDParams} from "./index";
 
 const Remotes: React.FC = (): JSX.Element => {
@@ -19,12 +18,12 @@ const Remotes: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	// global state
-	const [listRemotes, {data, loading, error}] = useListRemotes();
+	const [listRemotes, {data, loading, error}] = useListRemotesLazyQuery();
 	const {id} = useParams<IDParams>();
 
 	useEffect(() => {
 		window.document.title = "Remotes";
-		void listRemotes({variables: {arch: Archetype.NONE}});
+		void listRemotes({variables: {arch: Archetype.Generic}});
 	}, []);
 
 	// local state

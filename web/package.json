@@ -35,7 +35,8 @@
     "start": "./env.sh && mv ./env-config.js ./public/ && npm run dev",
     "dev": "vite",
     "build": "tsc && vite build",
-    "test": "jest"
+    "test": "jest",
+    "gql": "graphql-codegen --config codegen.yml"
   },
   "browserslist": {
     "production": [
@@ -50,6 +51,12 @@
     ]
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/fragment-matcher": "^3.2.1",
+    "@graphql-codegen/introspection": "^2.1.1",
+    "@graphql-codegen/typescript": "^2.4.8",
+    "@graphql-codegen/typescript-operations": "^2.3.5",
+    "@graphql-codegen/typescript-react-apollo": "^3.2.11",
     "@testing-library/jest-dom": "5.12.0",
     "@testing-library/react": "11.2.6",
     "@testing-library/user-event": "13.1.8",

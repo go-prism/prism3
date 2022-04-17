@@ -28,9 +28,8 @@ import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getError
 import ExpandableListItem from "../../list/ExpandableListItem";
 import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
-import useGetRemote from "../../../graph/actions/remote/useGetRemote";
-import {Archetype} from "../../../graph/types";
 import {getRemoteIcon} from "../../../utils/remote";
+import {Archetype, useGetRemoteLazyQuery} from "../../../generated/graphql";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
@@ -89,7 +88,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 	const {id} = useParams<IDParams>();
 
 	// global state
-	const [getRemote, {data, loading, error}] = useGetRemote();
+	const [getRemote, {data, loading, error}] = useGetRemoteLazyQuery();
 
 	// local state
 	const [url, setURL] = useState<ValidatedData>(initialURL);
@@ -113,7 +112,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 	const chips = useMemo(() => {
 		const chipData: MetadataChip[] = [
 			{
-				label: data?.getRemote?.archetype?.toLocaleLowerCase() || Archetype.NONE,
+				label: data?.getRemote?.archetype?.toLocaleLowerCase() || Archetype.Generic,
 				icon: Apps
 			},
 			{
@@ -143,7 +142,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 		// setResHeaders(data?.getRemote.security.authHeaders || []);
 		// setAllowList(data?.getRemote.security.allowed || []);
 		// setBlockList(data?.getRemote.security.blocked || []);
-		setReadOnly(data?.getRemote.archetype === Archetype.GO);
+		setReadOnly(data?.getRemote.archetype === Archetype.Go);
 	}, [data?.getRemote]);
 
 	const hasChanged = (): boolean => {
@@ -252,7 +251,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 			</Alert>}
 			<ListItem>
 				<ListItemIcon>
-					{loading ? <Skeleton variant="circular" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRemote?.archetype || Archetype.NONE)}
+					{loading ? <Skeleton variant="circular" animation="wave" width={48} height={48}/> : getRemoteIcon(theme, data?.getRemote?.archetype || Archetype.Generic)}
 				</ListItemIcon>
 				<ListItemText
 					disableTypography

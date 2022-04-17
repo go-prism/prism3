@@ -3,7 +3,6 @@ import {Alert, Button, Typography, useTheme} from "@mui/material";
 import {ArrowsSplit} from "tabler-icons-react";
 import {useParams} from "react-router";
 import {Link} from "react-router-dom";
-import useListRefractions from "../../../graph/actions/remote/useListRefractions";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import SidebarLayout from "../../layout/SidebarLayout";
 import SimpleSidebar, {SidebarItem} from "../../layout/SimpleSidebar";
@@ -11,6 +10,7 @@ import {getRemoteIcon} from "../../../utils/remote";
 import EditRefract from "../refract/Edit";
 import Header from "../../layout/Header";
 import InfoCard from "../../widgets/InfoCard";
+import {useListRefractionsQuery} from "../../../generated/graphql";
 import {IDParams} from "./index";
 
 const Refractions: React.FC = (): JSX.Element => {
@@ -18,7 +18,7 @@ const Refractions: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	// global state
-	const {data, loading, error, refetch} = useListRefractions();
+	const {data, loading, error, refetch} = useListRefractionsQuery();
 	const {id} = useParams<IDParams>();
 
 	useEffect(() => {

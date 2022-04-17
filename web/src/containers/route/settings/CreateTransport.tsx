@@ -23,9 +23,8 @@ import {useTheme} from "@mui/material/styles";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import StandardLayout from "../../layout/StandardLayout";
 import getErrorMessage from "../../../selectors/getErrorMessage";
-import {TransportSecurity} from "../../../graph/types";
 import ClientConfig from "../remote/options/ClientConfig";
-import useCreateTransport from "../../../graph/actions/transport/useCreateTransport";
+import {TransportSecurity, useCreateTransportMutation} from "../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -67,7 +66,7 @@ const CreateTransport: React.FC = (): JSX.Element => {
 	const history = useHistory();
 
 	// global state
-	const [createTransport, {loading, error}] = useCreateTransport();
+	const [createTransport, {loading, error}] = useCreateTransportMutation();
 
 	// local state
 	const [name, setName] = useState<ValidatedData>(initialName);

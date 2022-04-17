@@ -22,8 +22,8 @@ import {makeStyles} from "tss-react/mui";
 import {Skeleton} from "@mui/lab";
 import StandardLayout from "../layout/StandardLayout";
 import {getInitials, parseUsername} from "../../utils/parse";
-import useGetCurrentUser from "../../graph/actions/rbac/useGetCurrentUser";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
+import {useGetCurrentUserQuery} from "../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -38,7 +38,7 @@ const Profile: React.FC = (): JSX.Element => {
 	const {classes} = useStyles();
 	const theme = useTheme();
 
-	const {data, loading, error} = useGetCurrentUser();
+	const {data, loading, error} = useGetCurrentUserQuery();
 
 	return <StandardLayout>
 		<Box

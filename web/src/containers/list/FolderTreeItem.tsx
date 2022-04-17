@@ -34,7 +34,7 @@ import {
 } from "tabler-icons-react";
 import {unescapeString} from "../../utils/encode";
 import {Node} from "../route/Overview";
-import {Artifact} from "../../graph/types";
+import {Artifact} from "../../generated/graphql";
 
 interface StyleProps {
 	primary: string;

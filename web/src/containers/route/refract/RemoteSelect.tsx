@@ -16,11 +16,21 @@
  */
 
 import React, {useEffect, useState} from "react";
-import {Button, Card, Checkbox, Grid, List, ListItem, ListItemIcon, ListItemText, Theme,} from "@mui/material";
+import {
+	Button,
+	Card,
+	Checkbox,
+	Grid,
+	List,
+	ListItem,
+	ListItemButton,
+	ListItemIcon,
+	ListItemText,
+	Theme,
+} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight} from "tabler-icons-react";
-import useListRemotes from "../../../graph/actions/remote/useListRemotes";
-import {Archetype, Remote} from "../../../graph/types";
+import {Archetype, Remote, useListRemotesLazyQuery} from "../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -66,7 +76,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 	const {classes} = useStyles();
 
 	// global state
-	const [listRemotes, {data}] = useListRemotes();
+	const [listRemotes, {data}] = useListRemotesLazyQuery();
 
 	// local state
 	const [checked, setChecked] = useState<Remote[]>([]);
@@ -81,8 +91,8 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 	}, [arch]);
 
 	useEffect(() => {
-		setRight(notID(data?.listRemotes || [], defaultRemotes || []));
-		setLeft(intersectionID(data?.listRemotes || [],defaultRemotes || []));
+		setRight(notID((data?.listRemotes || []) as Remote[], defaultRemotes || []));
+		setLeft(intersectionID((data?.listRemotes || []) as Remote[],defaultRemotes || []));
 	}, [data?.listRemotes]);
 
 	useEffect(() => {
@@ -131,10 +141,9 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 				{items.map((value: Remote) => {
 					const labelId = `transfer-list-item-${value}-label`;
 					return (
-						<ListItem
+						<ListItemButton
 							key={value.id}
 							role="listitem"
-							button
 							disabled={disabled}
 							onClick={handleToggle(value)}>
 							<ListItemIcon>
@@ -151,7 +160,7 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 								id={labelId}
 								primary={value.name}
 							/>
-						</ListItem>
+						</ListItemButton>
 					);
 				})}
 				<ListItem/>

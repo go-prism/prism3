@@ -1,13 +1,14 @@
-import {Archetype} from "../graph/types";
+import {Archetype} from "../generated/graphql";
+
 
 export const REMOTE_ARCHETYPES: {name: string, value: Archetype, stable: boolean}[] = [
-	{name: "Generic", value: Archetype.GENERIC, stable: true},
-	{name: "Maven", value: Archetype.MAVEN, stable: true},
-	{name: "NPM", value: Archetype.NPM, stable: true},
-	{name: "Alpine", value: Archetype.ALPINE, stable: true},
-	{name: "Helm", value: Archetype.HELM, stable: true},
-	{name: "Debian", value: Archetype.DEBIAN, stable: false},
-	{name: "PyPI", value: Archetype.PIP, stable: true}
+	{name: "Generic", value: Archetype.Generic, stable: true},
+	{name: "Maven", value: Archetype.Maven, stable: true},
+	{name: "NPM", value: Archetype.Npm, stable: true},
+	{name: "Alpine", value: Archetype.Alpine, stable: true},
+	{name: "Helm", value: Archetype.Helm, stable: true},
+	{name: "Debian", value: Archetype.Debian, stable: false},
+	{name: "PyPI", value: Archetype.Pip, stable: true}
 ];
 
 export const DEFAULT_RESTRICTED_HEADERS = [

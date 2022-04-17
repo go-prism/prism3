@@ -19,8 +19,7 @@ import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
-import useCreateRemote from "../../../graph/actions/remote/useCreateRemote";
-import {Archetype, TransportSecurity} from "../../../graph/types";
+import {Archetype, TransportSecurity, useCreateRemoteMutation} from "../../../generated/graphql";
 import TransportOpts from "./options/TransportOpts";
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -69,11 +68,11 @@ const CreateRemote: React.FC = (): JSX.Element => {
 	const history = useHistory();
 
 	// global state
-	const [createRemote, {loading, error}] = useCreateRemote();
+	const [createRemote, {loading, error}] = useCreateRemoteMutation();
 
 
 	// local state
-	const [arch, setArch] = useState<Archetype>(Archetype.GENERIC);
+	const [arch, setArch] = useState<Archetype>(Archetype.Generic);
 	const [url, setURL] = useState<ValidatedData>(initialURL);
 	const [name, setName] = useState<ValidatedData>(initialName);
 	const [transport, setTransport] = useState<TransportSecurity | null>(null);

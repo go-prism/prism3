@@ -19,8 +19,7 @@ import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
-import {Archetype, Remote} from "../../../graph/types";
-import useCreateRefract from "../../../graph/actions/remote/useCreateRefract";
+import {Archetype, Remote, useCreateRefractMutation} from "../../../generated/graphql";
 import RemoteSelect from "./RemoteSelect";
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -62,10 +61,10 @@ const CreateRefract: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 	const history = useHistory();
 
-	const [createRefract, {loading, error}] = useCreateRefract();
+	const [createRefract, {loading, error}] = useCreateRefractMutation();
 
 	// local state
-	const [arch, setArch] = useState<Archetype>(Archetype.GENERIC);
+	const [arch, setArch] = useState<Archetype>(Archetype.Generic);
 	const [name, setName] = useState<ValidatedData>(initialName);
 	const [remotes, setRemotes] = useState<Remote[]>([]);
 

@@ -1,9 +1,8 @@
 import {Alert, CircularProgress, List, ListItem, ListItemText, MenuItem, Select} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useTheme} from "@mui/material/styles";
-import useListTransports from "../../../../graph/actions/transport/useListTransports";
 import {getGraphErrorMessage} from "../../../../selectors/getErrorMessage";
-import {TransportSecurity} from "../../../../graph/types";
+import {TransportSecurity, useListTransportsQuery} from "../../../../generated/graphql";
 
 interface Props {
 	onSelect: (val: TransportSecurity) => void;
@@ -13,7 +12,7 @@ interface Props {
 const TransportOpts: React.FC<Props> = ({onSelect, disabled}): JSX.Element => {
 	// hooks
 	const theme = useTheme();
-	const {data, loading, error} = useListTransports();
+	const {data, loading, error} = useListTransportsQuery();
 	const [selected, setSelected] = useState<TransportSecurity | null>(null);
 
 	useEffect(() => {
@@ -21,8 +20,8 @@ const TransportOpts: React.FC<Props> = ({onSelect, disabled}): JSX.Element => {
 			return;
 		if (data.listTransports.length === 0)
 			return;
-		setSelected(data.listTransports[0]);
-		onSelect(data.listTransports[0]);
+		setSelected(() => data.listTransports[0] as TransportSecurity);
+		onSelect(data.listTransports[0] as TransportSecurity);
 	}, [data?.listTransports]);
 
 	if (loading)
@@ -52,8 +51,8 @@ const TransportOpts: React.FC<Props> = ({onSelect, disabled}): JSX.Element => {
 					disabled={disabled}
 					selected={selected?.id === t.id}
 					onClick={() => {
-						setSelected(t);
-						onSelect(t);
+						setSelected(() => t as TransportSecurity);
+						onSelect(t as TransportSecurity);
 					}}
 					value={t.id}>
 					{t.name || "-"}

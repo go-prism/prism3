@@ -2,25 +2,25 @@ import React, {ReactNode} from "react";
 import {Files} from "tabler-icons-react";
 import {Theme} from "@mui/material/styles";
 import {Avatar} from "@mui/material";
-import {Archetype} from "../graph/types";
+import {Archetype} from "../generated/graphql";
 import {stringToColour} from "./data";
 import {toTitleCase} from "./format";
 
 export const getRemoteIcon = (theme: Theme, type: Archetype): ReactNode => {
 	switch (type) {
-		case Archetype.HELM:
-		case Archetype.ALPINE:
-		case Archetype.MAVEN:
-		case Archetype.NPM:
-		case Archetype.GO:
-		case Archetype.DEBIAN:
+		case Archetype.Helm:
+		case Archetype.Alpine:
+		case Archetype.Maven:
+		case Archetype.Npm:
+		case Archetype.Go:
+		case Archetype.Debian:
 			return <img
 				src={`/${type.toLocaleLowerCase()}_logo.svg`}
 				alt={`${type} logo`}
 				width={24}
 				height={24}
 			/>
-		case Archetype.PIP:
+		case Archetype.Pip:
 			return <img
 				src={`/${type.toLocaleLowerCase()}_logo.png`}
 				alt={`${type} logo`}

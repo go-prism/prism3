@@ -1,0 +1,38 @@
+mutation patchRefract($id: ID!, $name: String!, $remotes: [ID!]!) {
+    patchRefraction(id: $id, input: {name: $name, remotes: $remotes}) {
+        id
+    }
+}
+mutation createRefract($name: String!, $archetype: Archetype!, $remotes: [ID!]!) {
+    createRefraction(input: {name: $name, archetype: $archetype, remotes: $remotes}) {
+        id
+    }
+}
+query getRefraction($id: ID!) {
+    getRefraction(id: $id) {
+        id
+        createdAt
+        updatedAt
+        name
+        archetype
+        remotes {
+            id
+            name
+        }
+    }
+}
+query listRefractions {
+    listRefractions {
+        id
+        createdAt
+        updatedAt
+        name
+        archetype
+    }
+}
+query refSelect {
+    listRefractions {
+        id
+        name
+    }
+}

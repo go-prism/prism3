@@ -39,11 +39,10 @@ import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
-import {Role} from "../../../graph/types";
-import useCreateRoleBinding from "../../../graph/actions/rbac/useCreateRoleBinding";
 import {toTitleCase} from "../../../utils/format";
 import Flexbox from "../../widgets/Flexbox";
 import {getResourceIcon} from "../../../utils/remote";
+import {Role, useCreateRoleBindingMutation} from "../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -95,12 +94,12 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 	const history = useHistory();
 
 	// global state
-	const [createRoleBinding, {loading, error}] = useCreateRoleBinding();
+	const [createRoleBinding, {loading, error}] = useCreateRoleBindingMutation();
 
 	// local state
 	const [user, setUser] = useState<ValidatedData>(initialUser);
 	const [id, setID] = useState<ValidatedData>(initialID);
-	const [role, setRole] = useState<Role>(Role.POWER);
+	const [role, setRole] = useState<Role>(Role.Power);
 	const [resource, setResource] = useState<string>("");
 
 	const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -108,7 +107,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 	}
 
 	useEffect(() => {
-		if (role !== Role.SUPER)
+		if (role !== Role.Super)
 			return;
 		setResource(() => "");
 		setID(i => ({...i, value: ""}));
@@ -160,8 +159,8 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 									variant="outlined"
 									value={resource}
 									label="Resource"
-									required={role === Role.POWER}
-									disabled={role !== Role.POWER}>
+									required={role === Role.Power}
+									disabled={role !== Role.Power}>
 									{RESOURCES.map(r => <MenuItem
 										key={r}
 										value={r}
@@ -184,12 +183,12 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 								invalidLabel="Must be at least 3 characters."
 								fieldProps={{
 									className: classes.formItem,
-									required: role === Role.POWER,
+									required: role === Role.Power,
 									label: `${toTitleCase(resource || "Resource")} name`,
 									placeholder: "maven-central",
 									variant: "filled",
 									id: "txt-resource",
-									disabled: role !== Role.POWER,
+									disabled: role !== Role.Power,
 									fullWidth: true
 								}}
 							/>
@@ -217,7 +216,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 								<Typography
 									sx={{fontSize: 14}}
 									color="text.secondary">
-									{r === Role.SUPER ? "Grant full permissions to all resources." : "Grant full permissions to a specific resource."}
+									{r === Role.Super ? "Grant full permissions to all resources." : "Grant full permissions to a specific resource."}
 								</Typography>
 							</div>}
 							value={r}

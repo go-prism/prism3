@@ -15,11 +15,10 @@ import {
 import {makeStyles} from "tss-react/mui";
 import React, {useEffect, useRef, useState} from "react";
 import {ChevronDown} from "tabler-icons-react";
-import {gql, useQuery} from "@apollo/client";
 import {Link, useHistory} from "react-router-dom";
-import {Refraction} from "../../../graph/types";
 import {toTitleCase} from "../../../utils/format";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
+import {Refraction, useRefSelectQuery} from "../../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	toolbar: {
@@ -42,10 +41,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	}
 }));
 
-interface QueryData {
-	listRefractions: Refraction[];
-}
-
 interface Props {
 	id: string;
 }
@@ -54,14 +49,7 @@ const BrowserToolbar: React.FC<Props> = ({id}): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const history = useHistory();
-	const {data, loading, error} = useQuery<QueryData, void>(gql`
-		query refSelect {
-			listRefractions {
-				id
-				name
-            }
-		}
-	`);
+	const {data, loading, error} = useRefSelectQuery();
 
 	// local state
 	const [open, setOpen] = useState<boolean>(false);
@@ -81,7 +69,7 @@ const BrowserToolbar: React.FC<Props> = ({id}): JSX.Element => {
 			return;
 		for (let i = 0; i < data.listRefractions.length; i++) {
 			if (data.listRefractions[i].id === id) {
-				setSelected(() => data.listRefractions[i]);
+				setSelected(() => data.listRefractions[i] as Refraction);
 				return;
 			}
 		}
@@ -139,7 +127,7 @@ const BrowserToolbar: React.FC<Props> = ({id}): JSX.Element => {
 								{data?.listRefractions.map(i => <MenuItem
 									key={i.id}
 									selected={selected?.id === i.id}
-									onClick={() => onClickItem(i)}>
+									onClick={() => onClickItem(i as Refraction)}>
 									{toTitleCase(i.name)}
 								</MenuItem>)}
 							</MenuList>

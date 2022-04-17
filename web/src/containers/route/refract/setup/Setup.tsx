@@ -23,8 +23,8 @@ import xml from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
 import shell from "react-syntax-highlighter/dist/esm/languages/hljs/shell";
 import {API_URL} from "../../../../config";
 import Error from "../../../alert/Error";
-import {Archetype, Refraction} from "../../../../graph/types";
 import CodeBlock from "../../../widgets/CodeBlock";
+import {Archetype, Refraction} from "../../../../generated/graphql";
 
 interface SetupProps {
 	refract: Refraction;
@@ -34,7 +34,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	// local state
 	const language: string = useMemo(() => {
 		switch (refract.archetype) {
-			case Archetype.MAVEN:
+			case Archetype.Maven:
 				SyntaxHighlighter.registerLanguage("xml", xml);
 				return "xml";
 			default:
@@ -46,7 +46,7 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
 	const text = useMemo(() => {
 		const url = `${API_URL}/api/v1/${refract.name.toLocaleLowerCase()}/-/`;
 		switch(refract.archetype) {
-			case Archetype.MAVEN:
+			case Archetype.Maven:
 				return `<settings xmlns="https://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="https://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
@@ -67,15 +67,15 @@ const Setup: React.FC<SetupProps> = ({refract}): JSX.Element => {
         <profiles/>
         <activeProfiles/>
 </settings>`;
-			case Archetype.GO:
+			case Archetype.Go:
 				return `# use Prism as a module proxy
 export GOPROXY="${API_URL}/api/go"`;
-			case Archetype.NPM:
+			case Archetype.Npm:
 				return `# automatically using the npm cli
 npm config set registry "${API_URL}/api/npm/${refract.name.toLocaleLowerCase()}/"
 # manually
 echo "registry=${API_URL}/api/npm/${refract.name.toLocaleLowerCase()}/" >> ~/.npmrc`;
-			case Archetype.ALPINE:
+			case Archetype.Alpine:
 				return `# replace "latest-stable" with the target version (e.g. 3.12, 3.12)
 # replace "main" with the target repository (e.g. main, community, edge)
 
@@ -90,10 +90,10 @@ echo "${url}/latest-stable/community" >> /etc/apk/repositories
 apk add somepackage \\
 	-X ${url}/latest-stable/main \\
 	-X ${url}/latest-stable/community`;
-			case Archetype.PIP:
+			case Archetype.Pip:
 				return `pip config --user set global.index-url ${API_URL}/api/pypi/${refract.name.toLocaleLowerCase()}/simple/
 pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`;
-			case Archetype.DEBIAN:
+			case Archetype.Debian:
 				return `# replace "buster" with the target distribution (e.g. buster, jessie, stretch)
 # replace "main" with the target components (e.g. main, security)
 #
@@ -101,7 +101,7 @@ pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`;
 echo "deb ${url} buster main" >> /etc/apt/sources.list
 # to use only Prism
 echo "deb ${url} buster main" > /etc/apt/sources.list`;
-			case Archetype.HELM:
+			case Archetype.Helm:
 				return `helm repo add prism-${refract.name.toLocaleLowerCase()} ${API_URL}/api/helm/${refract.name.toLocaleLowerCase()}/-/
 helm repo update`;
 			default:
