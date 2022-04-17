@@ -25,7 +25,7 @@ service:
   internalPort: 8080
 ingress:
   enabled: true
-  className: gitlab-nginx
+  className: cap10
   annotations:
     cert-manager.io/cluster-issuer: "k2-internal"
   tls:

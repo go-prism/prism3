@@ -32,7 +32,7 @@ service:
   internalPort: 8081
 ingress:
   enabled: true
-  className: gitlab-nginx
+  className: cap10
   path: /api
   extraPaths: ["/auth"]
   annotations:

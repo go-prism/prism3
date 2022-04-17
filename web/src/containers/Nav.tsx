@@ -66,10 +66,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		height: 24,
 		margin: theme.spacing(1.5)
 	},
-	appBarShift: {
-		marginLeft: drawerWidth,
-		width: `calc(100% - ${drawerWidth}px)`
-	},
+	appBarShift: {},
 	menuButton: {
 		marginRight: 36,
 		marginLeft: theme.spacing(0.5)
