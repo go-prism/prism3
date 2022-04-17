@@ -205,7 +205,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						name="role"
 						value={role}
 						onChange={handleRoleChange}>
-						{Object.keys(Role).map(r => <FormControlLabel
+						{Object.values(Role).map(r => <FormControlLabel
 							key={r}
 							control={<Radio color="primary"/>}
 							label={<div>

@@ -23,7 +23,7 @@ const Remotes: React.FC = (): JSX.Element => {
 
 	useEffect(() => {
 		window.document.title = "Remotes";
-		void listRemotes({variables: {arch: Archetype.Generic}});
+		void listRemotes({variables: {arch: "" as Archetype}});
 	}, []);
 
 	// local state

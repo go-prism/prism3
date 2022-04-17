@@ -18,36 +18,36 @@ export type Scalars = {
 };
 
 export enum Archetype {
-  Alpine = 'ALPINE',
-  Debian = 'DEBIAN',
-  Generic = 'GENERIC',
-  Go = 'GO',
-  Helm = 'HELM',
-  Maven = 'MAVEN',
-  Npm = 'NPM',
-  Pip = 'PIP',
-  Rust = 'RUST'
+  Alpine = "ALPINE",
+  Debian = "DEBIAN",
+  Generic = "GENERIC",
+  Go = "GO",
+  Helm = "HELM",
+  Maven = "MAVEN",
+  Npm = "NPM",
+  Pip = "PIP",
+  Rust = "RUST"
 }
 
 export type Artifact = {
-  __typename?: 'Artifact';
-  createdAt: Scalars['Int'];
-  downloads: Scalars['Int'];
-  id: Scalars['ID'];
-  remoteID: Scalars['ID'];
-  slices: Scalars['Strings'];
-  updatedAt: Scalars['Int'];
-  uri: Scalars['String'];
+  __typename?: "Artifact";
+  createdAt: Scalars["Int"];
+  downloads: Scalars["Int"];
+  id: Scalars["ID"];
+  remoteID: Scalars["ID"];
+  slices: Scalars["Strings"];
+  updatedAt: Scalars["Int"];
+  uri: Scalars["String"];
 };
 
 export type Mutation = {
-  __typename?: 'Mutation';
+  __typename?: "Mutation";
   createRefraction: Refraction;
   createRemote: Remote;
   createRoleBinding: RoleBinding;
   createTransportProfile: TransportSecurity;
-  deleteRefraction: Scalars['Boolean'];
-  deleteRemote: Scalars['Boolean'];
+  deleteRefraction: Scalars["Boolean"];
+  deleteRemote: Scalars["Boolean"];
   patchRefraction: Refraction;
 };
 
@@ -73,71 +73,71 @@ export type MutationCreateTransportProfileArgs = {
 
 
 export type MutationDeleteRefractionArgs = {
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 };
 
 
 export type MutationDeleteRemoteArgs = {
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 };
 
 
 export type MutationPatchRefractionArgs = {
-  id: Scalars['ID'];
+  id: Scalars["ID"];
   input: PatchRefract;
 };
 
 export type NewRefract = {
   archetype: Archetype;
-  name: Scalars['String'];
-  remotes: Array<Scalars['ID']>;
+  name: Scalars["String"];
+  remotes: Array<Scalars["ID"]>;
 };
 
 export type NewRemote = {
   archetype: Archetype;
-  name: Scalars['String'];
-  transport: Scalars['ID'];
-  uri: Scalars['String'];
+  name: Scalars["String"];
+  transport: Scalars["ID"];
+  uri: Scalars["String"];
 };
 
 export type NewRoleBinding = {
-  resource: Scalars['String'];
+  resource: Scalars["String"];
   role: Role;
-  subject: Scalars['String'];
+  subject: Scalars["String"];
 };
 
 export type NewTransportProfile = {
-  ca: Scalars['String'];
-  cert: Scalars['String'];
-  httpProxy: Scalars['String'];
-  httpsProxy: Scalars['String'];
-  key: Scalars['String'];
-  name: Scalars['String'];
-  noProxy: Scalars['String'];
-  skipTLSVerify?: Scalars['Boolean'];
+  ca: Scalars["String"];
+  cert: Scalars["String"];
+  httpProxy: Scalars["String"];
+  httpsProxy: Scalars["String"];
+  key: Scalars["String"];
+  name: Scalars["String"];
+  noProxy: Scalars["String"];
+  skipTLSVerify?: Scalars["Boolean"];
 };
 
 export type Overview = {
-  __typename?: 'Overview';
-  artifacts: Scalars['Int'];
-  downloads: Scalars['Int'];
-  packages_helm: Scalars['Int'];
-  packages_npm: Scalars['Int'];
-  packages_pypi: Scalars['Int'];
-  refractions: Scalars['Int'];
-  remotes: Scalars['Int'];
-  storage: Scalars['Int'];
-  uptime: Scalars['Int'];
-  version: Scalars['String'];
+  __typename?: "Overview";
+  artifacts: Scalars["Int"];
+  downloads: Scalars["Int"];
+  packages_helm: Scalars["Int"];
+  packages_npm: Scalars["Int"];
+  packages_pypi: Scalars["Int"];
+  refractions: Scalars["Int"];
+  remotes: Scalars["Int"];
+  storage: Scalars["Int"];
+  uptime: Scalars["Int"];
+  version: Scalars["String"];
 };
 
 export type PatchRefract = {
-  name: Scalars['String'];
-  remotes: Array<Scalars['ID']>;
+  name: Scalars["String"];
+  remotes: Array<Scalars["ID"]>;
 };
 
 export type Query = {
-  __typename?: 'Query';
+  __typename?: "Query";
   getCurrentUser: User;
   getOverview: Overview;
   getRefraction: Refraction;
@@ -154,22 +154,22 @@ export type Query = {
 
 
 export type QueryGetRefractionArgs = {
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 };
 
 
 export type QueryGetRemoteArgs = {
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 };
 
 
 export type QueryGetRemoteOverviewArgs = {
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 };
 
 
 export type QueryGetRoleBindingsArgs = {
-  user: Scalars['String'];
+  user: Scalars["String"];
 };
 
 
@@ -179,200 +179,200 @@ export type QueryGetUsersArgs = {
 
 
 export type QueryListArtifactsArgs = {
-  remote: Scalars['ID'];
+  remote: Scalars["ID"];
 };
 
 
 export type QueryListCombinedArtifactsArgs = {
-  refract: Scalars['ID'];
+  refract: Scalars["ID"];
 };
 
 
 export type QueryListRemotesArgs = {
-  arch: Scalars['String'];
+  arch: Scalars["String"];
 };
 
 export type Refraction = {
-  __typename?: 'Refraction';
+  __typename?: "Refraction";
   archetype: Archetype;
-  createdAt: Scalars['Int'];
-  id: Scalars['ID'];
-  name: Scalars['String'];
+  createdAt: Scalars["Int"];
+  id: Scalars["ID"];
+  name: Scalars["String"];
   remotes: Array<Remote>;
-  updatedAt: Scalars['Int'];
+  updatedAt: Scalars["Int"];
 };
 
 export type Remote = {
-  __typename?: 'Remote';
+  __typename?: "Remote";
   archetype: Archetype;
-  createdAt: Scalars['Int'];
-  enabled: Scalars['Boolean'];
-  id: Scalars['ID'];
-  name: Scalars['String'];
+  createdAt: Scalars["Int"];
+  enabled: Scalars["Boolean"];
+  id: Scalars["ID"];
+  name: Scalars["String"];
   security: RemoteSecurity;
-  securityID: Scalars['ID'];
+  securityID: Scalars["ID"];
   transport: TransportSecurity;
-  transportID: Scalars['ID'];
-  updatedAt: Scalars['Int'];
-  uri: Scalars['String'];
+  transportID: Scalars["ID"];
+  updatedAt: Scalars["Int"];
+  uri: Scalars["String"];
 };
 
 export type RemoteOverview = {
-  __typename?: 'RemoteOverview';
-  artifacts: Scalars['Int'];
-  storage: Scalars['Int'];
+  __typename?: "RemoteOverview";
+  artifacts: Scalars["Int"];
+  storage: Scalars["Int"];
 };
 
 export type RemoteSecurity = {
-  __typename?: 'RemoteSecurity';
-  allowed: Scalars['Strings'];
-  authHeaders: Scalars['Strings'];
-  blocked: Scalars['Strings'];
-  id: Scalars['ID'];
+  __typename?: "RemoteSecurity";
+  allowed: Scalars["Strings"];
+  authHeaders: Scalars["Strings"];
+  blocked: Scalars["Strings"];
+  id: Scalars["ID"];
 };
 
 export enum Role {
-  Power = 'POWER',
-  Super = 'SUPER'
+  Power = "POWER",
+  Super = "SUPER"
 }
 
 export type RoleBinding = {
-  __typename?: 'RoleBinding';
-  id: Scalars['ID'];
-  resource: Scalars['String'];
+  __typename?: "RoleBinding";
+  id: Scalars["ID"];
+  resource: Scalars["String"];
   role: Role;
-  subject: Scalars['String'];
+  subject: Scalars["String"];
 };
 
 export type TransportSecurity = {
-  __typename?: 'TransportSecurity';
-  ca: Scalars['String'];
-  cert: Scalars['String'];
-  httpProxy: Scalars['String'];
-  httpsProxy: Scalars['String'];
-  id: Scalars['ID'];
-  key: Scalars['String'];
-  name: Scalars['String'];
-  noProxy: Scalars['String'];
-  skipTLSVerify: Scalars['Boolean'];
+  __typename?: "TransportSecurity";
+  ca: Scalars["String"];
+  cert: Scalars["String"];
+  httpProxy: Scalars["String"];
+  httpsProxy: Scalars["String"];
+  id: Scalars["ID"];
+  key: Scalars["String"];
+  name: Scalars["String"];
+  noProxy: Scalars["String"];
+  skipTLSVerify: Scalars["Boolean"];
 };
 
 export type User = {
-  __typename?: 'User';
-  iss: Scalars['String'];
-  sub: Scalars['String'];
+  __typename?: "User";
+  iss: Scalars["String"];
+  sub: Scalars["String"];
 };
 
 export type GetOverviewQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetOverviewQuery = { __typename?: 'Query', getOverview: { __typename?: 'Overview', remotes: number, refractions: number, artifacts: number, storage: number, downloads: number, uptime: number, version: string, packages_pypi: number, packages_npm: number, packages_helm: number } };
+export type GetOverviewQuery = { __typename?: "Query", getOverview: { __typename?: "Overview", remotes: number, refractions: number, artifacts: number, storage: number, downloads: number, uptime: number, version: string, packages_pypi: number, packages_npm: number, packages_helm: number } };
 
 export type OverviewQueryVariables = Exact<{
-  refract: Scalars['ID'];
+  refract: Scalars["ID"];
 }>;
 
 
-export type OverviewQuery = { __typename?: 'Query', getRefraction: { __typename?: 'Refraction', id: string, name: string, createdAt: number, updatedAt: number, archetype: Archetype }, listCombinedArtifacts: Array<{ __typename?: 'Artifact', id: string, uri: string, updatedAt: number, createdAt: number, downloads: number }> };
+export type OverviewQuery = { __typename?: "Query", getRefraction: { __typename?: "Refraction", id: string, name: string, createdAt: number, updatedAt: number, archetype: Archetype }, listCombinedArtifacts: Array<{ __typename?: "Artifact", id: string, uri: string, updatedAt: number, createdAt: number, downloads: number }> };
 
 export type CreateRoleBindingMutationVariables = Exact<{
-  subject: Scalars['String'];
+  subject: Scalars["String"];
   role: Role;
-  resource: Scalars['String'];
+  resource: Scalars["String"];
 }>;
 
 
-export type CreateRoleBindingMutation = { __typename?: 'Mutation', createRoleBinding: { __typename?: 'RoleBinding', id: string } };
+export type CreateRoleBindingMutation = { __typename?: "Mutation", createRoleBinding: { __typename?: "RoleBinding", id: string } };
 
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser: { __typename?: 'User', sub: string, iss: string } };
+export type GetCurrentUserQuery = { __typename?: "Query", getCurrentUser: { __typename?: "User", sub: string, iss: string } };
 
 export type GetUsersQueryVariables = Exact<{
   role: Role;
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', getUsers: Array<{ __typename?: 'RoleBinding', id: string, role: Role, subject: string, resource: string }> };
+export type GetUsersQuery = { __typename?: "Query", getUsers: Array<{ __typename?: "RoleBinding", id: string, role: Role, subject: string, resource: string }> };
 
 export type PatchRefractMutationVariables = Exact<{
-  id: Scalars['ID'];
-  name: Scalars['String'];
-  remotes: Array<Scalars['ID']> | Scalars['ID'];
+  id: Scalars["ID"];
+  name: Scalars["String"];
+  remotes: Array<Scalars["ID"]> | Scalars["ID"];
 }>;
 
 
-export type PatchRefractMutation = { __typename?: 'Mutation', patchRefraction: { __typename?: 'Refraction', id: string } };
+export type PatchRefractMutation = { __typename?: "Mutation", patchRefraction: { __typename?: "Refraction", id: string } };
 
 export type CreateRefractMutationVariables = Exact<{
-  name: Scalars['String'];
+  name: Scalars["String"];
   archetype: Archetype;
-  remotes: Array<Scalars['ID']> | Scalars['ID'];
+  remotes: Array<Scalars["ID"]> | Scalars["ID"];
 }>;
 
 
-export type CreateRefractMutation = { __typename?: 'Mutation', createRefraction: { __typename?: 'Refraction', id: string } };
+export type CreateRefractMutation = { __typename?: "Mutation", createRefraction: { __typename?: "Refraction", id: string } };
 
 export type GetRefractionQueryVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 }>;
 
 
-export type GetRefractionQuery = { __typename?: 'Query', getRefraction: { __typename?: 'Refraction', id: string, createdAt: number, updatedAt: number, name: string, archetype: Archetype, remotes: Array<{ __typename?: 'Remote', id: string, name: string }> } };
+export type GetRefractionQuery = { __typename?: "Query", getRefraction: { __typename?: "Refraction", id: string, createdAt: number, updatedAt: number, name: string, archetype: Archetype, remotes: Array<{ __typename?: "Remote", id: string, name: string }> } };
 
 export type ListRefractionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListRefractionsQuery = { __typename?: 'Query', listRefractions: Array<{ __typename?: 'Refraction', id: string, createdAt: number, updatedAt: number, name: string, archetype: Archetype }> };
+export type ListRefractionsQuery = { __typename?: "Query", listRefractions: Array<{ __typename?: "Refraction", id: string, createdAt: number, updatedAt: number, name: string, archetype: Archetype }> };
 
 export type RefSelectQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type RefSelectQuery = { __typename?: 'Query', listRefractions: Array<{ __typename?: 'Refraction', id: string, name: string }> };
+export type RefSelectQuery = { __typename?: "Query", listRefractions: Array<{ __typename?: "Refraction", id: string, name: string }> };
 
 export type CreateRemoteMutationVariables = Exact<{
-  name: Scalars['String'];
-  uri: Scalars['String'];
+  name: Scalars["String"];
+  uri: Scalars["String"];
   archetype: Archetype;
-  transport: Scalars['ID'];
+  transport: Scalars["ID"];
 }>;
 
 
-export type CreateRemoteMutation = { __typename?: 'Mutation', createRemote: { __typename?: 'Remote', id: string } };
+export type CreateRemoteMutation = { __typename?: "Mutation", createRemote: { __typename?: "Remote", id: string } };
 
 export type GetRemoteQueryVariables = Exact<{
-  id: Scalars['ID'];
+  id: Scalars["ID"];
 }>;
 
 
-export type GetRemoteQuery = { __typename?: 'Query', getRemote: { __typename?: 'Remote', id: string, createdAt: number, updatedAt: number, name: string, uri: string, archetype: Archetype, enabled: boolean, transport: { __typename?: 'TransportSecurity', id: string, name: string, cert: string, key: string, ca: string, skipTLSVerify: boolean, httpProxy: string, httpsProxy: string, noProxy: string } } };
+export type GetRemoteQuery = { __typename?: "Query", getRemote: { __typename?: "Remote", id: string, createdAt: number, updatedAt: number, name: string, uri: string, archetype: Archetype, enabled: boolean, transport: { __typename?: "TransportSecurity", id: string, name: string, cert: string, key: string, ca: string, skipTLSVerify: boolean, httpProxy: string, httpsProxy: string, noProxy: string } } };
 
 export type ListRemotesQueryVariables = Exact<{
-  arch: Scalars['String'];
+  arch: Scalars["String"];
 }>;
 
 
-export type ListRemotesQuery = { __typename?: 'Query', listRemotes: Array<{ __typename?: 'Remote', id: string, name: string, updatedAt: number, createdAt: number, uri: string, enabled: boolean, archetype: Archetype }> };
+export type ListRemotesQuery = { __typename?: "Query", listRemotes: Array<{ __typename?: "Remote", id: string, name: string, updatedAt: number, createdAt: number, uri: string, enabled: boolean, archetype: Archetype }> };
 
 export type CreateTransportMutationVariables = Exact<{
-  name: Scalars['String'];
-  ca: Scalars['String'];
-  cert: Scalars['String'];
-  key: Scalars['String'];
-  skipTLSVerify: Scalars['Boolean'];
-  httpProxy: Scalars['String'];
-  httpsProxy: Scalars['String'];
-  noProxy: Scalars['String'];
+  name: Scalars["String"];
+  ca: Scalars["String"];
+  cert: Scalars["String"];
+  key: Scalars["String"];
+  skipTLSVerify: Scalars["Boolean"];
+  httpProxy: Scalars["String"];
+  httpsProxy: Scalars["String"];
+  noProxy: Scalars["String"];
 }>;
 
 
-export type CreateTransportMutation = { __typename?: 'Mutation', createTransportProfile: { __typename?: 'TransportSecurity', id: string } };
+export type CreateTransportMutation = { __typename?: "Mutation", createTransportProfile: { __typename?: "TransportSecurity", id: string } };
 
 export type ListTransportsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListTransportsQuery = { __typename?: 'Query', listTransports: Array<{ __typename?: 'TransportSecurity', id: string, name: string, skipTLSVerify: boolean, ca: string, cert: string, noProxy: string, httpProxy: string, httpsProxy: string }> };
+export type ListTransportsQuery = { __typename?: "Query", listTransports: Array<{ __typename?: "TransportSecurity", id: string, name: string, skipTLSVerify: boolean, ca: string, cert: string, noProxy: string, httpProxy: string, httpsProxy: string }> };
 
 
 export const GetOverviewDocument = gql`
@@ -408,13 +408,13 @@ export const GetOverviewDocument = gql`
  * });
  */
 export function useGetOverviewQuery(baseOptions?: Apollo.QueryHookOptions<GetOverviewQuery, GetOverviewQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetOverviewQuery, GetOverviewQueryVariables>(GetOverviewDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<GetOverviewQuery, GetOverviewQueryVariables>(GetOverviewDocument, options);
+}
 export function useGetOverviewLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetOverviewQuery, GetOverviewQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetOverviewQuery, GetOverviewQueryVariables>(GetOverviewDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<GetOverviewQuery, GetOverviewQueryVariables>(GetOverviewDocument, options);
+}
 export type GetOverviewQueryHookResult = ReturnType<typeof useGetOverviewQuery>;
 export type GetOverviewLazyQueryHookResult = ReturnType<typeof useGetOverviewLazyQuery>;
 export type GetOverviewQueryResult = Apollo.QueryResult<GetOverviewQuery, GetOverviewQueryVariables>;
@@ -454,13 +454,13 @@ export const OverviewDocument = gql`
  * });
  */
 export function useOverviewQuery(baseOptions: Apollo.QueryHookOptions<OverviewQuery, OverviewQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<OverviewQuery, OverviewQueryVariables>(OverviewDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<OverviewQuery, OverviewQueryVariables>(OverviewDocument, options);
+}
 export function useOverviewLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<OverviewQuery, OverviewQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<OverviewQuery, OverviewQueryVariables>(OverviewDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<OverviewQuery, OverviewQueryVariables>(OverviewDocument, options);
+}
 export type OverviewQueryHookResult = ReturnType<typeof useOverviewQuery>;
 export type OverviewLazyQueryHookResult = ReturnType<typeof useOverviewLazyQuery>;
 export type OverviewQueryResult = Apollo.QueryResult<OverviewQuery, OverviewQueryVariables>;
@@ -493,9 +493,9 @@ export type CreateRoleBindingMutationFn = Apollo.MutationFunction<CreateRoleBind
  * });
  */
 export function useCreateRoleBindingMutation(baseOptions?: Apollo.MutationHookOptions<CreateRoleBindingMutation, CreateRoleBindingMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateRoleBindingMutation, CreateRoleBindingMutationVariables>(CreateRoleBindingDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useMutation<CreateRoleBindingMutation, CreateRoleBindingMutationVariables>(CreateRoleBindingDocument, options);
+}
 export type CreateRoleBindingMutationHookResult = ReturnType<typeof useCreateRoleBindingMutation>;
 export type CreateRoleBindingMutationResult = Apollo.MutationResult<CreateRoleBindingMutation>;
 export type CreateRoleBindingMutationOptions = Apollo.BaseMutationOptions<CreateRoleBindingMutation, CreateRoleBindingMutationVariables>;
@@ -524,13 +524,13 @@ export const GetCurrentUserDocument = gql`
  * });
  */
 export function useGetCurrentUserQuery(baseOptions?: Apollo.QueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
+}
 export function useGetCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCurrentUserQuery, GetCurrentUserQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<GetCurrentUserQuery, GetCurrentUserQueryVariables>(GetCurrentUserDocument, options);
+}
 export type GetCurrentUserQueryHookResult = ReturnType<typeof useGetCurrentUserQuery>;
 export type GetCurrentUserLazyQueryHookResult = ReturnType<typeof useGetCurrentUserLazyQuery>;
 export type GetCurrentUserQueryResult = Apollo.QueryResult<GetCurrentUserQuery, GetCurrentUserQueryVariables>;
@@ -562,13 +562,13 @@ export const GetUsersDocument = gql`
  * });
  */
 export function useGetUsersQuery(baseOptions: Apollo.QueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+}
 export function useGetUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+}
 export type GetUsersQueryHookResult = ReturnType<typeof useGetUsersQuery>;
 export type GetUsersLazyQueryHookResult = ReturnType<typeof useGetUsersLazyQuery>;
 export type GetUsersQueryResult = Apollo.QueryResult<GetUsersQuery, GetUsersQueryVariables>;
@@ -601,9 +601,9 @@ export type PatchRefractMutationFn = Apollo.MutationFunction<PatchRefractMutatio
  * });
  */
 export function usePatchRefractMutation(baseOptions?: Apollo.MutationHookOptions<PatchRefractMutation, PatchRefractMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<PatchRefractMutation, PatchRefractMutationVariables>(PatchRefractDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useMutation<PatchRefractMutation, PatchRefractMutationVariables>(PatchRefractDocument, options);
+}
 export type PatchRefractMutationHookResult = ReturnType<typeof usePatchRefractMutation>;
 export type PatchRefractMutationResult = Apollo.MutationResult<PatchRefractMutation>;
 export type PatchRefractMutationOptions = Apollo.BaseMutationOptions<PatchRefractMutation, PatchRefractMutationVariables>;
@@ -636,9 +636,9 @@ export type CreateRefractMutationFn = Apollo.MutationFunction<CreateRefractMutat
  * });
  */
 export function useCreateRefractMutation(baseOptions?: Apollo.MutationHookOptions<CreateRefractMutation, CreateRefractMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateRefractMutation, CreateRefractMutationVariables>(CreateRefractDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useMutation<CreateRefractMutation, CreateRefractMutationVariables>(CreateRefractDocument, options);
+}
 export type CreateRefractMutationHookResult = ReturnType<typeof useCreateRefractMutation>;
 export type CreateRefractMutationResult = Apollo.MutationResult<CreateRefractMutation>;
 export type CreateRefractMutationOptions = Apollo.BaseMutationOptions<CreateRefractMutation, CreateRefractMutationVariables>;
@@ -675,13 +675,13 @@ export const GetRefractionDocument = gql`
  * });
  */
 export function useGetRefractionQuery(baseOptions: Apollo.QueryHookOptions<GetRefractionQuery, GetRefractionQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetRefractionQuery, GetRefractionQueryVariables>(GetRefractionDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<GetRefractionQuery, GetRefractionQueryVariables>(GetRefractionDocument, options);
+}
 export function useGetRefractionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRefractionQuery, GetRefractionQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetRefractionQuery, GetRefractionQueryVariables>(GetRefractionDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<GetRefractionQuery, GetRefractionQueryVariables>(GetRefractionDocument, options);
+}
 export type GetRefractionQueryHookResult = ReturnType<typeof useGetRefractionQuery>;
 export type GetRefractionLazyQueryHookResult = ReturnType<typeof useGetRefractionLazyQuery>;
 export type GetRefractionQueryResult = Apollo.QueryResult<GetRefractionQuery, GetRefractionQueryVariables>;
@@ -713,13 +713,13 @@ export const ListRefractionsDocument = gql`
  * });
  */
 export function useListRefractionsQuery(baseOptions?: Apollo.QueryHookOptions<ListRefractionsQuery, ListRefractionsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<ListRefractionsQuery, ListRefractionsQueryVariables>(ListRefractionsDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<ListRefractionsQuery, ListRefractionsQueryVariables>(ListRefractionsDocument, options);
+}
 export function useListRefractionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListRefractionsQuery, ListRefractionsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<ListRefractionsQuery, ListRefractionsQueryVariables>(ListRefractionsDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<ListRefractionsQuery, ListRefractionsQueryVariables>(ListRefractionsDocument, options);
+}
 export type ListRefractionsQueryHookResult = ReturnType<typeof useListRefractionsQuery>;
 export type ListRefractionsLazyQueryHookResult = ReturnType<typeof useListRefractionsLazyQuery>;
 export type ListRefractionsQueryResult = Apollo.QueryResult<ListRefractionsQuery, ListRefractionsQueryVariables>;
@@ -748,13 +748,13 @@ export const RefSelectDocument = gql`
  * });
  */
 export function useRefSelectQuery(baseOptions?: Apollo.QueryHookOptions<RefSelectQuery, RefSelectQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<RefSelectQuery, RefSelectQueryVariables>(RefSelectDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<RefSelectQuery, RefSelectQueryVariables>(RefSelectDocument, options);
+}
 export function useRefSelectLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RefSelectQuery, RefSelectQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<RefSelectQuery, RefSelectQueryVariables>(RefSelectDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<RefSelectQuery, RefSelectQueryVariables>(RefSelectDocument, options);
+}
 export type RefSelectQueryHookResult = ReturnType<typeof useRefSelectQuery>;
 export type RefSelectLazyQueryHookResult = ReturnType<typeof useRefSelectLazyQuery>;
 export type RefSelectQueryResult = Apollo.QueryResult<RefSelectQuery, RefSelectQueryVariables>;
@@ -790,9 +790,9 @@ export type CreateRemoteMutationFn = Apollo.MutationFunction<CreateRemoteMutatio
  * });
  */
 export function useCreateRemoteMutation(baseOptions?: Apollo.MutationHookOptions<CreateRemoteMutation, CreateRemoteMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateRemoteMutation, CreateRemoteMutationVariables>(CreateRemoteDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useMutation<CreateRemoteMutation, CreateRemoteMutationVariables>(CreateRemoteDocument, options);
+}
 export type CreateRemoteMutationHookResult = ReturnType<typeof useCreateRemoteMutation>;
 export type CreateRemoteMutationResult = Apollo.MutationResult<CreateRemoteMutation>;
 export type CreateRemoteMutationOptions = Apollo.BaseMutationOptions<CreateRemoteMutation, CreateRemoteMutationVariables>;
@@ -838,13 +838,13 @@ export const GetRemoteDocument = gql`
  * });
  */
 export function useGetRemoteQuery(baseOptions: Apollo.QueryHookOptions<GetRemoteQuery, GetRemoteQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetRemoteQuery, GetRemoteQueryVariables>(GetRemoteDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<GetRemoteQuery, GetRemoteQueryVariables>(GetRemoteDocument, options);
+}
 export function useGetRemoteLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRemoteQuery, GetRemoteQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetRemoteQuery, GetRemoteQueryVariables>(GetRemoteDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<GetRemoteQuery, GetRemoteQueryVariables>(GetRemoteDocument, options);
+}
 export type GetRemoteQueryHookResult = ReturnType<typeof useGetRemoteQuery>;
 export type GetRemoteLazyQueryHookResult = ReturnType<typeof useGetRemoteLazyQuery>;
 export type GetRemoteQueryResult = Apollo.QueryResult<GetRemoteQuery, GetRemoteQueryVariables>;
@@ -879,13 +879,13 @@ export const ListRemotesDocument = gql`
  * });
  */
 export function useListRemotesQuery(baseOptions: Apollo.QueryHookOptions<ListRemotesQuery, ListRemotesQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<ListRemotesQuery, ListRemotesQueryVariables>(ListRemotesDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<ListRemotesQuery, ListRemotesQueryVariables>(ListRemotesDocument, options);
+}
 export function useListRemotesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListRemotesQuery, ListRemotesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<ListRemotesQuery, ListRemotesQueryVariables>(ListRemotesDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<ListRemotesQuery, ListRemotesQueryVariables>(ListRemotesDocument, options);
+}
 export type ListRemotesQueryHookResult = ReturnType<typeof useListRemotesQuery>;
 export type ListRemotesLazyQueryHookResult = ReturnType<typeof useListRemotesLazyQuery>;
 export type ListRemotesQueryResult = Apollo.QueryResult<ListRemotesQuery, ListRemotesQueryVariables>;
@@ -925,9 +925,9 @@ export type CreateTransportMutationFn = Apollo.MutationFunction<CreateTransportM
  * });
  */
 export function useCreateTransportMutation(baseOptions?: Apollo.MutationHookOptions<CreateTransportMutation, CreateTransportMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateTransportMutation, CreateTransportMutationVariables>(CreateTransportDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useMutation<CreateTransportMutation, CreateTransportMutationVariables>(CreateTransportDocument, options);
+}
 export type CreateTransportMutationHookResult = ReturnType<typeof useCreateTransportMutation>;
 export type CreateTransportMutationResult = Apollo.MutationResult<CreateTransportMutation>;
 export type CreateTransportMutationOptions = Apollo.BaseMutationOptions<CreateTransportMutation, CreateTransportMutationVariables>;
@@ -962,24 +962,24 @@ export const ListTransportsDocument = gql`
  * });
  */
 export function useListTransportsQuery(baseOptions?: Apollo.QueryHookOptions<ListTransportsQuery, ListTransportsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<ListTransportsQuery, ListTransportsQueryVariables>(ListTransportsDocument, options);
-      }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useQuery<ListTransportsQuery, ListTransportsQueryVariables>(ListTransportsDocument, options);
+}
 export function useListTransportsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListTransportsQuery, ListTransportsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<ListTransportsQuery, ListTransportsQueryVariables>(ListTransportsDocument, options);
-        }
+	const options = {...defaultOptions, ...baseOptions}
+	return Apollo.useLazyQuery<ListTransportsQuery, ListTransportsQueryVariables>(ListTransportsDocument, options);
+}
 export type ListTransportsQueryHookResult = ReturnType<typeof useListTransportsQuery>;
 export type ListTransportsLazyQueryHookResult = ReturnType<typeof useListTransportsLazyQuery>;
 export type ListTransportsQueryResult = Apollo.QueryResult<ListTransportsQuery, ListTransportsQueryVariables>;
 
-      export interface PossibleTypesResultData {
+export interface PossibleTypesResultData {
         possibleTypes: {
           [key: string]: string[]
         }
       }
-      const result: PossibleTypesResultData = {
-  "possibleTypes": {}
+const result: PossibleTypesResultData = {
+	"possibleTypes": {}
 };
-      export default result;
+export default result;
     

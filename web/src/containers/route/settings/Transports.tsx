@@ -17,20 +17,20 @@
 
 import React from "react";
 import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
 	Alert,
+	Box,
 	Button,
-	Card,
-	Collapse,
-	IconButton,
+	Divider,
 	List,
-	ListItemButton,
-	ListItemSecondaryAction,
-	ListItemText,
 	Theme,
+	Typography,
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {ListItemSkeleton} from "jmp-coreui";
-import {ChevronDown, ChevronUp} from "tabler-icons-react";
+import {ChevronDown} from "tabler-icons-react";
 import {Link, useHistory, useLocation} from "react-router-dom";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import ClientConfig from "../remote/options/ClientConfig";
@@ -43,10 +43,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	button: {
 		margin: theme.spacing(1)
-	},
-	configHolder: {
-		padding: theme.spacing(1),
-		paddingRight: theme.spacing(3)
 	}
 }));
 
@@ -57,35 +53,30 @@ interface TransportItemProps {
 }
 
 const TransportItem: React.FC<TransportItemProps> = ({item, selected, setSelected}): JSX.Element => {
-	const {classes} = useStyles();
 	const open = selected === item.id;
 
-	return <div>
-		<ListItemButton
-			selected={open}
-			onClick={() => setSelected(open ? "" : item.id)}
-			dense>
-			<ListItemText>
+	return <Accordion
+		variant="outlined"
+		expanded={open}
+		onChange={() => setSelected(selected === item.id ? "" : item.id)}>
+		<AccordionSummary
+			centerRipple={false}
+			expandIcon={<ChevronDown/>}>
+			<Typography>
 				{item.name || "-"}
-			</ListItemText>
-			<ListItemSecondaryAction>
-				<IconButton
-					size="small"
-					centerRipple={false}>
-					{open ? <ChevronUp/> : <ChevronDown/>}
-				</IconButton>
-			</ListItemSecondaryAction>
-		</ListItemButton>
-		<Collapse in={open}>
-			<div className={classes.configHolder}>
+			</Typography>
+		</AccordionSummary>
+		<AccordionDetails>
+			<Divider/>
+			<Box sx={{p: 1, pr: 3}}>
 				<ClientConfig
 					profile={item}
 					setProfile={() => {}}
 					disabled={item.name === "default"}
 				/>
-			</div>
-		</Collapse>
-	</div>
+			</Box>
+		</AccordionDetails>
+	</Accordion>
 }
 
 const Transports: React.FC = (): JSX.Element => {
@@ -105,7 +96,7 @@ const Transports: React.FC = (): JSX.Element => {
 	return (
 		<div
 			className={classes.card}>
-			<Card
+			<div
 				className={classes.card}>
 				<Header
 					title="Transports"
@@ -139,7 +130,7 @@ const Transports: React.FC = (): JSX.Element => {
 						setSelected={setSelected}
 					/>)}
 				</List>}
-			</Card>
+			</div>
 		</div>
 	);
 }

@@ -69,7 +69,7 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 	}, []);
 
 	useEffect(() => {
-		void refetch({role});
+		void refetch({role: role});
 	}, [role]);
 
 	const loadingItems = (): ReactNode[] => {
@@ -103,7 +103,8 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 	}
 
 	return (
-		<Card>
+		<Card
+			variant="outlined">
 			<Flexbox>
 				<Typography
 					sx={{ml: 2}}>
@@ -131,7 +132,7 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 						variant="outlined"
 						value={role}
 						label="Role">
-						{Object.keys(Role).map(r => <MenuItem
+						{Object.values(Role).map(r => <MenuItem
 							key={r}
 							value={r}
 							onClick={() => setRole(() => r as Role)}>
