@@ -60,7 +60,7 @@ const Settings: React.FC = (): JSX.Element => {
 			label: "About",
 			to: "/settings/sys/about"
 		},
-	]
+	];
 
 	return (
 		<SidebarLayout

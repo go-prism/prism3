@@ -17,9 +17,9 @@ import Help from "./containers/route/Help";
 import Settings from "./containers/route/settings";
 import Browser from "./containers/route/overview/Browser";
 import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
-import Profile from "./containers/route/Profile";
 import Dashboard from "./containers/route/Dashboard";
 import CreateTransport from "./containers/route/settings/CreateTransport";
+import UserSettings from "./containers/route/UserSettings";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -137,8 +137,7 @@ const App: React.FC = (): JSX.Element => {
 								/>
 								<Route
 									path="/profile"
-									exact
-									component={Profile}
+									component={UserSettings}
 								/>
 								<Route
 									path="/help"

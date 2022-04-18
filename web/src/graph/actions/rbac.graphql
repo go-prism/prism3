@@ -5,8 +5,10 @@ mutation createRoleBinding($subject: String!, $role: Role!, $resource: String!) 
 }
 query getCurrentUser {
     getCurrentUser {
+        id
         sub
         iss
+        claims
     }
 }
 query getUsers($role: Role!) {

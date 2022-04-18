@@ -22,7 +22,8 @@ import {
 	Compass,
 	InfoCircle,
 	ListDetails,
-	Recharging
+	Recharging,
+	Users
 } from "tabler-icons-react";
 import {useTheme} from "@mui/material/styles";
 import {formatDistanceStrict} from "date-fns";
@@ -126,7 +127,7 @@ const Dashboard: React.FC = (): JSX.Element => {
 				</Typography>
 			</div>
 			{error && <Alert
-				sx={{m: 2}}
+				sx={{mt: 2, mb: 2}}
 				severity="error">
 				Something went wrong loading the dashboard: &quot;{getGraphErrorMessage(error)}&quot;
 			</Alert>}
@@ -178,6 +179,7 @@ const Dashboard: React.FC = (): JSX.Element => {
 						sx={{p: 0.5}}>
 						{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
 						{item("Uptime", <Clock color={theme.palette.text.secondary}/>, formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0))}
+						{item("Users", <Users color={theme.palette.secondary.main}/>, data?.getOverview.users.toLocaleString() || 0)}
 						{(data?.getOverview.system_memory || 0) > 0 && item("Memory", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory || 0, false, 0), "Current memory allocation.")}
 						{(data?.getOverview.system_memory_os || 0) > 0 && item("Memory (OS)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_os || 0, false, 0), "Memory allocated by the OS.")}
 						{(data?.getOverview.system_memory_total || 0) > 0 && item("Memory (total)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_total || 0, false, 0), "Total allocated memory.")}

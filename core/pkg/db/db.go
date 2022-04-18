@@ -7,7 +7,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
-	schemas2 "gitlab.com/go-prism/prism3/core/pkg/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/plugin/dbresolver"
@@ -60,9 +60,10 @@ func (db *Database) Init(superuser string) error {
 		&model.TransportSecurity{},
 		&model.Artifact{},
 		&model.RoleBinding{},
-		&schemas2.NPMPackage{},
-		&schemas2.PyPackage{},
-		&schemas2.HelmPackage{},
+		&model.StoredUser{},
+		&schemas.NPMPackage{},
+		&schemas.PyPackage{},
+		&schemas.HelmPackage{},
 	)
 	if err != nil {
 		log.WithError(err).Error("failed to run auto-migration")

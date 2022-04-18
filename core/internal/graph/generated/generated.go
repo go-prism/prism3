@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 		SystemMemoryOs    func(childComplexity int) int
 		SystemMemoryTotal func(childComplexity int) int
 		Uptime            func(childComplexity int) int
+		Users             func(childComplexity int) int
 		Version           func(childComplexity int) int
 	}
 
@@ -137,6 +138,13 @@ type ComplexityRoot struct {
 		Subject  func(childComplexity int) int
 	}
 
+	StoredUser struct {
+		Claims func(childComplexity int) int
+		ID     func(childComplexity int) int
+		Iss    func(childComplexity int) int
+		Sub    func(childComplexity int) int
+	}
+
 	TransportSecurity struct {
 		Ca            func(childComplexity int) int
 		Cert          func(childComplexity int) int
@@ -176,7 +184,7 @@ type QueryResolver interface {
 	GetRemoteOverview(ctx context.Context, id string) (*model.RemoteOverview, error)
 	GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error)
 	GetUsers(ctx context.Context, role model.Role) ([]*model.RoleBinding, error)
-	GetCurrentUser(ctx context.Context) (*model.User, error)
+	GetCurrentUser(ctx context.Context) (*model.StoredUser, error)
 }
 
 type executableSchema struct {
@@ -410,6 +418,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Overview.Uptime(childComplexity), true
+
+	case "Overview.users":
+		if e.complexity.Overview.Users == nil {
+			break
+		}
+
+		return e.complexity.Overview.Users(childComplexity), true
 
 	case "Overview.version":
 		if e.complexity.Overview.Version == nil {
@@ -731,6 +746,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RoleBinding.Subject(childComplexity), true
 
+	case "StoredUser.claims":
+		if e.complexity.StoredUser.Claims == nil {
+			break
+		}
+
+		return e.complexity.StoredUser.Claims(childComplexity), true
+
+	case "StoredUser.id":
+		if e.complexity.StoredUser.ID == nil {
+			break
+		}
+
+		return e.complexity.StoredUser.ID(childComplexity), true
+
+	case "StoredUser.iss":
+		if e.complexity.StoredUser.Iss == nil {
+			break
+		}
+
+		return e.complexity.StoredUser.Iss(childComplexity), true
+
+	case "StoredUser.sub":
+		if e.complexity.StoredUser.Sub == nil {
+			break
+		}
+
+		return e.complexity.StoredUser.Sub(childComplexity), true
+
 	case "TransportSecurity.ca":
 		if e.complexity.TransportSecurity.Ca == nil {
 			break
@@ -878,6 +921,7 @@ var sources = []*ast.Source{
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 scalar Strings
+scalar StringMap
 
 enum Archetype {
     GENERIC
@@ -906,6 +950,13 @@ type RoleBinding {
 type User {
     sub: String!
     iss: String!
+}
+
+type StoredUser {
+    id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+    sub: String!
+    iss: String!
+    claims: StringMap!
 }
 
 type Artifact {
@@ -968,6 +1019,7 @@ type Overview {
     downloads: Int!
     uptime: Int!
     version: String!
+    users: Int!
 
     packages_pypi: Int!
     packages_npm: Int!
@@ -1001,7 +1053,7 @@ type Query {
     getRoleBindings(user: String!): [RoleBinding!]!
     getUsers(role: Role!): [RoleBinding!]!
 
-    getCurrentUser: User!
+    getCurrentUser: StoredUser!
 }
 
 input NewRemote {
@@ -2130,6 +2182,41 @@ func (ec *executionContext) _Overview_version(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Overview_users(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Overview",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Users, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Overview_packages_pypi(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2811,9 +2898,9 @@ func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*model.StoredUser)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNStoredUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3830,6 +3917,146 @@ func (ec *executionContext) _RoleBinding_resource(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StoredUser_id(ctx context.Context, field graphql.CollectedField, obj *model.StoredUser) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StoredUser",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StoredUser_sub(ctx context.Context, field graphql.CollectedField, obj *model.StoredUser) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StoredUser",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Sub, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StoredUser_iss(ctx context.Context, field graphql.CollectedField, obj *model.StoredUser) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StoredUser",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Iss, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _StoredUser_claims(ctx context.Context, field graphql.CollectedField, obj *model.StoredUser) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StoredUser",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Claims, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(datatypes.JSONMap)
+	fc.Result = res
+	return ec.marshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _TransportSecurity_id(ctx context.Context, field graphql.CollectedField, obj *model.TransportSecurity) (ret graphql.Marshaler) {
@@ -5921,6 +6148,16 @@ func (ec *executionContext) _Overview(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "users":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Overview_users(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "packages_pypi":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Overview_packages_pypi(ctx, field, obj)
@@ -6669,6 +6906,67 @@ func (ec *executionContext) _RoleBinding(ctx context.Context, sel ast.SelectionS
 		case "resource":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._RoleBinding_resource(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var storedUserImplementors = []string{"StoredUser"}
+
+func (ec *executionContext) _StoredUser(ctx context.Context, sel ast.SelectionSet, obj *model.StoredUser) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, storedUserImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("StoredUser")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StoredUser_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sub":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StoredUser_sub(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "iss":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StoredUser_iss(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "claims":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StoredUser_claims(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -7650,6 +7948,20 @@ func (ec *executionContext) marshalNRoleBinding2ᚖgitlabᚗcomᚋgoᚑprismᚋp
 	return ec._RoleBinding(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNStoredUser2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx context.Context, sel ast.SelectionSet, v model.StoredUser) graphql.Marshaler {
+	return ec._StoredUser(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStoredUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx context.Context, sel ast.SelectionSet, v *model.StoredUser) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._StoredUser(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7663,6 +7975,22 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx context.Context, v interface{}) (datatypes.JSONMap, error) {
+	var res datatypes.JSONMap
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx context.Context, sel ast.SelectionSet, v datatypes.JSONMap) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, v interface{}) (datatypes.JSONArray, error) {
@@ -7737,20 +8065,6 @@ func (ec *executionContext) marshalNTransportSecurity2ᚖgitlabᚗcomᚋgoᚑpri
 		return graphql.Null
 	}
 	return ec._TransportSecurity(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNUser2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
-	return ec._User(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

@@ -4,6 +4,7 @@ directive @goTag(
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 scalar Strings
+scalar StringMap
 
 enum Archetype {
     GENERIC
@@ -32,6 +33,13 @@ type RoleBinding {
 type User {
     sub: String!
     iss: String!
+}
+
+type StoredUser {
+    id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+    sub: String!
+    iss: String!
+    claims: StringMap!
 }
 
 type Artifact {
@@ -94,6 +102,7 @@ type Overview {
     downloads: Int!
     uptime: Int!
     version: String!
+    users: Int!
 
     packages_pypi: Int!
     packages_npm: Int!
@@ -127,7 +136,7 @@ type Query {
     getRoleBindings(user: String!): [RoleBinding!]!
     getUsers(role: Role!): [RoleBinding!]!
 
-    getCurrentUser: User!
+    getCurrentUser: StoredUser!
 }
 
 input NewRemote {

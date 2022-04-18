@@ -135,6 +135,7 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	packagesPyPi, _ := r.repos.PyPackageRepo.Count(ctx)
 	packagesNPM, _ := r.repos.NPMPackageRepo.Count(ctx)
 	packagesHelm, _ := r.repos.HelmPackageRepo.Count(ctx)
+	users, _ := r.repos.UserRepo.Count(ctx)
 	// get debug build information
 	var buildInfo string
 	build, ok := debug.ReadBuildInfo()
@@ -155,6 +156,7 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 		Downloads:         downloads,
 		Uptime:            uptime.UnixMilli(),
 		Version:           buildInfo,
+		Users:             users,
 		PackagesPypi:      packagesPyPi,
 		PackagesNpm:       packagesNPM,
 		PackagesHelm:      packagesHelm,
@@ -189,15 +191,21 @@ func (r *queryResolver) GetUsers(ctx context.Context, role model.Role) ([]*model
 	return r.repos.RBACRepo.ListForRole(ctx, role)
 }
 
-func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.User, error) {
+func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.StoredUser, error) {
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
 		return nil, errs.ErrUnauthorised
 	}
-	return &model.User{
-		Sub: user.Sub,
-		Iss: user.Iss,
-	}, nil
+	// create or fetch the current user
+	u, err := r.repos.UserRepo.CreateCtx(ctx)
+	if err != nil {
+		return &model.StoredUser{
+			ID:  user.AsUsername(),
+			Sub: user.Sub,
+			Iss: user.Iss,
+		}, nil
+	}
+	return u, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

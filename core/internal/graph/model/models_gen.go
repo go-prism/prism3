@@ -58,6 +58,7 @@ type Overview struct {
 	Downloads         int64  `json:"downloads"`
 	Uptime            int64  `json:"uptime"`
 	Version           string `json:"version"`
+	Users             int64  `json:"users"`
 	PackagesPypi      int64  `json:"packages_pypi"`
 	PackagesNpm       int64  `json:"packages_npm"`
 	PackagesHelm      int64  `json:"packages_helm"`
@@ -111,6 +112,13 @@ type RoleBinding struct {
 	Subject  string `json:"subject"`
 	Role     Role   `json:"role"`
 	Resource string `json:"resource"`
+}
+
+type StoredUser struct {
+	ID     string            `json:"id" gorm:"primaryKey;not null"`
+	Sub    string            `json:"sub"`
+	Iss    string            `json:"iss"`
+	Claims datatypes.JSONMap `json:"claims"`
 }
 
 type TransportSecurity struct {

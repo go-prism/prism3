@@ -7,6 +7,7 @@ query getOverview {
         downloads
         uptime
         version
+        users
 
         packages_pypi
         packages_npm

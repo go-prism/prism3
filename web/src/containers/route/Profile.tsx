@@ -16,7 +16,19 @@
  */
 
 import React from "react";
-import {Alert, Avatar, Box, CircularProgress, Theme, Tooltip, Typography} from "@mui/material";
+import {
+	Alert,
+	Avatar,
+	Box,
+	Card,
+	CircularProgress,
+	List,
+	ListItem,
+	ListItemText,
+	ListSubheader,
+	Theme,
+	Typography
+} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import {makeStyles} from "tss-react/mui";
 import {Skeleton} from "@mui/lab";
@@ -24,6 +36,7 @@ import StandardLayout from "../layout/StandardLayout";
 import {getInitials, parseUsername} from "../../utils/parse";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
 import {useGetCurrentUserQuery} from "../../generated/graphql";
+import InlineNotFound from "../widgets/InlineNotFound";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -40,12 +53,17 @@ const Profile: React.FC = (): JSX.Element => {
 
 	const {data, loading, error} = useGetCurrentUserQuery();
 
+	const hasPicture = data?.getCurrentUser.claims["picture"] as string | undefined;
+	const displayName = data?.getCurrentUser.claims["nickname"] || data?.getCurrentUser.claims["name"] || parseUsername(data?.getCurrentUser?.sub || "");
+
 	return <StandardLayout>
 		<Box
 			sx={{mt: 2, display: "flex", alignItems: "center", flexDirection: "column"}}>
 			<Avatar
-				style={{width: 96, height: 96, backgroundColor: theme.palette.primary.main}}>
-				{loading ? <CircularProgress color="secondary"/> : getInitials(parseUsername(data?.getCurrentUser.sub || ""))}
+				style={{width: 96, height: 96, backgroundColor: theme.palette.primary.main}}
+				src={hasPicture}>
+				{loading && <CircularProgress color="secondary"/>}
+				{!loading && !hasPicture && getInitials(displayName)}
 			</Avatar>
 			{error && <Alert
 				sx={{textAlign: "center"}}
@@ -53,29 +71,60 @@ const Profile: React.FC = (): JSX.Element => {
 				Something went wrong loading your profile.<br/>
 				{getGraphErrorMessage(error)}
 			</Alert>}
-			<Tooltip title={data?.getCurrentUser?.sub || ""}>
-				<Typography
-					className={classes.title}
-					variant="h3">
-					{!loading && parseUsername(data?.getCurrentUser?.sub || "")}
-					{loading && <Skeleton
-						variant="text"
-						height={80}
-						width={300}
+			<Typography
+				className={classes.title}
+				variant="h3">
+				{!loading && displayName}
+				{loading && <Skeleton
+					variant="text"
+					height={80}
+					width={300}
+				/>}
+			</Typography>
+			<Typography
+				variant="body1">
+				{!loading && parseUsername(data?.getCurrentUser?.iss || "")}
+				{loading && <Skeleton
+					variant="text"
+					width={150}
+					height={40}
+				/>}
+			</Typography>
+			<Card
+				sx={{mt: 2}}
+				variant="outlined">
+				<List>
+					<ListSubheader>
+						General
+					</ListSubheader>
+					<ListItem>
+						<ListItemText
+							primary="Username"
+							secondary={data?.getCurrentUser.sub}
+						/>
+					</ListItem>
+					<ListItem>
+						<ListItemText
+							primary="Issuer"
+							secondary={data?.getCurrentUser.iss}
+						/>
+					</ListItem>
+					<ListSubheader>
+						OIDC Claims
+					</ListSubheader>
+					{Object.keys(data?.getCurrentUser?.claims || {}).length === 0 && <InlineNotFound
+						title="No claims"
+						subtitle="Claims are only present when using an OIDC provider."
 					/>}
-				</Typography>
-			</Tooltip>
-			<Tooltip title={data?.getCurrentUser?.iss || ""}>
-				<Typography
-					variant="body1">
-					{!loading && parseUsername(data?.getCurrentUser?.iss || "")}
-					{loading && <Skeleton
-						variant="text"
-						width={150}
-						height={40}
-					/>}
-				</Typography>
-			</Tooltip>
+					{data?.getCurrentUser?.claims && Object.entries(data.getCurrentUser.claims).map(([k, v]) => <ListItem
+						key={k}>
+						<ListItemText
+							primary={k}
+							secondary={v as string}
+						/>
+					</ListItem>)}
+				</List>
+			</Card>
 		</Box>
 	</StandardLayout>
 }

@@ -14,6 +14,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  StringMap: any;
   Strings: any;
 };
 
@@ -131,6 +132,7 @@ export type Overview = {
   system_memory_os: Scalars['Int'];
   system_memory_total: Scalars['Int'];
   uptime: Scalars['Int'];
+  users: Scalars['Int'];
   version: Scalars['String'];
 };
 
@@ -141,7 +143,7 @@ export type PatchRefract = {
 
 export type Query = {
   __typename?: 'Query';
-  getCurrentUser: User;
+  getCurrentUser: StoredUser;
   getOverview: Overview;
   getRefraction: Refraction;
   getRemote: Remote;
@@ -247,6 +249,14 @@ export type RoleBinding = {
   subject: Scalars['String'];
 };
 
+export type StoredUser = {
+  __typename?: 'StoredUser';
+  claims: Scalars['StringMap'];
+  id: Scalars['ID'];
+  iss: Scalars['String'];
+  sub: Scalars['String'];
+};
+
 export type TransportSecurity = {
   __typename?: 'TransportSecurity';
   ca: Scalars['String'];
@@ -269,7 +279,7 @@ export type User = {
 export type GetOverviewQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetOverviewQuery = { __typename?: 'Query', getOverview: { __typename?: 'Overview', remotes: number, refractions: number, artifacts: number, storage: number, downloads: number, uptime: number, version: string, packages_pypi: number, packages_npm: number, packages_helm: number, system_memory: number, system_memory_os: number, system_memory_total: number } };
+export type GetOverviewQuery = { __typename?: 'Query', getOverview: { __typename?: 'Overview', remotes: number, refractions: number, artifacts: number, storage: number, downloads: number, uptime: number, version: string, users: number, packages_pypi: number, packages_npm: number, packages_helm: number, system_memory: number, system_memory_os: number, system_memory_total: number } };
 
 export type OverviewQueryVariables = Exact<{
   refract: Scalars['ID'];
@@ -290,7 +300,7 @@ export type CreateRoleBindingMutation = { __typename?: 'Mutation', createRoleBin
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser: { __typename?: 'User', sub: string, iss: string } };
+export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser: { __typename?: 'StoredUser', id: string, sub: string, iss: string, claims: any } };
 
 export type GetUsersQueryVariables = Exact<{
   role: Role;
@@ -388,6 +398,7 @@ export const GetOverviewDocument = gql`
     downloads
     uptime
     version
+    users
     packages_pypi
     packages_npm
     packages_helm
@@ -508,8 +519,10 @@ export type CreateRoleBindingMutationOptions = Apollo.BaseMutationOptions<Create
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {
+    id
     sub
     iss
+    claims
   }
 }
     `;

@@ -46,6 +46,9 @@ models:
   Strings:
     model:
       - gitlab.com/go-prism/prism3/core/pkg/db/datatypes.JSONArray
+  StringMap:
+    model:
+      - gitlab.com/go-prism/prism3/core/pkg/db/datatypes.JSONMap
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
