@@ -45,7 +45,7 @@ autobind:
 models:
   Strings:
     model:
-      - gitlab.com/go-prism/prism3/core/internal/db/datatypes.JSONArray
+      - gitlab.com/go-prism/prism3/core/pkg/db/datatypes.JSONArray
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID

@@ -21,7 +21,8 @@ import {
 	CloudUpload,
 	Compass,
 	InfoCircle,
-	ListDetails
+	ListDetails,
+	Recharging
 } from "tabler-icons-react";
 import {useTheme} from "@mui/material/styles";
 import {formatDistanceStrict} from "date-fns";
@@ -43,7 +44,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	avatar: {
 		width: 96,
 		height: 96,
-		borderRadius: 100,
+		borderRadius: 0,
 		margin: 12,
 		padding: 6,
 		backgroundColor: theme.palette.background.default
@@ -177,6 +178,9 @@ const Dashboard: React.FC = (): JSX.Element => {
 						sx={{p: 0.5}}>
 						{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
 						{item("Uptime", <Clock color={theme.palette.text.secondary}/>, formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0))}
+						{(data?.getOverview.system_memory || 0) > 0 && item("Memory", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory || 0, false, 0), "Current memory allocation.")}
+						{(data?.getOverview.system_memory_os || 0) > 0 && item("Memory (OS)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_os || 0, false, 0), "Memory allocated by the OS.")}
+						{(data?.getOverview.system_memory_total || 0) > 0 && item("Memory (total)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_total || 0, false, 0), "Total allocated memory.")}
 					</List>
 				</Widget>
 			</Grid>

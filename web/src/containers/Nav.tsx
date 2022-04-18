@@ -23,8 +23,6 @@ import {makeStyles} from "tss-react/mui";
 import {Help, User} from "tabler-icons-react";
 import {API_URL} from "../config";
 
-const drawerWidth = 64;
-
 const useStyles = makeStyles()((theme: Theme) => ({
 	grow: {
 		flexGrow: 1
@@ -64,9 +62,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	avatar: {
 		width: 24,
 		height: 24,
-		margin: theme.spacing(1.5)
+		margin: theme.spacing(1.5),
+		borderRadius: 0
 	},
-	appBarShift: {},
 	menuButton: {
 		marginRight: 36,
 		marginLeft: theme.spacing(0.5)
@@ -107,8 +105,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 				elevation={0}
 				variant="outlined"
 				position="fixed"
-				color="inherit"
-				className={classes.appBarShift}>
+				color="inherit">
 				<Toolbar
 					className={classes.toolbar}
 					variant="dense">

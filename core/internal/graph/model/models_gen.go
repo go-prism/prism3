@@ -4,9 +4,10 @@ package model
 
 import (
 	"fmt"
-	"gitlab.com/go-prism/prism3/core/pkg/db/datatypes"
 	"io"
 	"strconv"
+
+	"gitlab.com/go-prism/prism3/core/pkg/db/datatypes"
 )
 
 type Artifact struct {
@@ -50,16 +51,19 @@ type NewTransportProfile struct {
 }
 
 type Overview struct {
-	Remotes      int64  `json:"remotes"`
-	Refractions  int64  `json:"refractions"`
-	Artifacts    int64  `json:"artifacts"`
-	Storage      int64  `json:"storage"`
-	Downloads    int64  `json:"downloads"`
-	Uptime       int64  `json:"uptime"`
-	Version      string `json:"version"`
-	PackagesPypi int64  `json:"packages_pypi"`
-	PackagesNpm  int64  `json:"packages_npm"`
-	PackagesHelm int64  `json:"packages_helm"`
+	Remotes           int64  `json:"remotes"`
+	Refractions       int64  `json:"refractions"`
+	Artifacts         int64  `json:"artifacts"`
+	Storage           int64  `json:"storage"`
+	Downloads         int64  `json:"downloads"`
+	Uptime            int64  `json:"uptime"`
+	Version           string `json:"version"`
+	PackagesPypi      int64  `json:"packages_pypi"`
+	PackagesNpm       int64  `json:"packages_npm"`
+	PackagesHelm      int64  `json:"packages_helm"`
+	SystemMemory      int64  `json:"system_memory"`
+	SystemMemoryOs    int64  `json:"system_memory_os"`
+	SystemMemoryTotal int64  `json:"system_memory_total"`
 }
 
 type PatchRefract struct {

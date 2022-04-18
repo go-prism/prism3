@@ -98,6 +98,10 @@ type Overview {
     packages_pypi: Int!
     packages_npm: Int!
     packages_helm: Int!
+
+    system_memory: Int!
+    system_memory_os: Int!
+    system_memory_total: Int!
 }
 
 type RemoteOverview {

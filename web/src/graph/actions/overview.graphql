@@ -11,6 +11,10 @@ query getOverview {
         packages_pypi
         packages_npm
         packages_helm
+
+        system_memory
+        system_memory_os
+        system_memory_total
     }
 }
 query overview($refract: ID!) {

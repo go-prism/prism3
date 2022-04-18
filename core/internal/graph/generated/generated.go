@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"gitlab.com/go-prism/prism3/core/pkg/db/datatypes"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -16,6 +15,7 @@ import (
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/db/datatypes"
 )
 
 // region    ************************** generated!.gotpl **************************
@@ -65,16 +65,19 @@ type ComplexityRoot struct {
 	}
 
 	Overview struct {
-		Artifacts    func(childComplexity int) int
-		Downloads    func(childComplexity int) int
-		PackagesHelm func(childComplexity int) int
-		PackagesNpm  func(childComplexity int) int
-		PackagesPypi func(childComplexity int) int
-		Refractions  func(childComplexity int) int
-		Remotes      func(childComplexity int) int
-		Storage      func(childComplexity int) int
-		Uptime       func(childComplexity int) int
-		Version      func(childComplexity int) int
+		Artifacts         func(childComplexity int) int
+		Downloads         func(childComplexity int) int
+		PackagesHelm      func(childComplexity int) int
+		PackagesNpm       func(childComplexity int) int
+		PackagesPypi      func(childComplexity int) int
+		Refractions       func(childComplexity int) int
+		Remotes           func(childComplexity int) int
+		Storage           func(childComplexity int) int
+		SystemMemory      func(childComplexity int) int
+		SystemMemoryOs    func(childComplexity int) int
+		SystemMemoryTotal func(childComplexity int) int
+		Uptime            func(childComplexity int) int
+		Version           func(childComplexity int) int
 	}
 
 	Query struct {
@@ -379,6 +382,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Overview.Storage(childComplexity), true
+
+	case "Overview.system_memory":
+		if e.complexity.Overview.SystemMemory == nil {
+			break
+		}
+
+		return e.complexity.Overview.SystemMemory(childComplexity), true
+
+	case "Overview.system_memory_os":
+		if e.complexity.Overview.SystemMemoryOs == nil {
+			break
+		}
+
+		return e.complexity.Overview.SystemMemoryOs(childComplexity), true
+
+	case "Overview.system_memory_total":
+		if e.complexity.Overview.SystemMemoryTotal == nil {
+			break
+		}
+
+		return e.complexity.Overview.SystemMemoryTotal(childComplexity), true
 
 	case "Overview.uptime":
 		if e.complexity.Overview.Uptime == nil {
@@ -948,6 +972,10 @@ type Overview {
     packages_pypi: Int!
     packages_npm: Int!
     packages_helm: Int!
+
+    system_memory: Int!
+    system_memory_os: Int!
+    system_memory_total: Int!
 }
 
 type RemoteOverview {
@@ -1560,7 +1588,7 @@ func (ec *executionContext) _Artifact_slices(ctx context.Context, field graphql.
 	}
 	res := resTmp.(datatypes.JSONArray)
 	fc.Result = res
-	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createRemote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2191,6 +2219,111 @@ func (ec *executionContext) _Overview_packages_helm(ctx context.Context, field g
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PackagesHelm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Overview_system_memory(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Overview",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SystemMemory, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Overview_system_memory_os(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Overview",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SystemMemoryOs, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Overview_system_memory_total(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Overview",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SystemMemoryTotal, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3486,7 +3619,7 @@ func (ec *executionContext) _RemoteSecurity_allowed(ctx context.Context, field g
 	}
 	res := resTmp.(datatypes.JSONArray)
 	fc.Result = res
-	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _RemoteSecurity_blocked(ctx context.Context, field graphql.CollectedField, obj *model.RemoteSecurity) (ret graphql.Marshaler) {
@@ -3521,7 +3654,7 @@ func (ec *executionContext) _RemoteSecurity_blocked(ctx context.Context, field g
 	}
 	res := resTmp.(datatypes.JSONArray)
 	fc.Result = res
-	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _RemoteSecurity_authHeaders(ctx context.Context, field graphql.CollectedField, obj *model.RemoteSecurity) (ret graphql.Marshaler) {
@@ -3556,7 +3689,7 @@ func (ec *executionContext) _RemoteSecurity_authHeaders(ctx context.Context, fie
 	}
 	res := resTmp.(datatypes.JSONArray)
 	fc.Result = res
-	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _RoleBinding_id(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
@@ -5818,6 +5951,36 @@ func (ec *executionContext) _Overview(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "system_memory":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Overview_system_memory(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "system_memory_os":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Overview_system_memory_os(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "system_memory_total":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Overview_system_memory_total(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7502,13 +7665,13 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, v interface{}) (datatypes.JSONArray, error) {
+func (ec *executionContext) unmarshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, v interface{}) (datatypes.JSONArray, error) {
 	var res datatypes.JSONArray
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, sel ast.SelectionSet, v datatypes.JSONArray) graphql.Marshaler {
+func (ec *executionContext) marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx context.Context, sel ast.SelectionSet, v datatypes.JSONArray) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

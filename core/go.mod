@@ -27,7 +27,6 @@ require (
 	gitlab.com/av1o/cap10 v0.3.0
 	gitlab.com/av1o/cap10-ingress v0.0.0-20220212125434-d2886402dc5d
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
-	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/datatypes v1.0.6
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.2
@@ -152,6 +151,7 @@ require (
 	google.golang.org/grpc v1.44.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gorm.io/driver/mysql v1.3.2 // indirect
 	k8s.io/api v0.23.4 // indirect

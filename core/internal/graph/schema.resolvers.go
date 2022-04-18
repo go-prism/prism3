@@ -6,7 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
-	"gitlab.com/go-prism/prism3/core/pkg/tasks"
+	"runtime"
 	"runtime/debug"
 
 	"gitlab.com/av1o/cap10/pkg/client"
@@ -14,6 +14,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
@@ -140,17 +141,26 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	if ok {
 		buildInfo = build.Main.Version
 	}
+	var m runtime.MemStats
+	// only reveal system information to administrators
+	if err := r.authz.AmI(ctx, model.RoleSuper); err == nil {
+		runtime.ReadMemStats(&m)
+	}
+
 	return &model.Overview{
-		Remotes:      remotes,
-		Refractions:  refracts,
-		Artifacts:    artifacts,
-		Storage:      store.(*storage.BucketSize).Bytes,
-		Downloads:    downloads,
-		Uptime:       uptime.UnixMilli(),
-		Version:      buildInfo,
-		PackagesPypi: packagesPyPi,
-		PackagesNpm:  packagesNPM,
-		PackagesHelm: packagesHelm,
+		Remotes:           remotes,
+		Refractions:       refracts,
+		Artifacts:         artifacts,
+		Storage:           store.(*storage.BucketSize).Bytes,
+		Downloads:         downloads,
+		Uptime:            uptime.UnixMilli(),
+		Version:           buildInfo,
+		PackagesPypi:      packagesPyPi,
+		PackagesNpm:       packagesNPM,
+		PackagesHelm:      packagesHelm,
+		SystemMemory:      int64(m.Alloc),
+		SystemMemoryOs:    int64(m.Sys),
+		SystemMemoryTotal: int64(m.TotalAlloc),
 	}, nil
 }
 
