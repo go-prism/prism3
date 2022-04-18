@@ -15,7 +15,7 @@
  *
  */
 
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {
 	Alert,
 	Avatar,
@@ -37,6 +37,7 @@ import {getInitials, parseUsername} from "../../utils/parse";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
 import {useGetCurrentUserQuery} from "../../generated/graphql";
 import InlineNotFound from "../widgets/InlineNotFound";
+import {SimpleMap} from "../../domain";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -52,9 +53,20 @@ const Profile: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	const {data, loading, error} = useGetCurrentUserQuery();
+	const [claims, setClaims] = useState<SimpleMap<string>>({});
 
-	const hasPicture = data?.getCurrentUser.claims["picture"] as string | undefined;
-	const displayName = data?.getCurrentUser.claims["nickname"] || data?.getCurrentUser.claims["name"] || parseUsername(data?.getCurrentUser?.sub || "");
+	useEffect(() => {
+		if (data == null)
+			return;
+		const c: SimpleMap<string> = {};
+		Object.entries(data.getCurrentUser.claims).forEach(([k, v]) => {
+			c[k.toLocaleLowerCase()] = v as string;
+		});
+		setClaims(() => c);
+	}, [data]);
+
+	const hasPicture = claims["picture"] as string | undefined;
+	const displayName = claims["nickname"] || claims["name"] || parseUsername(data?.getCurrentUser?.sub || "");
 
 	return <StandardLayout>
 		<Box
@@ -93,7 +105,8 @@ const Profile: React.FC = (): JSX.Element => {
 			<Card
 				sx={{mt: 2}}
 				variant="outlined">
-				<List>
+				<List
+					sx={{maxHeight: 400, overflowY: "auto"}}>
 					<ListSubheader>
 						General
 					</ListSubheader>
@@ -112,11 +125,11 @@ const Profile: React.FC = (): JSX.Element => {
 					<ListSubheader>
 						OIDC Claims
 					</ListSubheader>
-					{Object.keys(data?.getCurrentUser?.claims || {}).length === 0 && <InlineNotFound
+					{Object.keys(claims).length === 0 && <InlineNotFound
 						title="No claims"
 						subtitle="Claims are only present when using an OIDC provider."
 					/>}
-					{data?.getCurrentUser?.claims && Object.entries(data.getCurrentUser.claims).map(([k, v]) => <ListItem
+					{Object.entries(claims).map(([k, v]) => <ListItem
 						key={k}>
 						<ListItemText
 							primary={k}
