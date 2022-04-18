@@ -15,7 +15,7 @@
  *
  */
 
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {
 	Alert,
 	Avatar,
@@ -35,9 +35,9 @@ import {Skeleton} from "@mui/lab";
 import StandardLayout from "../layout/StandardLayout";
 import {getInitials, parseUsername} from "../../utils/parse";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
-import {useGetCurrentUserQuery} from "../../generated/graphql";
 import InlineNotFound from "../widgets/InlineNotFound";
 import {SimpleMap} from "../../domain";
+import {AppContext} from "../../../store/AppProvider";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -51,22 +51,22 @@ const Profile: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
-
-	const {data, loading, error} = useGetCurrentUserQuery();
+	const {state: {user, userError}} = useContext(AppContext);
 	const [claims, setClaims] = useState<SimpleMap<string>>({});
+	const loading = user == null && userError == null;
 
 	useEffect(() => {
-		if (data == null)
+		if (user == null)
 			return;
 		const c: SimpleMap<string> = {};
-		Object.entries(data.getCurrentUser.claims).forEach(([k, v]) => {
+		Object.entries(user.claims).forEach(([k, v]) => {
 			c[k.toLocaleLowerCase()] = v as string;
 		});
 		setClaims(() => c);
-	}, [data]);
+	}, [user]);
 
 	const hasPicture = claims["picture"] as string | undefined;
-	const displayName = claims["nickname"] || claims["name"] || parseUsername(data?.getCurrentUser?.sub || "");
+	const displayName = claims["nickname"] || claims["name"] || parseUsername(user?.sub || "");
 
 	return <StandardLayout>
 		<Box
@@ -77,11 +77,11 @@ const Profile: React.FC = (): JSX.Element => {
 				{loading && <CircularProgress color="secondary"/>}
 				{!loading && !hasPicture && getInitials(displayName)}
 			</Avatar>
-			{error && <Alert
+			{userError && <Alert
 				sx={{textAlign: "center"}}
 				severity="error">
 				Something went wrong loading your profile.<br/>
-				{getGraphErrorMessage(error)}
+				{getGraphErrorMessage(userError)}
 			</Alert>}
 			<Typography
 				className={classes.title}
@@ -95,7 +95,7 @@ const Profile: React.FC = (): JSX.Element => {
 			</Typography>
 			<Typography
 				variant="body1">
-				{!loading && parseUsername(data?.getCurrentUser?.iss || "")}
+				{!loading && parseUsername(user?.iss || "")}
 				{loading && <Skeleton
 					variant="text"
 					width={150}
@@ -107,22 +107,24 @@ const Profile: React.FC = (): JSX.Element => {
 				variant="outlined">
 				<List
 					sx={{maxHeight: 400, overflowY: "auto"}}>
-					<ListSubheader>
+					<ListSubheader
+						disableSticky>
 						General
 					</ListSubheader>
 					<ListItem>
 						<ListItemText
 							primary="Username"
-							secondary={data?.getCurrentUser.sub}
+							secondary={user?.sub || <Skeleton/>}
 						/>
 					</ListItem>
 					<ListItem>
 						<ListItemText
 							primary="Issuer"
-							secondary={data?.getCurrentUser.iss}
+							secondary={user?.iss || <Skeleton/>}
 						/>
 					</ListItem>
-					<ListSubheader>
+					<ListSubheader
+						disableSticky>
 						OIDC Claims
 					</ListSubheader>
 					{Object.keys(claims).length === 0 && <InlineNotFound

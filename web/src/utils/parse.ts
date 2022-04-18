@@ -15,6 +15,8 @@
  *
  */
 
+import {StoredUser} from "../generated/graphql";
+
 export interface MavenPackage {
 	artifactId: string;
 	groupId: string;
@@ -68,4 +70,15 @@ export const parseDN = (dn: string): string => {
 
 export const getInitials = (name: string): string => {
 	return name.split(" ").map(w => w.length > 0 ? w[0] : "").join("");
+}
+
+export const getClaimValue = (user: StoredUser | null, key: string): string => {
+	if (!user)
+		return "";
+	Object.entries(user.claims).forEach(([k, v]) => {
+		if (k.toLocaleLowerCase() === key.toLocaleLowerCase()) {
+			return v;
+		}
+	});
+	return "";
 }

@@ -23,7 +23,7 @@ deploy:
     releases:
       - name: postgresql
         namespace: prism
-        remoteChart: https://charts.bitnami.com/bitnami/postgresql-11.1.17.tgz
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/postgresql-11.1.17.tgz
         skipBuildDependencies: true
         upgradeOnChange: true
         valuesFiles:
@@ -96,7 +96,7 @@ deploy:
     releases:
       - name: redis
         namespace: prism
-        remoteChart: https://charts.bitnami.com/bitnami/redis-16.8.2.tgz
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/redis-16.8.2.tgz
         skipBuildDependencies: true
         upgradeOnChange: true
         valuesFiles:

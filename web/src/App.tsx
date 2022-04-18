@@ -1,9 +1,11 @@
 import {createTheme, CssBaseline, Theme, ThemeProvider} from "@mui/material";
-import React from "react";
+import React, {useContext} from "react";
 import {Route, Switch} from "react-router";
 import createCache from "@emotion/cache";
 import {CacheProvider} from "@emotion/react";
 import {makeStyles} from "tss-react/mui";
+import {AppContext} from "../store/AppProvider";
+import {setCurrentUser, setUserError} from "../store/actions/user";
 import {light} from "./style/palette";
 import Nav from "./containers/Nav";
 import SideBar from "./containers/SideBar";
@@ -20,6 +22,7 @@ import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Dashboard from "./containers/route/Dashboard";
 import CreateTransport from "./containers/route/settings/CreateTransport";
 import UserSettings from "./containers/route/UserSettings";
+import {useGetCurrentUserQuery} from "./generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -41,6 +44,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 const App: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
+	const {dispatch} = useContext(AppContext);
 
 	// global state
 	const theme = createTheme({
@@ -66,6 +70,13 @@ const App: React.FC = (): JSX.Element => {
 	const cache = createCache({
 		key: "mui",
 		prepend: true
+	});
+	
+	useGetCurrentUserQuery({
+		onCompleted: data => {
+			dispatch(setCurrentUser(data.getCurrentUser));
+		},
+		onError: error => dispatch(setUserError(error))
 	});
 
 	return (

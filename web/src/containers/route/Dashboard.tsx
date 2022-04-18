@@ -169,7 +169,7 @@ const Dashboard: React.FC = (): JSX.Element => {
 								primary={<Link to="/help/whats-new">
 									What's new with Prism?
 								</Link>}
-								secondary="Take advantage of new features, fixes and workflows."
+								secondary="Take advantage of new features, improvements and workflows."
 							/>
 						</ListItem>
 					</List>

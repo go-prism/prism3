@@ -15,13 +15,29 @@
  *
  */
 
-import React, {useState} from "react";
-import {AppBar, Avatar, ButtonBase, IconButton, Popover, Theme, Toolbar, Typography,} from "@mui/material";
+import React, {useContext, useState} from "react";
+import {
+	AppBar,
+	Avatar,
+	ButtonBase,
+	Divider,
+	IconButton,
+	ListItem,
+	ListItemButton,
+	ListItemText,
+	MenuItem,
+	Popover,
+	Theme,
+	Toolbar,
+	Typography,
+} from "@mui/material";
 import {Link} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
 import {makeStyles} from "tss-react/mui";
-import {Help, User} from "tabler-icons-react";
+import {ChevronDown, Help, User} from "tabler-icons-react";
 import {API_URL} from "../config";
+import {AppContext} from "../../store/AppProvider";
+import {getClaimValue, parseUsername} from "../utils/parse";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	grow: {
@@ -54,7 +70,8 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		display: "none",
 		[theme.breakpoints.up("md")]: {
 			display: "flex"
-		}
+		},
+		alignItems: "center"
 	},
 	menuIcon: {
 		paddingRight: theme.spacing(1)
@@ -88,9 +105,13 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
+	const {state: {user}} = useContext(AppContext);
 
 	// global state
 	const oidcEnabled = true;
+	const userPicture = getClaimValue(user, "picture");
+	const displayName =  getClaimValue(user, "name") || parseUsername(user?.sub || "");
+	const username =  getClaimValue(user, "sub") || user?.sub || "";
 
 	// local state
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -137,25 +158,71 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 							to="/help">
 							<Help color={theme.palette.text.secondary}/>
 						</IconButton>
-						{oidcEnabled && <IconButton
-							style={{margin: 8}}
+						{oidcEnabled && <ButtonBase
+							className={classes.brandButton}
+							sx={{pl: 1, pr: 1}}
+							focusRipple
 							disabled={loading}
-							centerRipple={false}
-							size="small"
-							color="inherit"
-							href={`${API_URL}/auth/redirect`}
-							rel="noopener noreferrer">
-							<User color={theme.palette.text.secondary}/>
-						</IconButton>}
+							onClick={e => setAnchorEl(e.currentTarget)}>
+							{userPicture ? <Avatar
+								sx={{width: 24, height: 24}}
+								src={userPicture}
+							/> : <User
+								size={22}
+								color={theme.palette.text.secondary}
+							/>}
+							<ChevronDown
+								style={{marginLeft: theme.spacing(1)}}
+								size={16}
+								color={theme.palette.text.secondary}
+							/>
+						</ButtonBase>}
 					</div>
 				</Toolbar>
 			</AppBar>
 			<Popover
+				sx={{mt: 1.5}}
+				PaperProps={{variant: "outlined", sx: {minWidth: 200}}}
 				anchorEl={anchorEl}
-				anchorOrigin={{vertical: "top", horizontal: "right"}}
+				anchorOrigin={{vertical: "bottom", horizontal: "right"}}
 				transformOrigin={{vertical: "top", horizontal: "right"}}
 				open={anchorEl != null && !loading}
 				onClose={handleMenuClose}>
+				{!user && <ListItemButton
+					component="a"
+					href={`${API_URL}/auth/redirect`}
+					rel="noopener noreferrer">
+					<ListItemText
+						primary="Not logged in."
+						secondary="Click here to login"
+					/>
+				</ListItemButton>}
+				{user && <ListItem>
+					<ListItemText
+						primary={displayName}
+						secondary={username}
+						secondaryTypographyProps={{
+							sx: {textOverflow: "ellipsis", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden"}
+						}}
+					/>
+				</ListItem>}
+				<Divider/>
+				<MenuItem
+					sx={{fontSize: 14}}
+					onClick={handleMenuClose}
+					component={Link}
+					to="/profile"
+					disabled={!user}>
+					Edit profile
+				</MenuItem>
+				<MenuItem
+					sx={{fontSize: 14}}
+					onClick={handleMenuClose}
+					component={Link}
+					to="/profile/preferences"
+					disabled={!user}>
+					Preferences
+				</MenuItem>
 			</Popover>
 		</div>
 	);

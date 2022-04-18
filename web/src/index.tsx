@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import {BrowserRouter} from "react-router-dom";
 import {ApolloProvider} from "@apollo/client";
+import {AppProvider} from "../store/AppProvider";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "typeface-roboto";
@@ -10,11 +11,13 @@ import Client from "./graph";
 
 ReactDOM.render(
 	<React.StrictMode>
-		<BrowserRouter>
-			<ApolloProvider client={Client}>
-				<App/>
-			</ApolloProvider>
-		</BrowserRouter>
+		<AppProvider>
+			<BrowserRouter>
+				<ApolloProvider client={Client}>
+					<App/>
+				</ApolloProvider>
+			</BrowserRouter>
+		</AppProvider>
 	</React.StrictMode>,
 	document.getElementById("root")
 );
