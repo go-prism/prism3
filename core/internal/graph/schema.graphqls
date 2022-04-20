@@ -40,6 +40,7 @@ type StoredUser {
     sub: String!
     iss: String!
     claims: StringMap!
+    preferences: StringMap! @goTag(key: "gorm", value: "not null;type:jsonb;default:'{}'::jsonb")
 }
 
 type Artifact {
@@ -185,4 +186,6 @@ type Mutation {
     createRoleBinding(input: NewRoleBinding!): RoleBinding!
 
     createTransportProfile(input: NewTransportProfile!): TransportSecurity!
+
+    setPreference(key: String!, value: String!): Boolean!
 }

@@ -62,6 +62,7 @@ type ComplexityRoot struct {
 		DeleteRefraction       func(childComplexity int, id string) int
 		DeleteRemote           func(childComplexity int, id string) int
 		PatchRefraction        func(childComplexity int, id string, input model.PatchRefract) int
+		SetPreference          func(childComplexity int, key string, value string) int
 	}
 
 	Overview struct {
@@ -139,10 +140,11 @@ type ComplexityRoot struct {
 	}
 
 	StoredUser struct {
-		Claims func(childComplexity int) int
-		ID     func(childComplexity int) int
-		Iss    func(childComplexity int) int
-		Sub    func(childComplexity int) int
+		Claims      func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Iss         func(childComplexity int) int
+		Preferences func(childComplexity int) int
+		Sub         func(childComplexity int) int
 	}
 
 	TransportSecurity struct {
@@ -171,6 +173,7 @@ type MutationResolver interface {
 	DeleteRefraction(ctx context.Context, id string) (bool, error)
 	CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error)
 	CreateTransportProfile(ctx context.Context, input model.NewTransportProfile) (*model.TransportSecurity, error)
+	SetPreference(ctx context.Context, key string, value string) (bool, error)
 }
 type QueryResolver interface {
 	ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error)
@@ -334,6 +337,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.PatchRefraction(childComplexity, args["id"].(string), args["input"].(model.PatchRefract)), true
+
+	case "Mutation.setPreference":
+		if e.complexity.Mutation.SetPreference == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setPreference_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SetPreference(childComplexity, args["key"].(string), args["value"].(string)), true
 
 	case "Overview.artifacts":
 		if e.complexity.Overview.Artifacts == nil {
@@ -767,6 +782,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StoredUser.Iss(childComplexity), true
 
+	case "StoredUser.preferences":
+		if e.complexity.StoredUser.Preferences == nil {
+			break
+		}
+
+		return e.complexity.StoredUser.Preferences(childComplexity), true
+
 	case "StoredUser.sub":
 		if e.complexity.StoredUser.Sub == nil {
 			break
@@ -957,6 +979,7 @@ type StoredUser {
     sub: String!
     iss: String!
     claims: StringMap!
+    preferences: StringMap! @goTag(key: "gorm", value: "not null;type:jsonb;default:'{}'::jsonb")
 }
 
 type Artifact {
@@ -1102,6 +1125,8 @@ type Mutation {
     createRoleBinding(input: NewRoleBinding!): RoleBinding!
 
     createTransportProfile(input: NewTransportProfile!): TransportSecurity!
+
+    setPreference(key: String!, value: String!): Boolean!
 }
 `, BuiltIn: false},
 }
@@ -1222,6 +1247,30 @@ func (ec *executionContext) field_Mutation_patchRefraction_args(ctx context.Cont
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_setPreference_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["value"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["value"] = arg1
 	return args, nil
 }
 
@@ -1935,6 +1984,48 @@ func (ec *executionContext) _Mutation_createTransportProfile(ctx context.Context
 	res := resTmp.(*model.TransportSecurity)
 	fc.Result = res
 	return ec.marshalNTransportSecurity2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐTransportSecurity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_setPreference(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_setPreference_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SetPreference(rctx, args["key"].(string), args["value"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Overview_remotes(ctx context.Context, field graphql.CollectedField, obj *model.Overview) (ret graphql.Marshaler) {
@@ -4059,6 +4150,41 @@ func (ec *executionContext) _StoredUser_claims(ctx context.Context, field graphq
 	return ec.marshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _StoredUser_preferences(ctx context.Context, field graphql.CollectedField, obj *model.StoredUser) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "StoredUser",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Preferences, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(datatypes.JSONMap)
+	fc.Result = res
+	return ec.marshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _TransportSecurity_id(ctx context.Context, field graphql.CollectedField, obj *model.TransportSecurity) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6057,6 +6183,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "setPreference":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_setPreference(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6967,6 +7103,16 @@ func (ec *executionContext) _StoredUser(ctx context.Context, sel ast.SelectionSe
 		case "claims":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._StoredUser_claims(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "preferences":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._StoredUser_preferences(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

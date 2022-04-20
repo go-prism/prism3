@@ -83,6 +83,10 @@ func (r *mutationResolver) CreateTransportProfile(ctx context.Context, input mod
 	return r.repos.TransportRepo.CreateTransport(ctx, &input)
 }
 
+func (r *mutationResolver) SetPreference(ctx context.Context, key string, value string) (bool, error) {
+	return true, r.repos.UserRepo.SetPreference(ctx, key, value)
+}
+
 func (r *queryResolver) ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error) {
 	return r.repos.RemoteRepo.ListRemotes(ctx, model.Archetype(arch))
 }

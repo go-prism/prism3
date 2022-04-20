@@ -17,3 +17,5 @@ export const DEFAULT_RESTRICTED_HEADERS = [
 	"Deploy-Token",
 	"Job-Token"
 ];
+
+export const PREF_DARK_THEME = "dark-theme";

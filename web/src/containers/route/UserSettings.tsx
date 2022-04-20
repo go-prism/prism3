@@ -4,6 +4,7 @@ import {Route, Switch} from "react-router";
 import SimpleSidebar, {SidebarItem} from "../layout/SimpleSidebar";
 import SidebarLayout from "../layout/SidebarLayout";
 import Profile from "./Profile";
+import UserPreferences from "./user/UserPreferences";
 
 const UserSettings: React.FC = (): JSX.Element => {
 	useEffect(() => {
@@ -36,6 +37,11 @@ const UserSettings: React.FC = (): JSX.Element => {
 				exact
 				path="/profile"
 				component={Profile}
+			/>
+			<Route
+				exact
+				path="/profile/preferences"
+				component={UserPreferences}
 			/>
 		</Switch>
 	</SidebarLayout>

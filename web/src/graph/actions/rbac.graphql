@@ -9,6 +9,7 @@ query getCurrentUser {
         sub
         iss
         claims
+        preferences
     }
 }
 query getUsers($role: Role!) {
@@ -18,4 +19,7 @@ query getUsers($role: Role!) {
         subject
         resource
     }
+}
+mutation setPreference($key: String!, $value: String!) {
+    setPreference(key: $key, value: $value)
 }

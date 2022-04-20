@@ -115,10 +115,11 @@ type RoleBinding struct {
 }
 
 type StoredUser struct {
-	ID     string            `json:"id" gorm:"primaryKey;not null"`
-	Sub    string            `json:"sub"`
-	Iss    string            `json:"iss"`
-	Claims datatypes.JSONMap `json:"claims"`
+	ID          string            `json:"id" gorm:"primaryKey;not null"`
+	Sub         string            `json:"sub"`
+	Iss         string            `json:"iss"`
+	Claims      datatypes.JSONMap `json:"claims"`
+	Preferences datatypes.JSONMap `json:"preferences" gorm:"not null;type:jsonb;default:'{}'::jsonb"`
 }
 
 type TransportSecurity struct {

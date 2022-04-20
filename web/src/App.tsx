@@ -6,7 +6,7 @@ import {CacheProvider} from "@emotion/react";
 import {makeStyles} from "tss-react/mui";
 import {AppContext} from "../store/AppProvider";
 import {setCurrentUser, setUserError} from "../store/actions/user";
-import {light} from "./style/palette";
+import {dark, light} from "./style/palette";
 import Nav from "./containers/Nav";
 import SideBar from "./containers/SideBar";
 import NotFound from "./containers/route/NotFound";
@@ -23,6 +23,7 @@ import Dashboard from "./containers/route/Dashboard";
 import CreateTransport from "./containers/route/settings/CreateTransport";
 import UserSettings from "./containers/route/UserSettings";
 import {useGetCurrentUserQuery} from "./generated/graphql";
+import {PREF_DARK_THEME} from "./config/constants";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
@@ -44,11 +45,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
 const App: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
-	const {dispatch} = useContext(AppContext);
+	const {dispatch, state: {user}} = useContext(AppContext);
 
 	// global state
 	const theme = createTheme({
-		palette: light,
+		palette: user?.preferences[PREF_DARK_THEME] === "true" ? dark : light,
 		components: {
 			MuiTooltip: {
 				styleOverrides: {

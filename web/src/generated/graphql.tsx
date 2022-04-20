@@ -50,6 +50,7 @@ export type Mutation = {
   deleteRefraction: Scalars['Boolean'];
   deleteRemote: Scalars['Boolean'];
   patchRefraction: Refraction;
+  setPreference: Scalars['Boolean'];
 };
 
 
@@ -86,6 +87,12 @@ export type MutationDeleteRemoteArgs = {
 export type MutationPatchRefractionArgs = {
   id: Scalars['ID'];
   input: PatchRefract;
+};
+
+
+export type MutationSetPreferenceArgs = {
+  key: Scalars['String'];
+  value: Scalars['String'];
 };
 
 export type NewRefract = {
@@ -254,6 +261,7 @@ export type StoredUser = {
   claims: Scalars['StringMap'];
   id: Scalars['ID'];
   iss: Scalars['String'];
+  preferences: Scalars['StringMap'];
   sub: Scalars['String'];
 };
 
@@ -300,7 +308,7 @@ export type CreateRoleBindingMutation = { __typename?: 'Mutation', createRoleBin
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser: { __typename?: 'StoredUser', id: string, sub: string, iss: string, claims: any } };
+export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser: { __typename?: 'StoredUser', id: string, sub: string, iss: string, claims: any, preferences: any } };
 
 export type GetUsersQueryVariables = Exact<{
   role: Role;
@@ -308,6 +316,14 @@ export type GetUsersQueryVariables = Exact<{
 
 
 export type GetUsersQuery = { __typename?: 'Query', getUsers: Array<{ __typename?: 'RoleBinding', id: string, role: Role, subject: string, resource: string }> };
+
+export type SetPreferenceMutationVariables = Exact<{
+  key: Scalars['String'];
+  value: Scalars['String'];
+}>;
+
+
+export type SetPreferenceMutation = { __typename?: 'Mutation', setPreference: boolean };
 
 export type PatchRefractMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -523,6 +539,7 @@ export const GetCurrentUserDocument = gql`
     sub
     iss
     claims
+    preferences
   }
 }
     `;
@@ -591,6 +608,38 @@ export function useGetUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetUsersQueryHookResult = ReturnType<typeof useGetUsersQuery>;
 export type GetUsersLazyQueryHookResult = ReturnType<typeof useGetUsersLazyQuery>;
 export type GetUsersQueryResult = Apollo.QueryResult<GetUsersQuery, GetUsersQueryVariables>;
+export const SetPreferenceDocument = gql`
+    mutation setPreference($key: String!, $value: String!) {
+  setPreference(key: $key, value: $value)
+}
+    `;
+export type SetPreferenceMutationFn = Apollo.MutationFunction<SetPreferenceMutation, SetPreferenceMutationVariables>;
+
+/**
+ * __useSetPreferenceMutation__
+ *
+ * To run a mutation, you first call `useSetPreferenceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetPreferenceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setPreferenceMutation, { data, loading, error }] = useSetPreferenceMutation({
+ *   variables: {
+ *      key: // value for 'key'
+ *      value: // value for 'value'
+ *   },
+ * });
+ */
+export function useSetPreferenceMutation(baseOptions?: Apollo.MutationHookOptions<SetPreferenceMutation, SetPreferenceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetPreferenceMutation, SetPreferenceMutationVariables>(SetPreferenceDocument, options);
+      }
+export type SetPreferenceMutationHookResult = ReturnType<typeof useSetPreferenceMutation>;
+export type SetPreferenceMutationResult = Apollo.MutationResult<SetPreferenceMutation>;
+export type SetPreferenceMutationOptions = Apollo.BaseMutationOptions<SetPreferenceMutation, SetPreferenceMutationVariables>;
 export const PatchRefractDocument = gql`
     mutation patchRefract($id: ID!, $name: String!, $remotes: [ID!]!) {
   patchRefraction(id: $id, input: {name: $name, remotes: $remotes}) {
