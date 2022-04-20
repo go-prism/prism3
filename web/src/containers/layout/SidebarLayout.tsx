@@ -18,12 +18,13 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, sidebarWidth = DE
 	const location = useLocation();
 
 	const navHeight = location.pathname.startsWith("/artifacts/-/") ? 92 : 52;
+	const sidebarColour = theme.palette.mode === "light" ? theme.palette.grey["200"] : theme.palette.background.paper;
 
 	return (
 		<Grid
 			container>
 			<Grid
-				style={{backgroundColor: theme.palette.grey["200"], height: `calc(100vh - ${navHeight}px)`, padding: theme.spacing(1)}}
+				style={{backgroundColor: sidebarColour, height: `calc(100vh - ${navHeight}px)`, padding: theme.spacing(1)}}
 				item
 				xs={sidebarWidth || DEFAULT_WIDTH}>
 				<ErrorBoundary

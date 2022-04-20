@@ -1,5 +1,5 @@
 import {createTheme, CssBaseline, Theme, ThemeProvider} from "@mui/material";
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import {Route, Switch} from "react-router";
 import createCache from "@emotion/cache";
 import {CacheProvider} from "@emotion/react";
@@ -67,6 +67,10 @@ const App: React.FC = (): JSX.Element => {
 			}
 		}
 	});
+
+	useEffect(() => {
+		document.documentElement.setAttribute("data-theme", theme.palette.mode);
+	}, [theme.palette.mode]);
 
 	const cache = createCache({
 		key: "mui",
