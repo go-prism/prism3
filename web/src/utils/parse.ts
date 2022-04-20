@@ -16,6 +16,7 @@
  */
 
 import {StoredUser} from "../generated/graphql";
+import {SimpleMap} from "../domain";
 
 export interface MavenPackage {
 	artifactId: string;
@@ -75,10 +76,5 @@ export const getInitials = (name: string): string => {
 export const getClaimValue = (user: StoredUser | null, key: string): string => {
 	if (!user)
 		return "";
-	Object.entries(user.claims).forEach(([k, v]) => {
-		if (k.toLocaleLowerCase() === key.toLocaleLowerCase()) {
-			return v;
-		}
-	});
-	return "";
+	return Object.entries(user.claims as SimpleMap<string>).find(([k]) => k.toLocaleLowerCase() === key.toLocaleLowerCase())?.[1] || "";
 }

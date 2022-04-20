@@ -44,14 +44,16 @@ service:
 ingress:
   enabled: true
   path: /api
+  extraPaths:
+    - /auth
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: "iss-kube"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000"
-    nginx.ingress.kubernetes.io/auth-tls-secret: cert-manager/ca-dcas-dev
-    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
-    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+#    nginx.ingress.kubernetes.io/auth-tls-secret: cert-manager/ca-dcas-dev
+#    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+#    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
   tls:
     enabled: true
     secretName: tls-prism3-core
@@ -83,6 +85,13 @@ sidecars:
         value: "/healthz"
       - name: PORT
         value: "8081"
+      - name: BASE_URL
+        value: "https://prism3.devel"
+      - name: OIDC_COOKIE_SAME_SITE
+        value: "None"
+    envFrom:
+      - secretRef:
+          name: oidc
     ports:
       - name: http
         containerPort: 8081

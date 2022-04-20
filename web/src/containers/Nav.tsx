@@ -110,7 +110,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	// global state
 	const oidcEnabled = true;
 	const userPicture = getClaimValue(user, "picture");
-	const displayName =  getClaimValue(user, "name") || parseUsername(user?.sub || "");
+	const displayName = getClaimValue(user, "name") || parseUsername(user?.sub || "");
 	const username =  getClaimValue(user, "sub") || user?.sub || "";
 
 	// local state

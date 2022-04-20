@@ -5,7 +5,8 @@ import {API_URL} from "../config";
 
 const Client = new ApolloClient({
 	link: new GraphQLWsLink(createClient({
-		url: `${API_URL.replace("http", "ws")}/api/query`
+		url: `${API_URL.replace("http", "ws")}/api/query`,
+		lazyCloseTimeout: 60_000,
 	})),
 	cache: new InMemoryCache()
 });
