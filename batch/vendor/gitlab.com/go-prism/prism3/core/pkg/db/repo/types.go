@@ -47,6 +47,10 @@ type RBACRepo struct {
 	db *gorm.DB
 }
 
+type UserRepo struct {
+	db *gorm.DB
+}
+
 type Repos struct {
 	RemoteRepo      *RemoteRepo
 	RefractRepo     *RefractRepo
@@ -56,4 +60,5 @@ type Repos struct {
 	PyPackageRepo   *PyPackageRepo
 	HelmPackageRepo *HelmPackageRepo
 	RBACRepo        *RBACRepo
+	UserRepo        *UserRepo
 }

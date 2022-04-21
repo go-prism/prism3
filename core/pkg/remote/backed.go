@@ -7,7 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/policy"
-	repo2 "gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 	"net/url"
@@ -18,20 +19,21 @@ import (
 type BackedRemote struct {
 	rm       *model.Remote
 	eph      Remote
-	onCreate repo2.CreateArtifactFunc
+	onCreate repo.CreateArtifactFunc
 	pol      policy.Enforcer
 	store    storage.Reader
 }
 
-func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo2.CreateArtifactFunc, getPyPi, getHelm repo2.GetPackageFunc) *BackedRemote {
+func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
+	client := httpclient.GetConfigured(rm.Transport)
 	var eph Remote
 	switch rm.Archetype {
 	case model.ArchetypeHelm:
-		eph = NewHelmRemote(rm.URI, getHelm)
+		eph = NewHelmRemote(rm.URI, client, getHelm)
 	case model.ArchetypePip:
-		eph = NewPyPiRemote(rm.URI, getPyPi)
+		eph = NewPyPiRemote(rm.URI, client, getPyPi)
 	default:
-		eph = NewEphemeralRemote(rm.URI)
+		eph = NewEphemeralRemote(rm.URI, client)
 	}
 	return &BackedRemote{
 		rm:       rm,

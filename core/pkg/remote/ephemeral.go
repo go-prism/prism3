@@ -20,10 +20,16 @@ type EphemeralRemote struct {
 	cache  *ttlcache.Cache[string, string]
 }
 
-func NewEphemeralRemote(root string) *EphemeralRemote {
+func NewEphemeralRemote(root string, client *http.Client) *EphemeralRemote {
+	c := client
+	// use the default client if we're not given one
+	if client == nil {
+		log.Warning("received nil client - using default")
+		c = http.DefaultClient
+	}
 	return &EphemeralRemote{
 		root:   root,
-		client: http.DefaultClient,
+		client: c,
 		cache:  ttlcache.New[string, string](ttlcache.WithCapacity[string, string](1000)),
 	}
 }

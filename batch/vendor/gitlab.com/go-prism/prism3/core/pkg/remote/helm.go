@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"io"
+	"net/http"
 )
 
 type HelmRemote struct {
@@ -11,10 +12,10 @@ type HelmRemote struct {
 	rem        *EphemeralRemote
 }
 
-func NewHelmRemote(root string, getPackage repo.GetPackageFunc) *HelmRemote {
+func NewHelmRemote(root string, client *http.Client, getPackage repo.GetPackageFunc) *HelmRemote {
 	return &HelmRemote{
 		getPackage: getPackage,
-		rem:        NewEphemeralRemote(root),
+		rem:        NewEphemeralRemote(root, client),
 	}
 }
 

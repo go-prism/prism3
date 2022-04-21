@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"io"
+	"net/http"
 	"strings"
 )
 
@@ -12,10 +13,10 @@ type PyPiRemote struct {
 	rem        *EphemeralRemote
 }
 
-func NewPyPiRemote(root string, getPackage repo.GetPackageFunc) *PyPiRemote {
+func NewPyPiRemote(root string, client *http.Client, getPackage repo.GetPackageFunc) *PyPiRemote {
 	return &PyPiRemote{
 		getPackage: getPackage,
-		rem:        NewEphemeralRemote(root),
+		rem:        NewEphemeralRemote(root, client),
 	}
 }
 
