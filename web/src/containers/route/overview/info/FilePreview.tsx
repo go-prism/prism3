@@ -15,12 +15,12 @@
  *
  */
 
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {Alert} from "@mui/material";
 import {ListItemSkeleton} from "jmp-coreui";
-import useErrors from "../../../../hooks/useErrors";
 import getErrorMessage from "../../../../selectors/getErrorMessage";
-import useLoading from "../../../../hooks/useLoading";
+import {API_URL} from "../../../../config";
+import CodeBlock from "../../../widgets/CodeBlock";
 
 interface FilePreviewProps {
 	refraction: string;
@@ -29,12 +29,30 @@ interface FilePreviewProps {
 
 const FilePreview: React.FC<FilePreviewProps> = ({refraction, uri}): JSX.Element => {
 	// global state
-	const loading = useLoading([]);
-	const error = useErrors([]);
+	const [loading, setLoading] = useState<boolean>(false);
+	const [error, setError] = useState<Error | null>(null);
+	const [data, setData] = useState<string>();
 
-	// useEffect(() => {
-	// 	getFile(dispatch, refraction, uri);
-	// }, [refraction, uri]);
+	const getFile = (): void => {
+		setLoading(() => true);
+		setError(() => null);
+		fetch(`${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-/${uri}`)
+			.then(res => {
+				if (!res.ok) {
+					throw new Error(res.statusText);
+				}
+				return res.text();
+			})
+			.then(str => {
+				setData(() => str);
+			})
+			.catch(err => setError(() => err))
+			.finally(() => setLoading(() => false));
+	}
+
+	useEffect(() => {
+		getFile();
+	}, [refraction, uri]);
 
 	const codeLang = (): string => {
 		switch (true) {
@@ -62,14 +80,13 @@ const FilePreview: React.FC<FilePreviewProps> = ({refraction, uri}): JSX.Element
 			</div>}
 			{!loading && error != null && <Alert
 				severity="error">
+				Unable to load file preview.<br/>
 				{getErrorMessage(error)}
 			</Alert>}
-			{/*{!loading && error == null && filePreview != null && <CodeBlock*/}
-			{/*	text={filePreview}*/}
-			{/*	showLineNumbers*/}
-			{/*	language={codeLang()}*/}
-			{/*	theme={dracula}*/}
-			{/*/>}*/}
+			{!loading && error == null && data && <CodeBlock
+				code={data}
+				language={codeLang()}
+			/>}
 		</div>
 	);
 }
