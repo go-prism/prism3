@@ -69,12 +69,6 @@ pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`}
 						language="bash"
 					/>
 				</div>,
-				config: <div>
-					<CodeBlock
-						code="N/A"
-						language="text"
-					/>
-				</div>,
 				name: "Temporary"
 			}]}
 		/>

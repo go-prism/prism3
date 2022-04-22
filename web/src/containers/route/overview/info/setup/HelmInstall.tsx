@@ -65,12 +65,6 @@ const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element
 						language="bash"
 					/>
 				</div>,
-				config: <div>
-					<CodeBlock
-						code="N/A"
-						language="bash"
-					/>
-				</div>,
 				name: "Temporary"
 			}]}
 		/>

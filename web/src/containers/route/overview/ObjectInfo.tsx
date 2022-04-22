@@ -33,6 +33,7 @@ import HelmInstall from "./info/setup/HelmInstall";
 import NpmInstall from "./info/setup/NpmInstall";
 import PyPiInstall from "./info/setup/PyPiInstall";
 import DebianInstall from "./info/setup/DebianInstall";
+import GenericInstall from "./info/setup/GenericInstall";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -114,6 +115,8 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				return <PyPiInstall uri={item.uri} refraction={refraction.name} wheel={false}/>;
 			case item.uri.endsWith(".whl") && refraction.archetype === Archetype.Pip:
 				return <PyPiInstall uri={item.uri} refraction={refraction.name} wheel/>;
+			case refraction.archetype === Archetype.Generic:
+				return <GenericInstall uri={item.uri} refraction={refraction.name}/>;
 			default:
 				return <DefaultInstall uri={item.uri}/>;
 		}

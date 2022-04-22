@@ -44,7 +44,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
 export interface SetupVariants {
 	name: string;
 	install: ReactNode;
-	config: ReactNode;
+	config?: ReactNode;
 }
 
 interface LanguageInstallProps {
@@ -85,12 +85,12 @@ const LanguageInstall: React.FC<LanguageInstallProps> = ({variants}): JSX.Elemen
 				</Select>}
 			</div>
 			{variants[selected].install}
-			<Typography
+			{variants[selected].config && <Typography
 				className={classes.title}
 				color="textPrimary"
 				variant="h6">
 				Registry setup
-			</Typography>
+			</Typography>}
 			{variants[selected].config}
 		</div>
 	);

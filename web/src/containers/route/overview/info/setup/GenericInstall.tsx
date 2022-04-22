@@ -15,58 +15,44 @@
  *
  */
 
-import React, {useLayoutEffect, useMemo} from "react";
+import React, {useLayoutEffect} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
-interface AlpineInstallProps {
+interface Props {
 	uri: string;
 	refraction: string;
 }
 
-const AlpineInstall: React.FC<AlpineInstallProps> = ({uri, refraction}): JSX.Element => {
+const GenericInstall: React.FC<Props> = ({uri, refraction}): JSX.Element => {
 	useLayoutEffect(() => {
 		SyntaxHighlighter.registerLanguage("bash", bash);
 	}, []);
-
-	const [path, pkgName, pkgVersion] = useMemo((): string[] => {
-		const bits = uri.split("/");
-		const name = bits[bits.length - 1];
-		const [packageRevision, packageVersion, ...names] = name.replace(".apk", "").split("-").reverse().join("-").split("-");
-
-		return [bits.slice(0, 2).join("/"), names.reverse().join("-"), `${packageVersion}-${packageRevision}`];
-	}, [uri]);
 
 	return (
 		<LanguageInstall
 			variants={[{
 				install: <div>
 					<CodeBlock
-						code={`apk add ${pkgName}=${pkgVersion}`}
+						code={`curl -O "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${uri}"`}
 						language="bash"
 					/>
 				</div>,
-				config: <div>
-					<CodeBlock
-						code={`echo "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${path}" >> /etc/apk/repositories\napk update`}
-						language="bash"
-					/>
-				</div>,
-				name: "Permanent"
+				name: "cURL"
 			},
 			{
 				install: <div>
 					<CodeBlock
-						code={`apk add ${pkgName}=${pkgVersion} \\\n\t-X ${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${path}`}
+						code={`wget "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${uri}"`}
 						language="bash"
 					/>
 				</div>,
-				name: "Temporary"
+				name: "wget"
 			}]}
 		/>
 	)
 }
-export default AlpineInstall;
+export default GenericInstall;
