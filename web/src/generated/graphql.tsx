@@ -265,6 +265,11 @@ export type StoredUser = {
   sub: Scalars['String'];
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  getCurrentUser: StoredUser;
+};
+
 export type TransportSecurity = {
   __typename?: 'TransportSecurity';
   ca: Scalars['String'];
@@ -309,6 +314,11 @@ export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser: { __typename?: 'StoredUser', id: string, sub: string, iss: string, claims: any, preferences: any } };
+
+export type WatchCurrentUserSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WatchCurrentUserSubscription = { __typename?: 'Subscription', getCurrentUser: { __typename?: 'StoredUser', id: string, sub: string, iss: string, claims: any, preferences: any } };
 
 export type GetUsersQueryVariables = Exact<{
   role: Role;
@@ -570,6 +580,39 @@ export function useGetCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type GetCurrentUserQueryHookResult = ReturnType<typeof useGetCurrentUserQuery>;
 export type GetCurrentUserLazyQueryHookResult = ReturnType<typeof useGetCurrentUserLazyQuery>;
 export type GetCurrentUserQueryResult = Apollo.QueryResult<GetCurrentUserQuery, GetCurrentUserQueryVariables>;
+export const WatchCurrentUserDocument = gql`
+    subscription watchCurrentUser {
+  getCurrentUser {
+    id
+    sub
+    iss
+    claims
+    preferences
+  }
+}
+    `;
+
+/**
+ * __useWatchCurrentUserSubscription__
+ *
+ * To run a query within a React component, call `useWatchCurrentUserSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useWatchCurrentUserSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useWatchCurrentUserSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useWatchCurrentUserSubscription(baseOptions?: Apollo.SubscriptionHookOptions<WatchCurrentUserSubscription, WatchCurrentUserSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<WatchCurrentUserSubscription, WatchCurrentUserSubscriptionVariables>(WatchCurrentUserDocument, options);
+      }
+export type WatchCurrentUserSubscriptionHookResult = ReturnType<typeof useWatchCurrentUserSubscription>;
+export type WatchCurrentUserSubscriptionResult = Apollo.SubscriptionResult<WatchCurrentUserSubscription>;
 export const GetUsersDocument = gql`
     query getUsers($role: Role!) {
   getUsers(role: $role) {

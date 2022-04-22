@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -38,6 +39,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Subscription() SubscriptionResolver
 }
 
 type DirectiveRoot struct {
@@ -147,6 +149,10 @@ type ComplexityRoot struct {
 		Sub         func(childComplexity int) int
 	}
 
+	Subscription struct {
+		GetCurrentUser func(childComplexity int) int
+	}
+
 	TransportSecurity struct {
 		Ca            func(childComplexity int) int
 		Cert          func(childComplexity int) int
@@ -188,6 +194,9 @@ type QueryResolver interface {
 	GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error)
 	GetUsers(ctx context.Context, role model.Role) ([]*model.RoleBinding, error)
 	GetCurrentUser(ctx context.Context) (*model.StoredUser, error)
+}
+type SubscriptionResolver interface {
+	GetCurrentUser(ctx context.Context) (<-chan *model.StoredUser, error)
 }
 
 type executableSchema struct {
@@ -796,6 +805,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.StoredUser.Sub(childComplexity), true
 
+	case "Subscription.getCurrentUser":
+		if e.complexity.Subscription.GetCurrentUser == nil {
+			break
+		}
+
+		return e.complexity.Subscription.GetCurrentUser(childComplexity), true
+
 	case "TransportSecurity.ca":
 		if e.complexity.TransportSecurity.Ca == nil {
 			break
@@ -905,6 +921,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			first = false
 			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next()
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -1076,6 +1109,10 @@ type Query {
     getRoleBindings(user: String!): [RoleBinding!]!
     getUsers(role: Role!): [RoleBinding!]!
 
+    getCurrentUser: StoredUser!
+}
+
+type Subscription {
     getCurrentUser: StoredUser!
 }
 
@@ -4185,6 +4222,51 @@ func (ec *executionContext) _StoredUser_preferences(ctx context.Context, field g
 	return ec.marshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Subscription_getCurrentUser(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().GetCurrentUser(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *model.StoredUser)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNStoredUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
 func (ec *executionContext) _TransportSecurity_id(ctx context.Context, field graphql.CollectedField, obj *model.TransportSecurity) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7129,6 +7211,26 @@ func (ec *executionContext) _StoredUser(ctx context.Context, sel ast.SelectionSe
 		return graphql.Null
 	}
 	return out
+}
+
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func() graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "getCurrentUser":
+		return ec._Subscription_getCurrentUser(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
 }
 
 var transportSecurityImplementors = []string{"TransportSecurity"}

@@ -15,7 +15,7 @@
  *
  */
 
-import React, {useContext, useState} from "react";
+import React, {useMemo, useState} from "react";
 import {
 	AppBar,
 	Avatar,
@@ -36,8 +36,8 @@ import {useTheme} from "@mui/material/styles";
 import {makeStyles} from "tss-react/mui";
 import {ChevronDown, Help, User} from "tabler-icons-react";
 import {API_URL} from "../config";
-import {AppContext} from "../../store/AppProvider";
 import {getClaimValue, parseUsername} from "../utils/parse";
+import {useWatchCurrentUserSubscription} from "../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	grow: {
@@ -101,17 +101,30 @@ interface NavProps {
 	loading?: boolean;
 }
 
+interface UserInfo {
+	picture: string;
+	displayName: string;
+	username: string;
+}
+
 const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
-	const {state: {user}} = useContext(AppContext);
+	const {data} = useWatchCurrentUserSubscription();
 
 	// global state
-	const oidcEnabled = true;
-	const userPicture = getClaimValue(user, "picture");
-	const displayName = getClaimValue(user, "name") || parseUsername(user?.sub || "");
-	const username =  getClaimValue(user, "sub") || user?.sub || "";
+	const userInfo: UserInfo = useMemo(() => {
+		const user = data?.getCurrentUser ?? null;
+		const userPicture = getClaimValue(user, "picture");
+		const displayName = getClaimValue(user, "name") || parseUsername(user?.sub || "");
+		const username =  getClaimValue(user, "sub") || user?.sub || "";
+		return {
+			picture: userPicture,
+			displayName,
+			username
+		}
+	}, [data]);
 
 	// local state
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -158,15 +171,15 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 							to="/help">
 							<Help color={theme.palette.text.secondary}/>
 						</IconButton>
-						{oidcEnabled && <ButtonBase
+						<ButtonBase
 							className={classes.brandButton}
 							sx={{pl: 1, pr: 1}}
 							focusRipple
 							disabled={loading}
 							onClick={e => setAnchorEl(e.currentTarget)}>
-							{userPicture ? <Avatar
+							{userInfo.picture ? <Avatar
 								sx={{width: 24, height: 24}}
-								src={userPicture}
+								src={userInfo.picture}
 							/> : <User
 								size={22}
 								color={theme.palette.text.secondary}
@@ -176,19 +189,19 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 								size={16}
 								color={theme.palette.text.secondary}
 							/>
-						</ButtonBase>}
+						</ButtonBase>
 					</div>
 				</Toolbar>
 			</AppBar>
 			<Popover
 				sx={{mt: 1.5}}
-				PaperProps={{variant: "outlined", sx: {minWidth: 200}}}
+				PaperProps={{variant: "outlined", elevation: 0, sx: {minWidth: 200}}}
 				anchorEl={anchorEl}
 				anchorOrigin={{vertical: "bottom", horizontal: "right"}}
 				transformOrigin={{vertical: "top", horizontal: "right"}}
 				open={anchorEl != null && !loading}
 				onClose={handleMenuClose}>
-				{!user && <ListItemButton
+				{!data && <ListItemButton
 					component="a"
 					href={`${API_URL}/auth/redirect`}
 					rel="noopener noreferrer">
@@ -197,10 +210,10 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 						secondary="Click here to login"
 					/>
 				</ListItemButton>}
-				{user && <ListItem>
+				{data && <ListItem>
 					<ListItemText
-						primary={displayName}
-						secondary={username}
+						primary={userInfo.displayName}
+						secondary={userInfo.username}
 						secondaryTypographyProps={{
 							sx: {textOverflow: "ellipsis", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden"}
 						}}
@@ -212,7 +225,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 					onClick={handleMenuClose}
 					component={Link}
 					to="/profile"
-					disabled={!user}>
+					disabled={!data}>
 					Edit profile
 				</MenuItem>
 				<MenuItem
@@ -220,7 +233,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 					onClick={handleMenuClose}
 					component={Link}
 					to="/profile/preferences"
-					disabled={!user}>
+					disabled={!data}>
 					Preferences
 				</MenuItem>
 			</Popover>

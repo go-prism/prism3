@@ -1,11 +1,9 @@
 import {createTheme, CssBaseline, Theme, ThemeProvider} from "@mui/material";
-import React, {useContext, useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import {Route, Switch} from "react-router";
 import createCache from "@emotion/cache";
 import {CacheProvider} from "@emotion/react";
 import {makeStyles} from "tss-react/mui";
-import {AppContext} from "../store/AppProvider";
-import {setCurrentUser, setUserError} from "../store/actions/user";
 import {dark, light} from "./style/palette";
 import Nav from "./containers/Nav";
 import SideBar from "./containers/SideBar";
@@ -22,7 +20,7 @@ import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Dashboard from "./containers/route/Dashboard";
 import CreateTransport from "./containers/route/settings/CreateTransport";
 import UserSettings from "./containers/route/UserSettings";
-import {useGetCurrentUserQuery} from "./generated/graphql";
+import {useWatchCurrentUserSubscription} from "./generated/graphql";
 import {PREF_DARK_THEME} from "./config/constants";
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -39,34 +37,35 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	content: {
 		flexGrow: 1
 	},
-}),
-);
+}));
 
 const App: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
-	const {dispatch, state: {user}} = useContext(AppContext);
+	const {data} = useWatchCurrentUserSubscription();
 
 	// global state
-	const theme = createTheme({
-		palette: user?.preferences[PREF_DARK_THEME] === "true" ? dark : light,
-		components: {
-			MuiTooltip: {
-				styleOverrides: {
-					tooltip: {
-						fontSize: "0.9rem"
+	const theme = useMemo(() => {
+		return createTheme({
+			palette: data?.getCurrentUser.preferences[PREF_DARK_THEME] === "true" ? dark : light,
+			components: {
+				MuiTooltip: {
+					styleOverrides: {
+						tooltip: {
+							fontSize: "0.9rem"
+						}
 					}
-				}
-			},
-			MuiListSubheader: {
-				styleOverrides: {
-					root: {
-						backgroundColor: "transparent"
+				},
+				MuiListSubheader: {
+					styleOverrides: {
+						root: {
+							backgroundColor: "transparent"
+						}
 					}
 				}
 			}
-		}
-	});
+		});
+	}, [data]);
 
 	useEffect(() => {
 		document.documentElement.setAttribute("data-theme", theme.palette.mode);
@@ -75,13 +74,6 @@ const App: React.FC = (): JSX.Element => {
 	const cache = createCache({
 		key: "mui",
 		prepend: true
-	});
-	
-	useGetCurrentUserQuery({
-		onCompleted: data => {
-			dispatch(setCurrentUser(data.getCurrentUser));
-		},
-		onError: error => dispatch(setUserError(error))
 	});
 
 	return (

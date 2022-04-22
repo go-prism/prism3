@@ -15,7 +15,7 @@
  *
  */
 
-import React, {useContext, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
 	Alert,
 	Avatar,
@@ -37,7 +37,7 @@ import {getInitials, parseUsername} from "../../utils/parse";
 import {getGraphErrorMessage} from "../../selectors/getErrorMessage";
 import InlineNotFound from "../widgets/InlineNotFound";
 import {SimpleMap} from "../../domain";
-import {AppContext} from "../../../store/AppProvider";
+import {useWatchCurrentUserSubscription} from "../../generated/graphql";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -51,22 +51,21 @@ const Profile: React.FC = (): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const theme = useTheme();
-	const {state: {user, userError}} = useContext(AppContext);
+	const {data, loading, error} = useWatchCurrentUserSubscription();
 	const [claims, setClaims] = useState<SimpleMap<string>>({});
-	const loading = user == null && userError == null;
 
 	useEffect(() => {
-		if (user == null)
+		if (data?.getCurrentUser == null)
 			return;
 		const c: SimpleMap<string> = {};
-		Object.entries(user.claims).forEach(([k, v]) => {
+		Object.entries(data.getCurrentUser.claims).forEach(([k, v]) => {
 			c[k.toLocaleLowerCase()] = v as string;
 		});
 		setClaims(() => c);
-	}, [user]);
+	}, [data?.getCurrentUser]);
 
 	const hasPicture = claims["picture"] as string | undefined;
-	const displayName = claims["nickname"] || claims["name"] || parseUsername(user?.sub || "");
+	const displayName = claims["nickname"] || claims["name"] || parseUsername(data?.getCurrentUser.sub || "");
 
 	return <StandardLayout>
 		<Box
@@ -77,11 +76,11 @@ const Profile: React.FC = (): JSX.Element => {
 				{loading && <CircularProgress color="secondary"/>}
 				{!loading && !hasPicture && getInitials(displayName)}
 			</Avatar>
-			{userError && <Alert
+			{error && <Alert
 				sx={{textAlign: "center"}}
 				severity="error">
 				Something went wrong loading your profile.<br/>
-				{getGraphErrorMessage(userError)}
+				{getGraphErrorMessage(error)}
 			</Alert>}
 			<Typography
 				className={classes.title}
@@ -95,7 +94,7 @@ const Profile: React.FC = (): JSX.Element => {
 			</Typography>
 			<Typography
 				variant="body1">
-				{!loading && parseUsername(user?.iss || "")}
+				{!loading && parseUsername(data?.getCurrentUser.iss || "")}
 				{loading && <Skeleton
 					variant="text"
 					width={150}
@@ -114,13 +113,13 @@ const Profile: React.FC = (): JSX.Element => {
 					<ListItem>
 						<ListItemText
 							primary="Username"
-							secondary={user?.sub || <Skeleton/>}
+							secondary={data?.getCurrentUser.sub || <Skeleton/>}
 						/>
 					</ListItem>
 					<ListItem>
 						<ListItemText
 							primary="Issuer"
-							secondary={user?.iss || <Skeleton/>}
+							secondary={data?.getCurrentUser.iss || <Skeleton/>}
 						/>
 					</ListItem>
 					<ListSubheader

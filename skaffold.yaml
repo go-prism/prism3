@@ -13,6 +13,7 @@ build:
           paths:
             - cmd/core/
             - internal/
+            - pkg/
   local:
     push: false
 deploy:

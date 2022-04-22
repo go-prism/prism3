@@ -19,6 +19,7 @@ require (
 	github.com/hibiken/asynq v0.22.1
 	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/lib/pq v1.10.4
 	github.com/lpar/problem v0.0.0-20200522200938-32704d5be676
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0

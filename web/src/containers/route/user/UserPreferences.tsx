@@ -1,26 +1,36 @@
-import React, {useContext, useState} from "react";
+import React, {useMemo, useState} from "react";
 import {Alert, Card, Collapse, List, ListItem, ListItemText, ListSubheader, Switch} from "@mui/material";
 import StandardLayout from "../../layout/StandardLayout";
-import {AppContext} from "../../../../store/AppProvider";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
-import {useSetPreferenceMutation} from "../../../generated/graphql";
-import {PREF_DARK_THEME} from "../../../config/constants";
+import {useSetPreferenceMutation, useWatchCurrentUserSubscription} from "../../../generated/graphql";
+import {PREF_DARK_THEME, PREF_FMT_DATE_ABS} from "../../../config/constants";
 
 const UserPreferences: React.FC = (): JSX.Element => {
 	// hooks
 	const [showAll, setShowAll] = useState<boolean>(false);
-	const {state: {user, userError}} = useContext(AppContext);
 	const [setPreference, {loading, error}] = useSetPreferenceMutation();
+	const getCurrentUser = useWatchCurrentUserSubscription();
 
 	// helpers
-	const darkTheme = user?.preferences[PREF_DARK_THEME] === "true";
+	const darkTheme = getCurrentUser.data?.getCurrentUser.preferences[PREF_DARK_THEME] === "true";
+	const formatDateAbs = getCurrentUser.data?.getCurrentUser.preferences[PREF_FMT_DATE_ABS] === "true";
+
+	const preferences = useMemo(() => {
+		return Object.entries(getCurrentUser.data?.getCurrentUser.preferences || {}).map(([k, v]) => <ListItem
+			key={k}>
+			<ListItemText
+				primary={k}
+				secondary={v as string}
+			/>
+		</ListItem>);
+	}, [getCurrentUser.data?.getCurrentUser]);
 
 	return <StandardLayout>
-		{userError && <Alert
+		{getCurrentUser.error && <Alert
 			sx={{textAlign: "center"}}
 			severity="error">
 			Something went wrong loading preferences.<br/>
-			{getGraphErrorMessage(userError)}
+			{getGraphErrorMessage(getCurrentUser.error)}
 		</Alert>}
 		{error && <Alert
 			sx={{textAlign: "center"}}
@@ -47,6 +57,17 @@ const UserPreferences: React.FC = (): JSX.Element => {
 						onChange={(_, checked) => void setPreference({variables: {key: PREF_DARK_THEME, value: checked.toString()}})}
 					/>
 				</ListItem>
+				<ListItem>
+					<ListItemText
+						primary="Date format"
+						secondary={formatDateAbs ? "Absolute" : "Relative (e.g. 30 minutes ago)"}
+					/>
+					<Switch
+						checked={formatDateAbs}
+						disabled
+						onChange={(_, checked) => void setPreference({variables: {key: PREF_FMT_DATE_ABS, value: checked.toString()}})}
+					/>
+				</ListItem>
 			</List>
 		</Card>
 		<ListSubheader>
@@ -64,13 +85,7 @@ const UserPreferences: React.FC = (): JSX.Element => {
 				variant="outlined">
 				<List
 					sx={{maxHeight: 400, overflowY: "auto"}}>
-					{Object.entries(user?.preferences || {}).map(([k, v]) => <ListItem
-						key={k}>
-						<ListItemText
-							primary={k}
-							secondary={v as string}
-						/>
-					</ListItem>)}
+					{preferences}
 				</List>
 			</Card>
 		</Collapse>

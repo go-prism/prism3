@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import {Alert} from "@mui/material";
+import InlineNotFound from "../../../../widgets/InlineNotFound";
 
 interface DefaultInstallProps {
 	uri: string;
@@ -25,10 +25,10 @@ interface DefaultInstallProps {
 const DefaultInstall: React.FC<DefaultInstallProps> = (): JSX.Element => {
 	return (
 		<div>
-			<Alert
-				severity="info">
-				There are no details available for this file.
-			</Alert>
+			<InlineNotFound
+				title="No details"
+				subtitle="Details are only available for supported file types."
+			/>
 		</div>
 	)
 }

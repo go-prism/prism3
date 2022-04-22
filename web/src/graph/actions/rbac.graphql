@@ -12,6 +12,15 @@ query getCurrentUser {
         preferences
     }
 }
+subscription watchCurrentUser {
+    getCurrentUser {
+        id
+        sub
+        iss
+        claims
+        preferences
+    }
+}
 query getUsers($role: Role!) {
     getUsers(role: $role) {
         id

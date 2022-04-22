@@ -19,3 +19,4 @@ export const DEFAULT_RESTRICTED_HEADERS = [
 ];
 
 export const PREF_DARK_THEME = "dark-theme";
+export const PREF_FMT_DATE_ABS = "fmt-date-abs";

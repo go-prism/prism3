@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"runtime"
 	"runtime/debug"
 
@@ -13,6 +14,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 )
@@ -212,11 +214,40 @@ func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.StoredUser, 
 	return u, nil
 }
 
+func (r *subscriptionResolver) GetCurrentUser(ctx context.Context) (<-chan *model.StoredUser, error) {
+	user, ok := client.GetContextUser(ctx)
+	if !ok {
+		return nil, errs.ErrUnauthorised
+	}
+	events := make(chan *model.StoredUser, 1)
+	r.stream(ctx, []string{schemas.TableNameStoredUsers}, func(msg *notify.Message) {
+		if msg != nil && msg.ID != user.AsUsername() {
+			return
+		}
+		// create or fetch the current user
+		u, err := r.repos.UserRepo.CreateCtx(ctx)
+		if err != nil {
+			events <- &model.StoredUser{
+				ID:  user.AsUsername(),
+				Sub: user.Sub,
+				Iss: user.Iss,
+			}
+			return
+		}
+		events <- u
+	})
+	return events, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Subscription returns generated.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }

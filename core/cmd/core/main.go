@@ -20,9 +20,11 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
+	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/errtack"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"net/http"
 	"net/url"
@@ -82,6 +84,12 @@ func main() {
 		log.WithError(err).Fatal("failed to initialise database")
 		return
 	}
+	notifier, err := notify.NewNotifier(database.DB(), e.DB.DSN, schemas.NotifyTables...)
+	if err != nil {
+		log.WithError(err).Fatal("failed to initialise listeners")
+		return
+	}
+	notifier.Listen()
 	repos := repo.NewRepos(database.DB())
 	s3, err := storage.NewS3(context.Background(), e.S3)
 	if err != nil {
@@ -105,7 +113,7 @@ func main() {
 
 	// configure graphql
 	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3, batchClient)}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3, batchClient, notifier)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,

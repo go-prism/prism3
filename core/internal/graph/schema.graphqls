@@ -140,6 +140,10 @@ type Query {
     getCurrentUser: StoredUser!
 }
 
+type Subscription {
+    getCurrentUser: StoredUser!
+}
+
 input NewRemote {
     name: String!
     uri: String!
