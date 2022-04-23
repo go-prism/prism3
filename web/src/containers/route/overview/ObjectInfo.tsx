@@ -82,7 +82,7 @@ const ObjectInfo: React.FC<ObjectInfoProps> = ({item, refraction}): JSX.Element 
 				icon: Edit
 			},
 			{
-				label: item.downloads,
+				label: item.downloads.toLocaleString(),
 				icon: FileDownload
 			}
 		];

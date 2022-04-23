@@ -18,7 +18,6 @@
 import React, {useLayoutEffect, useMemo} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
@@ -44,27 +43,15 @@ const HelmInstall: React.FC<HelmInstallProps> = ({uri, refraction}): JSX.Element
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`helm install my-app prism-helm/${pkgName} --version=${pkgVersion}`}
-						language="bash"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={`helm repo add prism-helm ${API_URL}/api/helm/${refraction}/-/\nhelm repo update`}
-						language="bash"
-					/>
-				</div>,
+				install: `helm install my-app prism-helm/${pkgName} --version=${pkgVersion}`,
+				installLang: "bash",
+				config: `helm repo add prism-helm ${API_URL}/api/helm/${refraction}/-/\nhelm repo update`,
+				configLang: "bash",
 				name: "Permanent"
 			},
 			{
-				install: <div>
-					<CodeBlock
-						code={`helm install my-app ${API_URL}/api/v1/${refraction}/-/${pkgName}-${pkgVersion}.tgz`}
-						language="bash"
-					/>
-				</div>,
+				install: `helm install my-app ${API_URL}/api/v1/${refraction}/-/${pkgName}-${pkgVersion}.tgz`,
+				installLang: "bash",
 				name: "Temporary"
 			}]}
 		/>

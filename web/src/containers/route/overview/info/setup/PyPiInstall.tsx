@@ -18,7 +18,6 @@
 import React, {useLayoutEffect, useMemo} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
@@ -48,27 +47,15 @@ const PyPiInstall: React.FC<Props> = ({uri, refraction, wheel}): JSX.Element => 
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`pip install ${pkgName}==${pkgVersion}`}
-						language="bash"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={`pip config --user set global.index-url ${API_URL}/api/pypi/${refraction.toLocaleLowerCase()}/simple/
-pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`}
-						language="bash"
-					/>
-				</div>,
+				install: `pip install ${pkgName}==${pkgVersion}`,
+				installLang: "bash",
+				config: `pip config --user set global.index-url ${API_URL}/api/pypi/${refraction.toLocaleLowerCase()}/simple/
+pip config --user set global.trusted-host ${API_URL.replace("https://", "")}`,
+				configLang: "bash",
 				name: "Permanent"
 			}, {
-				install: <div>
-					<CodeBlock
-						code={`pip install ${pkgName}==${pkgVersion} --index-url ${API_URL}/api/pypi/${refraction.toLocaleLowerCase()}/simple/`}
-						language="bash"
-					/>
-				</div>,
+				install: `pip install ${pkgName}==${pkgVersion} --index-url ${API_URL}/api/pypi/${refraction.toLocaleLowerCase()}/simple/`,
+				installLang: "bash",
 				name: "Temporary"
 			}]}
 		/>

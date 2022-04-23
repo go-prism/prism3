@@ -18,7 +18,6 @@
 import React, {useLayoutEffect, useMemo} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
@@ -45,18 +44,10 @@ const NpmInstall: React.FC<Props> = ({uri, refraction}): JSX.Element => {
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`npm install ${pkgName}@${pkgVersion}`}
-						language="bash"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={`npm config set registry "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-/"`}
-						language="bash"
-					/>
-				</div>,
+				install: `npm install ${pkgName}@${pkgVersion}`,
+				installLang: "bash",
+				config: `npm config set registry "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-/"`,
+				configLang: "bash",
 				name: "Permanent"
 			}]}
 		/>

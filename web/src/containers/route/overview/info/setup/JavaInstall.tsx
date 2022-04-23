@@ -16,15 +16,12 @@
  */
 
 import React, {useLayoutEffect} from "react";
-import {Typography} from "@mui/material";
-import {Link} from "react-router-dom";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import xml from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
 import kotlin from "react-syntax-highlighter/dist/esm/languages/hljs/kotlin";
 import groovy from "react-syntax-highlighter/dist/esm/languages/hljs/groovy";
 import {API_URL} from "../../../../../config";
 import {parseMavenPackage} from "../../../../../utils/parse";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {Refraction} from "../../../../../generated/graphql";
 import LanguageInstall from "./index";
 
@@ -87,53 +84,24 @@ const JavaInstall: React.FC<JavaInstallProps> = ({uri, refraction}): JSX.Element
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={getInstall(TYPE_MAVEN_XML)}
-						language="xml"
-					/>
-				</div>,
-				config: <div>
-					<Typography
-						sx={{mb: 0.5, ml: 1}}
-						color="textSecondary">
-						You can also set this Refraction globally by following the guide <Link to={`/refract/${refraction.id}/-/edit#getting-setup`}>here</Link>.
-					</Typography>
-					<CodeBlock
-						code={getConfig(TYPE_MAVEN_XML)}
-						language="xml"
-					/>
-				</div>,
+				install: getInstall(TYPE_MAVEN_XML),
+				installLang: "xml",
+				config: getConfig(TYPE_MAVEN_XML),
+				configLang: "xml",
 				name: "Maven XML"
 			},
 			{
-				install: <div>
-					<CodeBlock
-						code={getInstall(TYPE_GRADLE_KT)}
-						language="kotlin"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={getConfig(TYPE_GRADLE_KT)}
-						language="kotlin"
-					/>
-				</div>,
+				install: getInstall(TYPE_GRADLE_KT),
+				installLang: "kotlin",
+				config: getConfig(TYPE_GRADLE_KT),
+				configLang: "kotlin",
 				name: "Gradle Kotlin DSL"
 			},
 			{
-				install: <div>
-					<CodeBlock
-						code={getInstall(TYPE_GRADLE_GROOVY)}
-						language="groovy"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={getConfig(TYPE_GRADLE_GROOVY)}
-						language="groovy"
-					/>
-				</div>,
+				install: getInstall(TYPE_GRADLE_GROOVY),
+				installLang: "groovy",
+				config: getConfig(TYPE_GRADLE_GROOVY),
+				configLang: "groovy",
 				name: "Gradle Groovy DSL"
 			}
 			]}

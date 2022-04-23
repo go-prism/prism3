@@ -18,7 +18,6 @@
 import React, {useLayoutEffect, useMemo} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import LanguageInstall from "./index";
 
 interface Props {
@@ -40,18 +39,8 @@ const DebianInstall: React.FC<Props> = ({uri}): JSX.Element => {
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`apt install ${pkgName}`}
-						language="bash"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code="N/A"
-						language="text"
-					/>
-				</div>,
+				install: `apt install ${pkgName}`,
+				installLang: "bash",
 				name: "Permanent"
 			}]}
 		/>

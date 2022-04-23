@@ -18,7 +18,6 @@
 import React, {useLayoutEffect} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {unescapeString} from "../../../../../utils/encode";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
@@ -35,19 +34,11 @@ const GoLangInstall: React.FC<GoLangInstallProps> = ({uri}): JSX.Element => {
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`go get -d ${unescapeString(uri.replace("/@v/", "@").replace(".mod", "").replace(".info", ""))}`}
-						language="bash"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={`echo 'export GOPROXY="${API_URL}/api/go"' >> ~/.bashrc
-source ~/.bashrc`}
-						language="bash"
-					/>
-				</div>,
+				install: `go get -d ${unescapeString(uri.replace("/@v/", "@").replace(".mod", "").replace(".info", ""))}`,
+				installLang: "bash",
+				config: `echo 'export GOPROXY="${API_URL}/api/go"' >> ~/.bashrc
+source ~/.bashrc`,
+				configLang: "bash",
 				name: "Go Modules"
 			}]}
 		/>

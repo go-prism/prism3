@@ -18,7 +18,6 @@
 import React, {useLayoutEffect} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
@@ -35,21 +34,13 @@ const GenericInstall: React.FC<Props> = ({uri, refraction}): JSX.Element => {
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`curl -O "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${uri}"`}
-						language="bash"
-					/>
-				</div>,
+				install: `curl -O "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${uri}"`,
+				installLang: "bash",
 				name: "cURL"
 			},
 			{
-				install: <div>
-					<CodeBlock
-						code={`wget "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${uri}"`}
-						language="bash"
-					/>
-				</div>,
+				install: `wget "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${uri}"`,
+				installLang: "bash",
 				name: "wget"
 			}]}
 		/>

@@ -15,16 +15,20 @@
  *
  */
 
-import React, {ReactNode, useState} from "react";
-import {MenuItem, Select, SelectChangeEvent, Theme, Typography} from "@mui/material";
+import React, {useState} from "react";
+import {IconButton, MenuItem, Select, SelectChangeEvent, Theme, Typography} from "@mui/material";
 
 import {makeStyles} from "tss-react/mui";
+import {Copy} from "tabler-icons-react";
+import CodeBlock from "../../../../widgets/CodeBlock";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		marginBottom: theme.spacing(1),
-		marginLeft: theme.spacing(1)
+		marginLeft: theme.spacing(1),
+		display: "flex",
+		alignItems: "center"
 	},
 	code: {
 		margin: theme.spacing(0.5)
@@ -43,8 +47,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface SetupVariants {
 	name: string;
-	install: ReactNode;
-	config?: ReactNode;
+	install: string;
+	installLang?: string;
+	config?: string;
+	configLang?: string;
 }
 
 interface LanguageInstallProps {
@@ -62,6 +68,10 @@ const LanguageInstall: React.FC<LanguageInstallProps> = ({variants}): JSX.Elemen
 		setSelected(e.target.value as number);
 	}
 
+	const handleCopy = (s: string): void => {
+		void navigator.clipboard.writeText(s);
+	}
+
 	return (
 		<div>
 			<div className={classes.titlebar}>
@@ -70,6 +80,13 @@ const LanguageInstall: React.FC<LanguageInstallProps> = ({variants}): JSX.Elemen
 					color="textPrimary"
 					variant="h6">
 					Installation
+					<IconButton
+						sx={{ml: 1}}
+						color="primary"
+						centerRipple={false}
+						onClick={() => handleCopy(variants[selected].install)}>
+						<Copy/>
+					</IconButton>
 				</Typography>
 				<div className={classes.divider}/>
 				{variants.length > 1 && <Select
@@ -84,14 +101,33 @@ const LanguageInstall: React.FC<LanguageInstallProps> = ({variants}): JSX.Elemen
 					</MenuItem>)}
 				</Select>}
 			</div>
-			{variants[selected].install}
-			{variants[selected].config && <Typography
-				className={classes.title}
-				color="textPrimary"
-				variant="h6">
-				Registry setup
-			</Typography>}
-			{variants[selected].config}
+			<div>
+				<CodeBlock
+					code={variants[selected].install}
+					language={variants[selected].installLang || "text"}
+				/>
+			</div>
+			{variants[selected].config && <React.Fragment>
+				<Typography
+					className={classes.title}
+					color="textPrimary"
+					variant="h6">
+					Registry setup
+					<IconButton
+						sx={{ml: 1}}
+						color="primary"
+						centerRipple={false}
+						onClick={() => handleCopy(variants[selected].config || "")}>
+						<Copy/>
+					</IconButton>
+				</Typography>
+				<div>
+					<CodeBlock
+						code={variants[selected].config || ""}
+						language={variants[selected].configLang || "text"}
+					/>
+				</div>
+			</React.Fragment>}
 		</div>
 	);
 }

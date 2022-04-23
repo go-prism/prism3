@@ -18,7 +18,6 @@
 import React, {useLayoutEffect, useMemo} from "react";
 import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
-import CodeBlock from "../../../../widgets/CodeBlock";
 import {API_URL} from "../../../../../config";
 import LanguageInstall from "./index";
 
@@ -43,27 +42,15 @@ const AlpineInstall: React.FC<AlpineInstallProps> = ({uri, refraction}): JSX.Ele
 	return (
 		<LanguageInstall
 			variants={[{
-				install: <div>
-					<CodeBlock
-						code={`apk add ${pkgName}=${pkgVersion}`}
-						language="bash"
-					/>
-				</div>,
-				config: <div>
-					<CodeBlock
-						code={`echo "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${path}" >> /etc/apk/repositories\napk update`}
-						language="bash"
-					/>
-				</div>,
+				install: `apk add ${pkgName}=${pkgVersion}`,
+				installLang: "bash",
+				config: `echo "${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${path}" >> /etc/apk/repositories\napk update`,
+				configLang: "bash",
 				name: "Permanent"
 			},
 			{
-				install: <div>
-					<CodeBlock
-						code={`apk add ${pkgName}=${pkgVersion} \\\n\t-X ${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${path}`}
-						language="bash"
-					/>
-				</div>,
+				install: `apk add ${pkgName}=${pkgVersion} \\\n\t-X ${API_URL}/api/v1/${refraction.toLocaleLowerCase()}/-${path}`,
+				installLang: "bash",
 				name: "Temporary"
 			}]}
 		/>

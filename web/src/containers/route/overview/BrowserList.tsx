@@ -1,10 +1,12 @@
 import React, {useState} from "react";
 import {DataGrid, GridColDef, GridColumnVisibilityModel} from "@mui/x-data-grid";
-import {Box} from "@mui/material";
+import {Box, Drawer} from "@mui/material";
 import {format} from "date-fns";
 import {useTheme} from "@mui/material/styles";
 import {getNodeColour, getNodeIcon} from "../../../utils/remote";
+import {Artifact, Refraction} from "../../../generated/graphql";
 import {BrowserProps} from "./Browser";
+import ObjectInfo from "./ObjectInfo";
 
 const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
 	const theme = useTheme();
@@ -14,6 +16,7 @@ const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
 		"updatedAt": true,
 		"downloads": true
 	});
+	const [selected, setSelected] = useState<Artifact | null>(null);
 
 	const columns: GridColDef[] = [
 		{
@@ -75,7 +78,19 @@ const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
 			autoPageSize
 			columns={columns}
 			rows={data?.listCombinedArtifacts || []}
+			onRowClick={params => setSelected(() => params.row as Artifact)}
 		/>
+		<Drawer
+			anchor="right"
+			elevation={8}
+			PaperProps={{sx: {maxWidth: 500, width: 500, p: 1}}}
+			open={selected != null}
+			onClose={() => setSelected(() => null)}>
+			{selected != null && data != null && <ObjectInfo
+				item={selected}
+				refraction={data.getRefraction as Refraction}
+			/>}
+		</Drawer>
 	</Box>
 }
 export default BrowserList;
