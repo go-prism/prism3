@@ -19,22 +19,11 @@ import React, {CSSProperties, useMemo} from "react";
 import {useTheme} from "@mui/material/styles";
 import {ListItem, ListItemIcon, ListItemText, Theme} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
-import {
-	BrandDebian,
-	BrandPython,
-	Certificate,
-	Coffee,
-	Database,
-	FileCode,
-	FileInvoice,
-	FileZip,
-	Folder,
-	Hexagon,
-	Package
-} from "tabler-icons-react";
+import {FileCode, Folder} from "tabler-icons-react";
 import {unescapeString} from "../../utils/encode";
 import {Node} from "../route/Overview";
 import {Artifact} from "../../generated/graphql";
+import {getNodeColour, getNodeIcon} from "../../utils/remote";
 
 interface StyleProps {
 	primary: string;
@@ -76,48 +65,25 @@ const FolderTreeItem: React.FC<FolderTreeItemProps> = ({item, style, selected, s
 	const Icon = useMemo(() => {
 		switch (true) {
 			case node.name === "APKINDEX.tar.gz":
-				return Database;
 			case node.name.endsWith(".pom"):
-				return FileInvoice;
 			case node.name.endsWith(".sha1"):
-				return Certificate;
 			case node.name.endsWith(".jar"):
-				return Coffee;
 			case node.name.endsWith(".tgz"):
 			case node.name.endsWith(".tar.gz"):
 			case node.name.endsWith(".apk"):
-				return Package;
 			case node.name.endsWith(".deb"):
-				return BrandDebian;
 			case node.name.endsWith(".zip"):
-				return FileZip;
 			case node.name.endsWith(".mod"):
-				return Hexagon;
 			case node.name.endsWith(".whl"):
-				return BrandPython;
+				return getNodeIcon(node.name);
 			default:
 				return node.children.length === 0 ? FileCode : Folder;
 		}
 	}, [node.name]);
 
 	const colours = useMemo(() => {
-		switch (true) {
-			case node.name.endsWith(".whl"):
-			case node.name.endsWith(".pom"):
-				return [theme.palette.success.main, theme.palette.success.light];
-			case node.name.endsWith(".jar"):
-				return [theme.palette.warning.main, theme.palette.warning.light];
-			case node.name.endsWith(".deb"):
-				return [theme.palette.error.main, theme.palette.error.light];
-			case node.name.endsWith(".mod"):
-			case node.name.endsWith(".tgz"):
-			case node.name.endsWith(".tar.gz"):
-			case node.name.endsWith(".apk"):
-				return [theme.palette.primary.main, theme.palette.primary.light];
-			default:
-				return [theme.palette.text.secondary, theme.palette.action.hover];
-		}
-	}, [node.name]);
+		return getNodeColour(theme, node.name);
+	}, [node.name, theme.palette.mode]);
 
 	const {classes} = useStyles({
 		primary: colours[0],

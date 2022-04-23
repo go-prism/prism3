@@ -1,5 +1,18 @@
 import React, {ReactNode} from "react";
-import {Files} from "tabler-icons-react";
+import {
+	BrandDebian,
+	BrandPython,
+	Certificate,
+	Coffee,
+	Database,
+	FileCode,
+	FileInvoice,
+	Files,
+	FileZip,
+	Hexagon,
+	Icon,
+	Package
+} from "tabler-icons-react";
 import {Theme} from "@mui/material/styles";
 import {Avatar} from "@mui/material";
 import {Archetype} from "../generated/graphql";
@@ -33,6 +46,52 @@ export const getRemoteIcon = (theme: Theme, type: Archetype): ReactNode => {
 			/>
 	}
 }
+
+export const getNodeIcon = (name: string): Icon => {
+	switch (true) {
+		case name === "APKINDEX.tar.gz":
+			return Database;
+		case name.endsWith(".pom"):
+			return FileInvoice;
+		case name.endsWith(".sha1"):
+			return Certificate;
+		case name.endsWith(".jar"):
+			return Coffee;
+		case name.endsWith(".tgz"):
+		case name.endsWith(".tar.gz"):
+		case name.endsWith(".apk"):
+			return Package;
+		case name.endsWith(".deb"):
+			return BrandDebian;
+		case name.endsWith(".zip"):
+			return FileZip;
+		case name.endsWith(".mod"):
+			return Hexagon;
+		case name.endsWith(".whl"):
+			return BrandPython;
+		default:
+			return FileCode;
+	}
+};
+
+export const getNodeColour = (theme: Theme, name: string): [string, string] => {
+	switch (true) {
+		case name.endsWith(".whl"):
+		case name.endsWith(".pom"):
+			return [theme.palette.success.main, theme.palette.success.light];
+		case name.endsWith(".jar"):
+			return [theme.palette.warning.main, theme.palette.warning.light];
+		case name.endsWith(".deb"):
+			return [theme.palette.error.main, theme.palette.error.light];
+		case name.endsWith(".mod"):
+		case name.endsWith(".tgz"):
+		case name.endsWith(".tar.gz"):
+		case name.endsWith(".apk"):
+			return [theme.palette.primary.main, theme.palette.primary.light];
+		default:
+			return [theme.palette.text.secondary, theme.palette.action.hover];
+	}
+};
 
 export const getResourceName = (s: string): string => {
 	const [,name] = s.split("::", 2);

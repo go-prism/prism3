@@ -15,13 +15,13 @@ import CreateRefract from "./containers/route/refract/Create";
 import Overview from "./containers/route/Overview";
 import Help from "./containers/route/Help";
 import Settings from "./containers/route/settings";
-import Browser from "./containers/route/overview/Browser";
 import CreateRoleBinding from "./containers/route/acl/CreateRoleBinding";
 import Dashboard from "./containers/route/Dashboard";
 import CreateTransport from "./containers/route/settings/CreateTransport";
 import UserSettings from "./containers/route/UserSettings";
 import {useWatchCurrentUserSubscription} from "./generated/graphql";
 import {PREF_DARK_THEME} from "./config/constants";
+import Browser from "./containers/route/overview/Browser";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {

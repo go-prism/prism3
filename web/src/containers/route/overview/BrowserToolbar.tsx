@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import React, {useEffect, useRef, useState} from "react";
-import {ChevronDown} from "tabler-icons-react";
+import {ChevronDown, Layout} from "tabler-icons-react";
 import {Link, useHistory} from "react-router-dom";
 import {toTitleCase} from "../../../utils/format";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
@@ -43,9 +43,10 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 interface Props {
 	id: string;
+	onToggleLayout: () => void;
 }
 
-const BrowserToolbar: React.FC<Props> = ({id}): JSX.Element => {
+const BrowserToolbar: React.FC<Props> = ({id, onToggleLayout}): JSX.Element => {
 	// hooks
 	const {classes} = useStyles();
 	const history = useHistory();
@@ -86,6 +87,13 @@ const BrowserToolbar: React.FC<Props> = ({id}): JSX.Element => {
 		<Toolbar
 			className={classes.toolbar}
 			variant="dense">
+			<Button
+				className={classes.button}
+				onClick={onToggleLayout}>
+				<Layout
+					size={16}
+				/>
+			</Button>
 			{loading && <CircularProgress size={16}/>}
 			{!loading && <ButtonGroup
 				className={classes.button}
