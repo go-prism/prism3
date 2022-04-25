@@ -9,17 +9,17 @@ import (
 )
 
 type NoOp struct {
-	data map[string][]byte
+	Data map[string][]byte
 }
 
 func NewNoOp() *NoOp {
 	return &NoOp{
-		data: map[string][]byte{},
+		Data: map[string][]byte{},
 	}
 }
 
 func (n *NoOp) Get(_ context.Context, path string) (io.Reader, error) {
-	val, ok := n.data[path]
+	val, ok := n.Data[path]
 	if !ok {
 		return nil, errors.New("not found")
 	}
@@ -31,19 +31,19 @@ func (n *NoOp) Put(_ context.Context, path string, r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	n.data[path] = data
+	n.Data[path] = data
 	return nil
 }
 
 func (n *NoOp) Head(_ context.Context, path string) (bool, error) {
-	_, ok := n.data[path]
+	_, ok := n.Data[path]
 	return ok, nil
 }
 
 func (n *NoOp) Size(context.Context, string) (*BucketSize, error) {
-	count := len(n.data)
+	count := len(n.Data)
 	size := int64(0)
-	for _, d := range n.data {
+	for _, d := range n.Data {
 		size += int64(len(d))
 	}
 	return &BucketSize{

@@ -3,6 +3,8 @@ package remote
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -48,12 +50,12 @@ func (b *BackedRemote) String() string {
 	return b.eph.String()
 }
 
-func (b *BackedRemote) Exists(ctx context.Context, path string) (string, error) {
+func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *RequestContext) (string, error) {
 	// check that this remote is allowed to receive the file
 	if !b.pol.CanReceive(ctx, path) {
 		return "", errors.New("blocked by policy")
 	}
-	uploadPath, normalPath := b.getPath(ctx, path)
+	uploadPath, normalPath := b.getPath(ctx, path, rctx)
 	canCache := b.pol.CanCache(ctx, path)
 	if canCache {
 		ok, _ := b.store.Head(ctx, uploadPath)
@@ -62,7 +64,7 @@ func (b *BackedRemote) Exists(ctx context.Context, path string) (string, error) 
 		}
 	}
 	// HEAD the remote
-	uri, err := b.eph.Exists(ctx, path)
+	uri, err := b.eph.Exists(ctx, path, rctx)
 	if err != nil {
 		return "", err
 	}
@@ -73,13 +75,21 @@ func (b *BackedRemote) Exists(ctx context.Context, path string) (string, error) 
 	return uri, nil
 }
 
-func (b *BackedRemote) Download(ctx context.Context, path string) (io.Reader, error) {
+func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
 	canCache := b.pol.CanCache(ctx, path)
-	uploadPath, normalPath := b.getPath(ctx, path)
+	uploadPath, normalPath := b.getPath(ctx, path, rctx)
+	fields := log.Fields{
+		"path":        path,
+		"cache":       canCache,
+		"path_normal": normalPath,
+		"path_store":  uploadPath,
+	}
 	// check the cache first
 	if canCache {
+		log.WithContext(ctx).WithFields(fields).Debug("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			log.WithContext(ctx).WithFields(fields).Debug("located existing file in cache")
 			if canCache {
 				_ = b.onCreate(ctx, normalPath, b.rm.ID)
 			}
@@ -87,12 +97,13 @@ func (b *BackedRemote) Download(ctx context.Context, path string) (io.Reader, er
 		}
 	}
 
-	r, err := b.eph.Download(ctx, path)
+	r, err := b.eph.Download(ctx, path, rctx)
 	if err != nil {
 		return nil, err
 	}
 	// check that this remote is allowed to cache the file
 	if canCache {
+		log.WithContext(ctx).WithFields(fields).Debug("preparing to upload to cache")
 		_ = b.onCreate(ctx, normalPath, b.rm.ID)
 		buf := new(bytes.Buffer)
 		// duplicate the data, so we can upload it
@@ -105,7 +116,7 @@ func (b *BackedRemote) Download(ctx context.Context, path string) (io.Reader, er
 	return r, nil
 }
 
-func (b *BackedRemote) getPath(ctx context.Context, path string) (string, string) {
+func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *RequestContext) (string, string) {
 	uploadPath := strings.TrimPrefix(path, b.rm.URI)
 	if strings.HasPrefix(uploadPath, "https://") {
 		uri, err := url.Parse(uploadPath)
@@ -115,9 +126,22 @@ func (b *BackedRemote) getPath(ctx context.Context, path string) (string, string
 			uploadPath = strings.TrimPrefix(uri.Path, "/")
 		}
 	}
+	// create the cache partition by appending
+	// the hash of the token
+	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
+		log.WithContext(ctx).Debug("creating partition")
+		uploadPath = filepath.Join(uploadPath, hash(rctx.Token))
+	}
 	log.WithContext(ctx).WithFields(log.Fields{
 		"path":       path,
 		"uploadPath": uploadPath,
 	}).Debug("normalised path")
 	return filepath.Join(b.rm.Name, uploadPath), uploadPath
+}
+
+// hash returns the hex-encoded SHA256 sum of
+// the given string
+func hash(s string) string {
+	h := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(h[:])
 }

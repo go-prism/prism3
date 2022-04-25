@@ -29,7 +29,7 @@ func (r *Refraction) Remotes() []remote.Remote {
 	return r.remotes
 }
 
-func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) {
+func (r *Refraction) Exists(ctx context.Context, path string, rctx *remote.RequestContext) (*Message, error) {
 	ch := make(chan Message, 1)
 	// create a goroutine for each remote
 	log.WithContext(ctx).WithFields(log.Fields{
@@ -43,7 +43,7 @@ func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) 
 	for i := range r.remotes {
 		rem := r.remotes[i]
 		go func() {
-			uri, _ := rem.Exists(reqCtx, path)
+			uri, _ := rem.Exists(reqCtx, path, rctx)
 			ch <- Message{
 				URI:    uri,
 				Remote: rem,
@@ -68,13 +68,13 @@ func (r *Refraction) Exists(ctx context.Context, path string) (*Message, error) 
 	return nil, ErrNotFound
 }
 
-func (r *Refraction) Download(ctx context.Context, path string) (io.Reader, error) {
+func (r *Refraction) Download(ctx context.Context, path string, rctx *remote.RequestContext) (io.Reader, error) {
 	// find the best location for the file
-	msg, err := r.Exists(ctx, path)
+	msg, err := r.Exists(ctx, path, rctx)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := msg.Remote.Download(ctx, msg.URI)
+	resp, err := msg.Remote.Download(ctx, msg.URI, rctx)
 	if err != nil {
 		return nil, err
 	}

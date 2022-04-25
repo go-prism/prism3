@@ -10,6 +10,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 	"time"
@@ -53,7 +54,7 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error)
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
 		return nil, err
 	}
-	return ref.(*refract.BackedRefraction).Download(ctx, req.path)
+	return ref.(*refract.BackedRefraction).Download(ctx, req.path, &remote.RequestContext{})
 }
 
 func (r *Resolver) getRefraction(v any) (any, error) {

@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"io"
 	"path/filepath"
 	"strings"
@@ -87,7 +88,8 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 		// download the metadata
 		go func() {
 			defer wg.Done()
-			resp, err := remotes[j].Download(ctx, fmt.Sprintf("/%s", pkg))
+			// todo support requestcontext
+			resp, err := remotes[j].Download(ctx, fmt.Sprintf("/%s", pkg), &remote.RequestContext{})
 			if err != nil {
 				return
 			}
