@@ -5,6 +5,10 @@ import (
 	"github.com/getsentry/sentry-go"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"time"
 )
@@ -18,8 +22,13 @@ func NewArtifactRepo(db *gorm.DB) *ArtifactRepo {
 type CreateArtifactFunc = func(ctx context.Context, path, remote string) error
 
 func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_artifact_createArtifact", trace.WithAttributes(
+		attribute.String("path", path),
+		attribute.String("remote", remote),
+	))
+	defer span.End()
 	// try to update the existing artifact
-	tx := r.db.Model(&model.Artifact{}).Where("uri = ? AND remote_id = ?", path, remote).Updates(map[string]any{
+	tx := r.db.WithContext(ctx).Model(&model.Artifact{}).Where("uri = ? AND remote_id = ?", path, remote).Updates(map[string]any{
 		"downloads":  gorm.Expr("downloads + ?", 1),
 		"updated_at": time.Now().Unix(),
 	})
@@ -42,7 +51,7 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 		Downloads: 1,
 		RemoteID:  remote,
 	}
-	if err := r.db.Create(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to create artifact")
 		sentry.CaptureException(err)
 		return err
@@ -51,8 +60,12 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 }
 
 func (r *ArtifactRepo) ListArtifacts(ctx context.Context, remotes []string) ([]*model.Artifact, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_artifact_listArtifacts", trace.WithAttributes(
+		attribute.StringSlice("remotes", remotes),
+	))
+	defer span.End()
 	var result []*model.Artifact
-	if err := r.db.Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Order("uri asc").Find(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Order("uri asc").Find(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to list artifacts")
 		sentry.CaptureException(err)
 		return nil, err
@@ -61,6 +74,8 @@ func (r *ArtifactRepo) ListArtifacts(ctx context.Context, remotes []string) ([]*
 }
 
 func (r *ArtifactRepo) Count(ctx context.Context) (int64, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_artifact_count")
+	defer span.End()
 	var result int64
 	if err := r.db.Model(&model.Artifact{}).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count artifacts")
@@ -71,8 +86,12 @@ func (r *ArtifactRepo) Count(ctx context.Context) (int64, error) {
 }
 
 func (r *ArtifactRepo) CountArtifactsByRemote(ctx context.Context, remote string) (int64, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_artifact_countArtifactsByRemote", trace.WithAttributes(
+		attribute.String("remote", remote),
+	))
+	defer span.End()
 	var result int64
-	if err := r.db.Model(&model.Artifact{}).Where("remoteID = ?", remote).Count(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&model.Artifact{}).Where("remoteID = ?", remote).Count(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to count artifacts")
 		sentry.CaptureException(err)
 		return 0, err
@@ -81,8 +100,10 @@ func (r *ArtifactRepo) CountArtifactsByRemote(ctx context.Context, remote string
 }
 
 func (r *ArtifactRepo) Downloads(ctx context.Context) (int64, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_artifact_downloads")
+	defer span.End()
 	var result int64
-	if err := r.db.Model(&model.Artifact{}).Select("COALESCE(SUM(downloads), 0)").Scan(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&model.Artifact{}).Select("COALESCE(SUM(downloads), 0)").Scan(&result).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to aggregate downloads")
 		sentry.CaptureException(err)
 		return 0, err

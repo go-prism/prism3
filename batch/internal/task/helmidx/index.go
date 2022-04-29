@@ -33,7 +33,7 @@ func (p *HelmProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	rem := remote.NewBackedRemote(r, p.store, p.repos.ArtifactRepo.CreateArtifact, p.repos.PyPackageRepo.GetPackage, p.repos.HelmPackageRepo.GetPackage)
-	resp, err := rem.Download(ctx, "/index.yaml")
+	resp, err := rem.Download(ctx, "/index.yaml", &remote.RequestContext{})
 	if err != nil {
 		return err
 	}

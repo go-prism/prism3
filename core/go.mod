@@ -27,11 +27,17 @@ require (
 	gitlab.com/autokubeops/serverless v0.4.1-rc.1
 	gitlab.com/av1o/cap10 v0.3.0
 	gitlab.com/av1o/cap10-ingress v0.0.0-20220212125434-d2886402dc5d
+	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.28.0
+	go.opentelemetry.io/otel v1.4.0
+	go.opentelemetry.io/otel/exporters/jaeger v1.4.0
+	go.opentelemetry.io/otel/sdk v1.4.0
+	go.opentelemetry.io/otel/trace v1.4.0
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
 	gorm.io/datatypes v1.0.6
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.2
 	gorm.io/plugin/dbresolver v1.1.0
+	gorm.io/plugin/opentracing v0.0.0-20211220013347-7d2b2af23560
 	helm.sh/helm/v3 v3.8.1
 )
 
@@ -73,6 +79,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-logr/logr v1.2.2 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
@@ -156,7 +163,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gorm.io/driver/mysql v1.3.2 // indirect
-	gorm.io/plugin/opentracing v0.0.0-20211220013347-7d2b2af23560 // indirect
 	k8s.io/api v0.23.4 // indirect
 	k8s.io/apimachinery v0.23.4 // indirect
 	k8s.io/cli-runtime v0.23.4 // indirect
