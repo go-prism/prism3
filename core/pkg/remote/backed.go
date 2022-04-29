@@ -12,6 +12,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"io"
 	"net/url"
 	"path/filepath"
@@ -51,6 +53,8 @@ func (b *BackedRemote) String() string {
 }
 
 func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *RequestContext) (string, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_exists")
+	defer span.End()
 	// check that this remote is allowed to receive the file
 	if !b.pol.CanReceive(ctx, path) {
 		return "", errors.New("blocked by policy")
@@ -76,6 +80,8 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *RequestCon
 }
 
 func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download")
+	defer span.End()
 	canCache := b.pol.CanCache(ctx, path)
 	uploadPath, normalPath := b.getPath(ctx, path, rctx)
 	fields := log.Fields{
@@ -117,6 +123,8 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestC
 }
 
 func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *RequestContext) (string, string) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_getPath")
+	defer span.End()
 	uploadPath := strings.TrimPrefix(path, b.rm.URI)
 	if strings.HasPrefix(uploadPath, "https://") {
 		uri, err := url.Parse(uploadPath)

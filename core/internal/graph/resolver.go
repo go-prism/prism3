@@ -10,6 +10,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"time"
 )
 
@@ -62,6 +64,8 @@ func (r *Resolver) getStoreSize(any) (any, error) {
 }
 
 func (r *Resolver) stream(ctx context.Context, tables []string, f func(msg *notify.Message)) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_stream")
+	defer span.End()
 	l := make(chan *notify.Message)
 	r.notifier.AddListener(ctx, l)
 	// get data straight away

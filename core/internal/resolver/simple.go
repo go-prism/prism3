@@ -12,6 +12,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"io"
 	"time"
 )
@@ -38,6 +40,8 @@ func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Res
 }
 
 func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_helm")
+	defer span.End()
 	ref, err := r.cache.Get(req.bucket)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
@@ -48,7 +52,8 @@ func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, er
 }
 
 func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {
-	// todo any middleware (e.g. helm)
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_generic")
+	defer span.End()
 	ref, err := r.cache.Get(req.bucket)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")

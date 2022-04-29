@@ -6,6 +6,8 @@ import (
 	_ "embed"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 	"strings"
 	"text/template"
@@ -68,11 +70,15 @@ func (n *Notifier) Listen() {
 }
 
 func (n *Notifier) AddListener(ctx context.Context, l chan *Message) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "db_notifier_addListener")
+	defer span.End()
 	log.WithContext(ctx).Info("adding listener")
 	n.lis[l] = struct{}{}
 }
 
 func (n *Notifier) RemoveListener(ctx context.Context, l chan *Message) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "db_notifier_removeListener")
+	defer span.End()
 	log.WithContext(ctx).Info("removing listener")
 	delete(n.lis, l)
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"io"
 	"sync"
 	"time"
@@ -30,6 +32,8 @@ func (r *Refraction) Remotes() []remote.Remote {
 }
 
 func (r *Refraction) Exists(ctx context.Context, path string, rctx *remote.RequestContext) (*Message, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "refraction_exists")
+	defer span.End()
 	ch := make(chan Message, 1)
 	// create a goroutine for each remote
 	log.WithContext(ctx).WithFields(log.Fields{
@@ -69,6 +73,8 @@ func (r *Refraction) Exists(ctx context.Context, path string, rctx *remote.Reque
 }
 
 func (r *Refraction) Download(ctx context.Context, path string, rctx *remote.RequestContext) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "refraction_download")
+	defer span.End()
 	// find the best location for the file
 	msg, err := r.Exists(ctx, path, rctx)
 	if err != nil {

@@ -28,6 +28,7 @@ require (
 	gitlab.com/av1o/cap10 v0.3.0
 	gitlab.com/av1o/cap10-ingress v0.0.0-20220212125434-d2886402dc5d
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.28.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.28.1-0.20220210160856-10051614d2b8
 	go.opentelemetry.io/otel v1.4.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.4.0
 	go.opentelemetry.io/otel/sdk v1.4.0
@@ -143,6 +144,8 @@ require (
 	github.com/twmb/murmur3 v1.1.5 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
+	go.opentelemetry.io/otel/internal/metric v0.27.0 // indirect
+	go.opentelemetry.io/otel/metric v0.27.0 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/automaxprocs v1.5.2-0.20220426165107-d835ace014b3 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect

@@ -5,6 +5,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"io"
 	"net/http"
 	"strings"
@@ -28,15 +30,19 @@ func (g *Gateway) RouteNPM(r *mux.Router) {
 }
 
 func (g *Gateway) RedirectNPM(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_npm_redirect")
+	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
 	path := strings.TrimPrefix(r.URL.Path, "/api/npm/")
 	path = strings.TrimPrefix(path, bucket)
 	path = strings.TrimSuffix(path, "/")
 	uri := fmt.Sprintf("%s/api/v1/%s/-/%s", "", bucket, path)
-	http.Redirect(w, r, uri, http.StatusFound)
+	http.Redirect(w, r.WithContext(ctx), uri, http.StatusFound)
 }
 
 func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_npm_serve")
+	defer span.End()
 	vars := mux.Vars(r)
 	bucket, scope, pkg, version := vars["bucket"], vars["scope"], vars["package"], vars["version"]
 	// re-assembled scoped packages
@@ -47,7 +53,7 @@ func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, pkg, version)
 	defer g.npmPool.Put(req)
 	// serve
-	reader, err := g.resolver.ResolveNPM(r.Context(), req)
+	reader, err := g.resolver.ResolveNPM(ctx, req)
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return

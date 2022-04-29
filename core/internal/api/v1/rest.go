@@ -4,6 +4,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"io"
 	"net/http"
 	"net/url"
@@ -19,6 +21,8 @@ func (*Gateway) getPath(uri *url.URL) (string, bool) {
 }
 
 func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_generic_serve")
+	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
 	path, ok := g.getPath(r.URL)
 	if !ok {
@@ -29,7 +33,7 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve
-	reader, err := g.Serve(r.Context(), req)
+	reader, err := g.Serve(ctx, req)
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return
@@ -39,6 +43,8 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *Gateway) ServeHTTPHelm(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_helm_serve")
+	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
 	path, ok := g.getPath(r.URL)
 	if !ok {
@@ -49,7 +55,7 @@ func (g *Gateway) ServeHTTPHelm(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve
-	reader, err := g.ServeHelm(r.Context(), req)
+	reader, err := g.ServeHelm(ctx, req)
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return
@@ -59,13 +65,15 @@ func (g *Gateway) ServeHTTPHelm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_pypi_serve")
+	defer span.End()
 	vars := mux.Vars(r)
 	bucket, pkg := vars["bucket"], vars["package"]
 	req := g.pool.Get().(*resolver.Request)
 	req.New(bucket, pkg)
 	defer g.pool.Put(req)
 	// serve
-	reader, err := g.resolver.ResolvePyPi(r.Context(), req)
+	reader, err := g.resolver.ResolvePyPi(ctx, req)
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return
