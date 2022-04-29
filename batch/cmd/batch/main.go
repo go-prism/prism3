@@ -14,6 +14,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"net/http"
 	"time"
 )
@@ -34,6 +35,7 @@ type environment struct {
 		Addr     string `split_words:"true" required:"true"`
 		Password string `split_words:"true"`
 	}
+	Otel tracing.OtelOptions
 }
 
 func main() {
@@ -43,6 +45,12 @@ func main() {
 		return
 	}
 	logging.Init(&e.Log)
+
+	// setup otel
+	if err := tracing.Init(&e.Otel); err != nil {
+		log.WithError(err).Fatal("failed to setup tracing")
+		return
+	}
 
 	// configure database
 	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)

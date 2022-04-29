@@ -2,17 +2,24 @@ package policy
 
 import (
 	"context"
+	"github.com/djcass44/go-utils/pkg/sliceutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
 var (
-	RegexDebian = regexp.MustCompile(`^.*\.(deb|tar.gz)$`)
-	RegexNode   = regexp.MustCompile(`.tgz$`)
-	RegexHelm   = regexp.MustCompile(`.tgz(.prov)?$`)
-	RegexPy     = regexp.MustCompile(`.(tar.gz|whl)$`)
+	RegexDebian        = regexp.MustCompile(`^.*\.(deb|tar.gz)$`)
+	RegexNode          = regexp.MustCompile(`.tgz$`)
+	RegexHelm          = regexp.MustCompile(`.tgz(.prov)?$`)
+	RegexPy            = regexp.MustCompile(`.(tar.gz|whl)$`)
+	ExcludedExtensions = []string{
+		".js",
+		".html",
+		".css",
+	}
 )
 
 type RegexEnforcer struct {
@@ -74,7 +81,7 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 		}
 		canCache = RegexPy.MatchString(path)
 	default:
-		canCache = true
+		canCache = r.canCacheGeneric(path)
 	}
 	log.WithContext(ctx).WithFields(log.Fields{
 		"path":  path,
@@ -82,6 +89,13 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 		"arch":  r.archetype,
 	}).Debug("checked cache status")
 	return canCache
+}
+
+// canCacheGeneric excludes common Web resources
+// (e.g., html, js, css)
+func (*RegexEnforcer) canCacheGeneric(path string) bool {
+	ext := filepath.Ext(path)
+	return !sliceutils.Includes(ExcludedExtensions, ext)
 }
 
 func (*RegexEnforcer) anyMatch(path string, rules []*regexp.Regexp) bool {

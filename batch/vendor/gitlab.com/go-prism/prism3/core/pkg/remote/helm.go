@@ -19,12 +19,12 @@ func NewHelmRemote(root string, client *http.Client, getPackage repo.GetPackageF
 	}
 }
 
-func (h *HelmRemote) Exists(ctx context.Context, path string) (string, error) {
+func (h *HelmRemote) Exists(ctx context.Context, path string, _ *RequestContext) (string, error) {
 	return h.getPackage(ctx, path)
 }
 
-func (h *HelmRemote) Download(ctx context.Context, path string) (io.Reader, error) {
-	return h.rem.Download(ctx, path)
+func (h *HelmRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
+	return h.rem.Download(ctx, path, rctx)
 }
 
 func (h *HelmRemote) String() string {

@@ -41,6 +41,7 @@ func (r *UserRepo) SetPreference(ctx context.Context, key, value string) error {
 	if !ok {
 		return errs.ErrUnauthorised
 	}
+	log.WithContext(ctx).Debugf("updating preference '%s' to '%s'", key, value)
 	if err := r.db.Model(&model.StoredUser{}).Where("id = ?", user.AsUsername()).Update("preferences", gorm.Expr("preferences::jsonb || ?", fmt.Sprintf(`{"%s": "%s"}`, key, value))).Error; err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to update preferences")
 		sentry.CaptureException(err)

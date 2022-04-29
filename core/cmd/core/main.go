@@ -26,6 +26,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"net/http"
 	"net/url"
 	"time"
@@ -58,6 +60,7 @@ type environment struct {
 		Addr     string `split_words:"true" required:"true"`
 		Password string `split_words:"true"`
 	}
+	Otel tracing.OtelOptions
 }
 
 func main() {
@@ -72,6 +75,12 @@ func main() {
 	// setup sentry
 	if e.Sentry.DSN != "" {
 		_ = errtack.Init(e.Sentry)
+	}
+
+	// setup otel
+	if err := tracing.Init(&e.Otel); err != nil {
+		log.WithError(err).Fatal("failed to setup tracing")
+		return
 	}
 
 	// configure database
@@ -129,6 +138,7 @@ func main() {
 	// configure routing
 	router := mux.NewRouter()
 	router.Use(sentryhttp.New(sentryhttp.Options{Repanic: true}).Handle)
+	router.Use(otelmux.Middleware(tracing.DefaultServiceName))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})

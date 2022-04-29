@@ -10,7 +10,9 @@ import (
 	"gitlab.com/av1o/cap10-ingress/pkg/logging"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"gitlab.com/go-prism/prism3/goproxy/internal/cache"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	stdlog "log"
 	"net/http"
 )
@@ -24,6 +26,7 @@ type environment struct {
 		Handlers bool `split_words:"true" default:"true"`
 	}
 	Flag flag.Options
+	Otel tracing.OtelOptions
 }
 
 func main() {
@@ -42,8 +45,15 @@ func main() {
 		return
 	}
 
+	// setup otel
+	if err := tracing.Init(&e.Otel); err != nil {
+		log.WithError(err).Fatal("failed to setup tracing")
+		return
+	}
+
 	// configure routing
 	router := mux.NewRouter()
+	router.Use(otelmux.Middleware(tracing.DefaultServiceName))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})

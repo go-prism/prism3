@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"runtime"
 	"runtime/debug"
 
@@ -113,10 +115,14 @@ func (r *queryResolver) ListTransports(ctx context.Context) ([]*model.TransportS
 }
 
 func (r *queryResolver) ListArtifacts(ctx context.Context, remote string) ([]*model.Artifact, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_listArtifacts")
+	defer span.End()
 	return r.repos.ArtifactRepo.ListArtifacts(ctx, []string{remote})
 }
 
 func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract string) ([]*model.Artifact, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_listCombinedArtifacts")
+	defer span.End()
 	// collect a list of remotes
 	ref, err := r.repos.RefractRepo.GetRefraction(ctx, refract)
 	if err != nil {
@@ -130,6 +136,8 @@ func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract strin
 }
 
 func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_getOverview")
+	defer span.End()
 	store, err := r.storeSizeCache.Get("")
 	if err != nil {
 		return nil, err
@@ -173,6 +181,8 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 }
 
 func (r *queryResolver) GetRemoteOverview(ctx context.Context, id string) (*model.RemoteOverview, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_getRemoteOverview")
+	defer span.End()
 	count, err := r.repos.ArtifactRepo.CountArtifactsByRemote(ctx, id)
 	if err != nil {
 		return nil, err

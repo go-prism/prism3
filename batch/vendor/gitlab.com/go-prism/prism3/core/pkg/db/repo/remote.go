@@ -7,6 +7,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -30,7 +31,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 		CreatedAt: time.Now().Unix(),
 		UpdatedAt: time.Now().Unix(),
 		Name:      in.Name,
-		URI:       in.URI,
+		URI:       strings.TrimSuffix(in.URI, "/"),
 		Archetype: in.Archetype,
 		Enabled:   true,
 		Security: &model.RemoteSecurity{

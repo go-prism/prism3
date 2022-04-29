@@ -3,9 +3,6 @@ package serverless
 import (
 	"fmt"
 	"github.com/gorilla/handlers"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	_ "go.uber.org/automaxprocs"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -16,32 +13,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
-)
-
-var (
-	MetricNamespace = "serverless"
-	MetricSubsystem = "function"
-)
-
-var (
-	metricOpsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: MetricNamespace,
-		Subsystem: MetricSubsystem,
-		Name:      "ops_total",
-	}, []string{"method", "path"})
-	metricOpsDurationTotal = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: MetricNamespace,
-		Subsystem: MetricSubsystem,
-		Name:      "ops_duration_total",
-	}, []string{"method", "path"})
-	metricOpsDurationHistogram = promauto.NewHistogram(prometheus.HistogramOpts{
-		Namespace: MetricNamespace,
-		Subsystem: MetricSubsystem,
-		Name:      "ops_duration_ms",
-		Help:      "Histogram for function execution duration",
-		Buckets:   prometheus.LinearBuckets(1, 10, 100),
-	})
 )
 
 const (
@@ -54,7 +25,6 @@ type Builder struct {
 	gsrv           *grpc.Server
 	port           int
 	enableHandlers bool
-	enableMetrics  bool
 }
 
 func NewBuilder(handler http.Handler) *Builder {
@@ -62,26 +32,15 @@ func NewBuilder(handler http.Handler) *Builder {
 		handler:        handler,
 		port:           8080,
 		enableHandlers: true,
-		enableMetrics:  false,
 	}
 }
 
 // WithPrometheus enables Prometheus metric collection
 // from function invocation.
+//
+// Deprecated
 func (b *Builder) WithPrometheus() *Builder {
-	h := b.handler
-	b.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// preprocessing
-		metricOpsTotal.WithLabelValues(r.Method, r.URL.Path).Inc()
-		timer := prometheus.NewTimer(metricOpsDurationHistogram)
-		defer timer.ObserveDuration()
-		start := time.Now()
-		// call the handler
-		h.ServeHTTP(w, r)
-		// postprocessing
-		metricOpsDurationTotal.WithLabelValues(r.Method, r.URL.Path).Add(float64(time.Since(start).Milliseconds()))
-	})
-	b.enableMetrics = true
+	log.Printf("prometheus metrics collection has been removed due to interferance with other collectors")
 	return b
 }
 
@@ -118,9 +77,6 @@ func (b *Builder) Run() {
 	// configure HTTP
 	router := http.NewServeMux()
 	router.Handle("/", b.handler)
-	if b.enableMetrics {
-		router.Handle("/metrics", promhttp.Handler())
-	}
 
 	var h http.Handler
 	dualHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

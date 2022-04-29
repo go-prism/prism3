@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/plugin/dbresolver"
+	gormopentracing "gorm.io/plugin/opentracing"
 )
 import "gorm.io/driver/postgres"
 
@@ -32,6 +33,10 @@ func NewDatabase(dsn string, replicas ...string) (*Database, error) {
 			continue
 		}
 		r = append(r, postgres.Open(replicas[i]))
+	}
+	if err := database.Use(gormopentracing.New()); err != nil {
+		sentry.CaptureException(err)
+		log.WithError(err).Error("failed to enable SQL OpenTracing plugin")
 	}
 	if err := database.Use(dbresolver.Register(dbresolver.Config{
 		Replicas: r,
