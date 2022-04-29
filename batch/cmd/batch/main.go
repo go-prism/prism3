@@ -12,6 +12,7 @@ import (
 	"gitlab.com/go-prism/prism3/batch/internal/task/helmidx"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/sre"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
@@ -45,12 +46,14 @@ func main() {
 		return
 	}
 	logging.Init(&e.Log)
+	log.AddHook(&sre.UserHook{})
 
 	// setup otel
 	if err := tracing.Init(&e.Otel); err != nil {
 		log.WithError(err).Fatal("failed to setup tracing")
 		return
 	}
+	log.AddHook(&sre.TraceHook{})
 
 	// configure database
 	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)

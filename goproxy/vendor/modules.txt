@@ -187,6 +187,7 @@ gitlab.com/av1o/cap10-ingress/pkg/logging
 # gitlab.com/go-prism/prism3/core v0.0.0-00010101000000-000000000000 => ../core
 ## explicit; go 1.18
 gitlab.com/go-prism/prism3/core/pkg/flag
+gitlab.com/go-prism/prism3/core/pkg/sre
 gitlab.com/go-prism/prism3/core/pkg/storage
 gitlab.com/go-prism/prism3/core/pkg/tracing
 # go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.28.0

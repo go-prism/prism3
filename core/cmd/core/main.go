@@ -25,6 +25,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/errtack"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/sre"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
@@ -71,6 +72,7 @@ func main() {
 	}
 	logging.Init(&e.Log)
 	flag.Init(e.Flag)
+	log.AddHook(&sre.UserHook{})
 
 	// setup sentry
 	if e.Sentry.DSN != "" {
@@ -82,6 +84,7 @@ func main() {
 		log.WithError(err).Fatal("failed to setup tracing")
 		return
 	}
+	log.AddHook(&sre.TraceHook{})
 
 	// configure database
 	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)

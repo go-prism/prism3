@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -140,6 +141,7 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	defer span.End()
 	store, err := r.storeSizeCache.Get("")
 	if err != nil {
+		log.WithContext(ctx).Error("failed to retrieved storage usage statistics")
 		return nil, err
 	}
 	remotes, _ := r.repos.RemoteRepo.Count(ctx)
@@ -159,6 +161,7 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	var m runtime.MemStats
 	// only reveal system information to administrators
 	if err := r.authz.AmI(ctx, model.RoleSuper); err == nil {
+		log.WithContext(ctx).Debug("reading runtime statistics")
 		runtime.ReadMemStats(&m)
 	}
 

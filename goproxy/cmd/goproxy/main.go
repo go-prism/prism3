@@ -9,6 +9,7 @@ import (
 	"gitlab.com/autokubeops/serverless"
 	"gitlab.com/av1o/cap10-ingress/pkg/logging"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
+	"gitlab.com/go-prism/prism3/core/pkg/sre"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"gitlab.com/go-prism/prism3/goproxy/internal/cache"
@@ -37,6 +38,7 @@ func main() {
 	}
 	logging.Init(&e.Log)
 	flag.Init(e.Flag)
+	log.AddHook(&sre.UserHook{})
 
 	logger := log.New()
 	s3, err := storage.NewS3(context.Background(), e.S3)
@@ -50,6 +52,7 @@ func main() {
 		log.WithError(err).Fatal("failed to setup tracing")
 		return
 	}
+	log.AddHook(&sre.TraceHook{})
 
 	// configure routing
 	router := mux.NewRouter()

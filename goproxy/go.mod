@@ -14,6 +14,8 @@ require (
 	gitlab.com/av1o/cap10-ingress v0.0.0-20220212125434-d2886402dc5d
 	gitlab.com/go-prism/prism3/core v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.28.0
+	go.opentelemetry.io/otel v1.4.0
+	go.opentelemetry.io/otel/trace v1.4.0
 )
 
 require (
@@ -49,10 +51,8 @@ require (
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a // indirect
 	github.com/twmb/murmur3 v1.1.5 // indirect
 	gitlab.com/av1o/cap10 v0.3.0 // indirect
-	go.opentelemetry.io/otel v1.4.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.4.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.4.0 // indirect
-	go.opentelemetry.io/otel/trace v1.4.0 // indirect
 	go.uber.org/automaxprocs v1.5.2-0.20220426165107-d835ace014b3 // indirect
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
