@@ -8,6 +8,10 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"path/filepath"
 	"strings"
@@ -25,6 +29,11 @@ func NewProvider(repos *repo.Repos, publicURL string) *Provider {
 }
 
 func (p *Provider) Package(ctx context.Context, ref *refract.Refraction, pkg string) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_npm_package", trace.WithAttributes(
+		attribute.String("package", pkg),
+		attribute.String("refraction", ref.String()),
+	))
+	defer span.End()
 	log.WithContext(ctx).WithField("package", pkg).Info("retrieving NPM package manifest")
 	// check the cache
 	item := p.pkgCache.Get(pkg)
@@ -45,6 +54,12 @@ func (p *Provider) Package(ctx context.Context, ref *refract.Refraction, pkg str
 }
 
 func (p *Provider) PackageVersion(ctx context.Context, ref *refract.Refraction, pkg, version string) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_npm_packageVersion", trace.WithAttributes(
+		attribute.String("package", pkg),
+		attribute.String("version", version),
+		attribute.String("refraction", ref.String()),
+	))
+	defer span.End()
 	log.WithContext(ctx).WithFields(log.Fields{
 		"package": pkg,
 		"version": version,
@@ -75,6 +90,11 @@ func (p *Provider) PackageVersion(ctx context.Context, ref *refract.Refraction, 
 }
 
 func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg string) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_npm_fetch", trace.WithAttributes(
+		attribute.String("package", pkg),
+		attribute.String("refraction", ref.String()),
+	))
+	defer span.End()
 	// download the package
 	remotes := ref.Remotes()
 	roots := make([]string, len(remotes))
@@ -106,7 +126,11 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 	wg.Wait()
 }
 
-func (p *Provider) rewriteURLs(_ context.Context, roots []string, ref, data string) string {
+func (p *Provider) rewriteURLs(ctx context.Context, roots []string, ref, data string) string {
+	_, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_npm_rewriteURLs", trace.WithAttributes(
+		attribute.String("refraction", ref),
+	))
+	defer span.End()
 	rep := make([]string, len(roots)*2)
 	for i := range roots {
 		rep[i*2] = roots[i]

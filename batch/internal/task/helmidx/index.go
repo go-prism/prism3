@@ -11,6 +11,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	helmrepo "helm.sh/helm/v3/pkg/repo"
 	"io"
 )
@@ -23,6 +25,8 @@ func NewHelmProcessor(repos *repo.Repos, store storage.Reader) *HelmProcessor {
 }
 
 func (p *HelmProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "task_helm_process")
+	defer span.End()
 	var payload tasks.HelmRepositoryPayload
 	err := tasks.Deserialise(t.Payload(), &payload)
 	if err != nil {

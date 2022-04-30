@@ -5,7 +5,9 @@ import (
 	"crypto/tls"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
 	"golang.org/x/net/http2"
 	"io"
 	"net"
@@ -43,5 +45,7 @@ func NewGateway(r resolver.IResolver, goProxyURL *url.URL, artifactRepo *repo.Ar
 }
 
 func (g *Gateway) Serve(ctx context.Context, r *resolver.Request) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "gateway_generic")
+	defer span.End()
 	return g.resolver.Resolve(ctx, r)
 }

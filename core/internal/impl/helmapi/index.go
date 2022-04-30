@@ -8,6 +8,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"helm.sh/helm/v3/pkg/chart"
 	helmrepo "helm.sh/helm/v3/pkg/repo"
 	"io"
@@ -21,9 +24,13 @@ func NewIndex(repos *repo.Repos, publicURL string) *Index {
 }
 
 func (svc *Index) Serve(ctx context.Context, ref *refract.BackedRefraction) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_helm_serve")
+	defer span.End()
 	index := helmrepo.NewIndexFile()
 	refraction := ref.Model()
 	remotes := refraction.Remotes
+
+	span.SetAttributes(attribute.String("refraction", refraction.Name))
 
 	remoteID := make([]string, len(remotes))
 	for i := range remoteID {

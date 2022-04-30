@@ -7,6 +7,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"io"
 	"net/http"
 	"strings"
@@ -37,6 +38,10 @@ func (g *Gateway) RedirectNPM(w http.ResponseWriter, r *http.Request) {
 	path = strings.TrimPrefix(path, bucket)
 	path = strings.TrimSuffix(path, "/")
 	uri := fmt.Sprintf("%s/api/v1/%s/-/%s", "", bucket, path)
+	span.SetAttributes(
+		attribute.String("bucket", bucket),
+		attribute.String("redirect_uri", uri),
+	)
 	http.Redirect(w, r.WithContext(ctx), uri, http.StatusFound)
 }
 
@@ -49,6 +54,12 @@ func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	if scope != "" {
 		pkg = fmt.Sprintf("@%s/%s", scope, pkg)
 	}
+	span.SetAttributes(
+		attribute.String("bucket", bucket),
+		attribute.String("package", pkg),
+		attribute.String("scope", scope),
+		attribute.String("version", version),
+	)
 	req := g.npmPool.Get().(*resolver.NPMRequest)
 	req.New(bucket, pkg, version)
 	defer g.npmPool.Put(req)

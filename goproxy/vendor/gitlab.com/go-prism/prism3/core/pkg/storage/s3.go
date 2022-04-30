@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws"
 	"io"
 )
 
@@ -33,6 +34,8 @@ func NewS3(ctx context.Context, opt S3Options) (*S3, error) {
 		log.WithError(err).Error("failed to retrieve AWS config")
 		return nil, err
 	}
+	// OpenTelemetry instrumentation
+	otelaws.AppendMiddlewares(&cfg.APIOptions)
 	log.WithContext(ctx).WithFields(log.Fields{
 		"pathStyle": opt.PathStyle,
 		"region":    opt.Region,

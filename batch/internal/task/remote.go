@@ -7,6 +7,8 @@ import (
 	"gitlab.com/go-prism/prism3/batch/internal/task/helmidx"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 )
 
 func NewRemoteProcessor(client *asynq.Client, repos *repo.Repos, helm *helmidx.HelmProcessor) *RemoteProcessor {
@@ -18,6 +20,8 @@ func NewRemoteProcessor(client *asynq.Client, repos *repo.Repos, helm *helmidx.H
 }
 
 func (p *RemoteProcessor) HandleIndexAllTask(ctx context.Context, t *asynq.Task) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "task_remote_indexAll")
+	defer span.End()
 	var payload tasks.IndexRemoteAllPayload
 	err := tasks.Deserialise(t.Payload(), &payload)
 	if err != nil {
@@ -38,6 +42,8 @@ func (p *RemoteProcessor) HandleIndexAllTask(ctx context.Context, t *asynq.Task)
 }
 
 func (p *RemoteProcessor) HandleIndexTask(ctx context.Context, t *asynq.Task) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "task_remote_index")
+	defer span.End()
 	var payload tasks.IndexRemotePayload
 	err := tasks.Deserialise(t.Payload(), &payload)
 	if err != nil {

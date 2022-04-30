@@ -6,6 +6,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"io"
 	"net/http"
 	"net/url"
@@ -24,6 +25,7 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_generic_serve")
 	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
+	span.SetAttributes(attribute.String("bucket", bucket))
 	path, ok := g.getPath(r.URL)
 	if !ok {
 		_ = problem.MustWrite(w, problem.New(http.StatusBadRequest).Errorf("malformed path"))
@@ -46,6 +48,7 @@ func (g *Gateway) ServeHTTPHelm(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_helm_serve")
 	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
+	span.SetAttributes(attribute.String("bucket", bucket))
 	path, ok := g.getPath(r.URL)
 	if !ok {
 		_ = problem.MustWrite(w, problem.New(http.StatusBadRequest).Errorf("malformed path"))
@@ -69,6 +72,10 @@ func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
 	defer span.End()
 	vars := mux.Vars(r)
 	bucket, pkg := vars["bucket"], vars["package"]
+	span.SetAttributes(
+		attribute.String("bucket", bucket),
+		attribute.String("package", pkg),
+	)
 	req := g.pool.Get().(*resolver.Request)
 	req.New(bucket, pkg)
 	defer g.pool.Put(req)

@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/Unleash/unleash-client-go/v3"
 	"github.com/getsentry/sentry-go"
+	otelgorm "github.com/kostyay/gorm-opentelemetry"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -11,7 +12,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/plugin/dbresolver"
-	gormopentracing "gorm.io/plugin/opentracing"
 )
 import "gorm.io/driver/postgres"
 
@@ -34,7 +34,7 @@ func NewDatabase(dsn string, replicas ...string) (*Database, error) {
 		}
 		r = append(r, postgres.Open(replicas[i]))
 	}
-	if err := database.Use(gormopentracing.New()); err != nil {
+	if err := database.Use(otelgorm.NewPlugin()); err != nil {
 		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to enable SQL OpenTracing plugin")
 	}

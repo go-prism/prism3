@@ -9,6 +9,8 @@ import (
 	"github.com/lpar/problem"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"io"
 	"net/http"
 	"strings"
@@ -40,6 +42,8 @@ func (r *EphemeralRemote) String() string {
 }
 
 func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *RequestContext) (string, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_exists")
+	defer span.End()
 	// check the cache
 	cacheKey := path
 	if rctx != nil {
@@ -68,6 +72,8 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *Request
 }
 
 func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_download")
+	defer span.End()
 	target := path
 	if !strings.HasPrefix(path, "https://") {
 		target = fmt.Sprintf("%s/%s", r.root, strings.TrimPrefix(path, "/"))
@@ -84,6 +90,8 @@ func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *Reque
 }
 
 func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *RequestContext) (*http.Response, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_do")
+	defer span.End()
 	req, err := http.NewRequestWithContext(ctx, method, target, nil)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to prepare request")

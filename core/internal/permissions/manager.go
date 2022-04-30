@@ -9,6 +9,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 )
 
 func NewManager(repos *repo.Repos) *Manager {
@@ -19,6 +21,8 @@ func NewManager(repos *repo.Repos) *Manager {
 }
 
 func (m *Manager) Load(ctx context.Context) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "rbac_load")
+	defer span.End()
 	// register roles
 	super := MustRegisterRole(m.r, model.RoleSuper, "Super user")
 	//_ = MustRegisterRole(m.r, model.RolePower, "Power user")
@@ -57,6 +61,8 @@ func (m *Manager) Load(ctx context.Context) error {
 }
 
 func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID string, verb rbac.Action) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "rbac_canI")
+	defer span.End()
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
 		return errs.ErrUnauthorised
@@ -77,6 +83,8 @@ func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID s
 }
 
 func (m *Manager) AmI(ctx context.Context, role model.Role) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "rbac_amI")
+	defer span.End()
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
 		return errs.ErrUnauthorised

@@ -14,6 +14,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"gitlab.com/go-prism/prism3/goproxy/internal/cache"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	stdlog "log"
 	"net/http"
 )
@@ -63,7 +64,7 @@ func main() {
 	router.PathPrefix("/").Handler(&goproxy.Goproxy{
 		Cacher:        cache.NewCacher(s3),
 		ProxiedSUMDBs: nil,
-		Transport:     nil,
+		Transport:     otelhttp.NewTransport(http.DefaultTransport),
 		ErrorLogger:   stdlog.New(logger.WriterLevel(log.ErrorLevel), "", 0),
 	})
 	serverless.NewBuilder(router).

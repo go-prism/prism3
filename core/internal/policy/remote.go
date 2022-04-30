@@ -5,6 +5,10 @@ import (
 	"github.com/djcass44/go-utils/pkg/sliceutils"
 	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -45,6 +49,11 @@ func NewRegexEnforcer(r *model.Remote) *RegexEnforcer {
 }
 
 func (r *RegexEnforcer) CanReceive(ctx context.Context, path string) bool {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canReceive", trace.WithAttributes(
+		attribute.String("archetype", string(r.archetype)),
+		attribute.String("path", path),
+	))
+	defer span.End()
 	if r.anyMatch(path, r.block) {
 		log.WithContext(ctx).WithField("path", path).Debug("blocked by blocklist")
 		return false
@@ -57,6 +66,11 @@ func (r *RegexEnforcer) CanReceive(ctx context.Context, path string) bool {
 }
 
 func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canCache", trace.WithAttributes(
+		attribute.String("archetype", string(r.archetype)),
+		attribute.String("path", path),
+	))
+	defer span.End()
 	if r.archetype == "" {
 		return false
 	}
@@ -83,6 +97,7 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 	default:
 		canCache = r.canCacheGeneric(path)
 	}
+	span.SetAttributes(attribute.Bool("can_cache", canCache))
 	log.WithContext(ctx).WithFields(log.Fields{
 		"path":  path,
 		"cache": canCache,

@@ -10,6 +10,10 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/net/html"
 	"html/template"
 	"io"
@@ -27,6 +31,10 @@ func NewProvider(repos *repo.Repos, publicURL string) *Provider {
 }
 
 func (p *Provider) Index(ctx context.Context, ref *refract.Refraction, pkg string) (io.Reader, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_pypi_index", trace.WithAttributes(
+		attribute.String("package", pkg),
+	))
+	defer span.End()
 	items := p.fetch(ctx, ref, pkg)
 
 	// template our response
@@ -41,6 +49,10 @@ func (p *Provider) Index(ctx context.Context, ref *refract.Refraction, pkg strin
 }
 
 func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg string) []*schemas.PyPackage {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_pypi_fetch", trace.WithAttributes(
+		attribute.String("package", pkg),
+	))
+	defer span.End()
 	remotes := ref.Remotes()
 	var items []*schemas.PyPackage
 
@@ -78,6 +90,10 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 }
 
 func (p *Provider) parse(ctx context.Context, pkg string, r io.Reader) ([]*schemas.PyPackage, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "api_pypi_parse", trace.WithAttributes(
+		attribute.String("package", pkg),
+	))
+	defer span.End()
 	doc, err := html.Parse(r)
 	if err != nil {
 		log.WithContext(ctx).WithError(err).Error("failed to parse html")
