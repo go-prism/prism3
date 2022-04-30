@@ -49,7 +49,7 @@ func main() {
 	log.AddHook(&sre.UserHook{})
 
 	// setup otel
-	if err := tracing.Init(&e.Otel); err != nil {
+	if err := tracing.Init(tracing.ServiceNameBatch, &e.Otel); err != nil {
 		log.WithError(err).Fatal("failed to setup tracing")
 		return
 	}

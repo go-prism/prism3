@@ -19,5 +19,7 @@ package tracing
 
 const (
 	DefaultTracerName  = ""
-	DefaultServiceName = "prism3/core"
+	ServiceNameCore    = "prism3/core"
+	ServiceNameBatch   = "prism3/batch"
+	ServiceNameGoProxy = "prism3/goproxy"
 )

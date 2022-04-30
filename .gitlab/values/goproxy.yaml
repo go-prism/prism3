@@ -42,6 +42,10 @@ volumes:
     mountPath: /tmp
     config:
       emptyDir: {}
+  - name: gopkg
+    mountPath: /go/pkg
+    config:
+      emptyDir: {}
 resources:
   requests:
     cpu: 200m

@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// setup otel
-	if err := tracing.Init(&e.Otel); err != nil {
+	if err := tracing.Init(tracing.ServiceNameGoProxy, &e.Otel); err != nil {
 		log.WithError(err).Fatal("failed to setup tracing")
 		return
 	}
@@ -57,7 +57,7 @@ func main() {
 
 	// configure routing
 	router := mux.NewRouter()
-	router.Use(otelmux.Middleware(tracing.DefaultServiceName))
+	router.Use(otelmux.Middleware(tracing.ServiceNameGoProxy))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})

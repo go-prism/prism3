@@ -39,7 +39,7 @@ type OtelOptions struct {
 	SampleRate  float64 `split_words:"true" default:"0.05"`
 }
 
-func Init(opts *OtelOptions) error {
+func Init(serviceName string, opts *OtelOptions) error {
 	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint())
 	if err != nil {
 		log.WithError(err).Error("failed to setup otel exporter")
@@ -55,7 +55,7 @@ func Init(opts *OtelOptions) error {
 		sdktrace.WithSampler(sdktrace.TraceIDRatioBased(opts.SampleRate)),
 		sdktrace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(DefaultServiceName),
+			semconv.ServiceNameKey.String(serviceName),
 			attribute.String("environment", opts.Environment),
 			attribute.String("os", runtime.GOOS),
 			attribute.String("arch", runtime.GOARCH),

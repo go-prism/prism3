@@ -80,7 +80,7 @@ func main() {
 	}
 
 	// setup otel
-	if err := tracing.Init(&e.Otel); err != nil {
+	if err := tracing.Init(tracing.ServiceNameCore, &e.Otel); err != nil {
 		log.WithError(err).Fatal("failed to setup tracing")
 		return
 	}
@@ -141,7 +141,7 @@ func main() {
 	// configure routing
 	router := mux.NewRouter()
 	router.Use(sentryhttp.New(sentryhttp.Options{Repanic: true}).Handle)
-	router.Use(otelmux.Middleware(tracing.DefaultServiceName))
+	router.Use(otelmux.Middleware(tracing.ServiceNameCore))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
