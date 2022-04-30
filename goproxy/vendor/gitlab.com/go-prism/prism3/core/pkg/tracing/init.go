@@ -60,7 +60,15 @@ func Init(serviceName string, opts *OtelOptions) error {
 			attribute.String("os", runtime.GOOS),
 			attribute.String("arch", runtime.GOARCH),
 			attribute.String("hostname", host),
-			attribute.String("go_version", runtime.Version()),
+			attribute.String("pod", host),
+			attribute.String("namespace", os.Getenv("KUBERNETES_NAMESPACE")),
+			attribute.String("deployment.environment", opts.Environment),
+			attribute.String("process.runtime.name", getRuntimeName()),
+			attribute.String("process.runtime.version", runtime.Version()),
+			// kubernetes semantic tags
+			// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/resource/semantic_conventions/k8s.md
+			attribute.String("k8s.pod.name", host),
+			attribute.String("k8s.namespace.name", os.Getenv("KUBERNETES_NAMESPACE")),
 		)),
 	)
 	otel.SetTracerProvider(tp)
@@ -69,6 +77,13 @@ func Init(serviceName string, opts *OtelOptions) error {
 	go waitForShutdown(tp)
 
 	return nil
+}
+
+func getRuntimeName() string {
+	if runtime.Compiler == "gc" {
+		return "go"
+	}
+	return runtime.Compiler
 }
 
 func waitForShutdown(tp *sdktrace.TracerProvider) {
