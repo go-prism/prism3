@@ -2,12 +2,15 @@ package policy
 
 import (
 	"context"
+	"github.com/go-logr/logr"
+	"github.com/go-logr/logr/testr"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"testing"
 )
 
 func TestRegexEnforcer_CanCache(t *testing.T) {
+	ctx := logr.NewContext(context.TODO(), testr.New(t))
 	var cases = []struct {
 		arch model.Archetype
 		path string
@@ -36,11 +39,11 @@ func TestRegexEnforcer_CanCache(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.path, func(t *testing.T) {
-			enf := NewRegexEnforcer(&model.Remote{
+			enf := NewRegexEnforcer(ctx, &model.Remote{
 				Archetype: tt.arch,
 				Security:  &model.RemoteSecurity{},
 			})
-			ok := enf.CanCache(context.TODO(), tt.path)
+			ok := enf.CanCache(ctx, tt.path)
 			assert.EqualValues(t, tt.ok, ok)
 		})
 	}

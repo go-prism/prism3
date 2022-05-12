@@ -3,7 +3,8 @@ package remote
 import (
 	"context"
 	_ "embed"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
+	"github.com/go-logr/logr/testr"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
@@ -19,7 +20,8 @@ var getPkg = func(ctx context.Context, file string) (string, error) {
 }
 
 func TestBackedRemote_Exists(t *testing.T) {
-	rem := NewBackedRemote(&model.Remote{
+	ctx := logr.NewContext(context.TODO(), testr.New(t))
+	rem := NewBackedRemote(ctx, &model.Remote{
 		URI:      "https://mirror.aarnet.edu.au/pub/alpine",
 		Security: &model.RemoteSecurity{},
 	}, storage.NewNoOp(), func(ctx context.Context, path, remote string) error {
@@ -34,7 +36,7 @@ func TestBackedRemote_Exists(t *testing.T) {
 var dummyFile string
 
 func TestBackedRemote_Download(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	ctx := logr.NewContext(context.TODO(), testr.New(t))
 	token := "hunter2"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
@@ -47,7 +49,7 @@ func TestBackedRemote_Download(t *testing.T) {
 	defer ts.Close()
 
 	store := storage.NewNoOp()
-	rem := NewBackedRemote(&model.Remote{
+	rem := NewBackedRemote(ctx, &model.Remote{
 		URI:       ts.URL,
 		Security:  &model.RemoteSecurity{},
 		Archetype: model.ArchetypeGeneric,

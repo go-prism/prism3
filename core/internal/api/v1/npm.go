@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
@@ -33,6 +34,7 @@ func (g *Gateway) RouteNPM(r *mux.Router) {
 func (g *Gateway) RedirectNPM(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_npm_redirect")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("npm")
 	bucket := mux.Vars(r)["bucket"]
 	path := strings.TrimPrefix(r.URL.Path, "/api/npm/")
 	path = strings.TrimPrefix(path, bucket)
@@ -42,16 +44,19 @@ func (g *Gateway) RedirectNPM(w http.ResponseWriter, r *http.Request) {
 		attribute.String("bucket", bucket),
 		attribute.String("redirect_uri", uri),
 	)
+	log.V(1).Info("issuing NPM redirect", "Bucket", bucket, "Url", uri)
 	http.Redirect(w, r.WithContext(ctx), uri, http.StatusFound)
 }
 
 func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_npm_serve")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("npm")
 	vars := mux.Vars(r)
 	bucket, scope, pkg, version := vars["bucket"], vars["scope"], vars["package"], vars["version"]
 	// re-assembled scoped packages
 	if scope != "" {
+		log.V(1).Info("handling NPM scoped request", "Scope", scope)
 		pkg = fmt.Sprintf("@%s/%s", scope, pkg)
 	}
 	span.SetAttributes(

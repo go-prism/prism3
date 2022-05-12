@@ -1,9 +1,10 @@
 package httpclient
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"golang.org/x/net/http/httpproxy"
 	"net/http"
@@ -11,15 +12,17 @@ import (
 	"os"
 )
 
-func GetConfigured(security *model.TransportSecurity) *http.Client {
-	tlsConfig := getTLSConfig(security)
-	proxy := getProxyConfig(security)
+func GetConfigured(ctx context.Context, security *model.TransportSecurity) *http.Client {
+	log := logr.FromContextOrDiscard(ctx)
+	tlsConfig := getTLSConfig(ctx, security)
+	proxy := getProxyConfig(ctx, security)
 
 	transport := getTransport()
 	transport.Proxy = func(r *http.Request) (*url.URL, error) {
 		return proxy.ProxyFunc()(r.URL)
 	}
 	transport.TLSClientConfig = tlsConfig
+	log.V(3).Info("generated transport", "Transport", transport)
 	return &http.Client{
 		Transport:     transport,
 		CheckRedirect: http.DefaultClient.CheckRedirect,
@@ -41,11 +44,14 @@ func getTransport() *http.Transport {
 
 // getProxyConfig returns a httpproxy.Config tuned
 // based on the passed model.TransportSecurity
-func getProxyConfig(s *model.TransportSecurity) *httpproxy.Config {
+func getProxyConfig(ctx context.Context, s *model.TransportSecurity) *httpproxy.Config {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(3).Info("generating proxy configuration from model", "Model", s)
 	if s == nil || s.HTTPProxy == "" && s.HTTPSProxy == "" {
-		log.Info("importing proxy configuration from environment")
+		log.V(1).Info("importing proxy configuration from environment")
 		return httpproxy.FromEnvironment()
 	}
+	log.V(1).Info("building proxy configuration from model")
 	return &httpproxy.Config{
 		HTTPProxy:  s.HTTPProxy,
 		HTTPSProxy: s.HTTPSProxy,
@@ -56,9 +62,10 @@ func getProxyConfig(s *model.TransportSecurity) *httpproxy.Config {
 
 // getTLSConfig returns a tls.Config tuned
 // based on the passed model.TransportSecurity
-func getTLSConfig(s *model.TransportSecurity) *tls.Config {
+func getTLSConfig(ctx context.Context, s *model.TransportSecurity) *tls.Config {
+	log := logr.FromContextOrDiscard(ctx)
 	if s == nil {
-		log.Warning("returning default TLS configuration")
+		log.Info("returning default TLS configuration")
 		// return a minimal configuration
 		return &tls.Config{
 			MinVersion: tls.VersionTLS12,
@@ -66,22 +73,23 @@ func getTLSConfig(s *model.TransportSecurity) *tls.Config {
 	}
 	caPool, err := x509.SystemCertPool()
 	if err != nil {
-		log.WithError(err).Error("failed to load system CA pool")
+		log.Error(err, "failed to load system CA pool")
 		caPool = x509.NewCertPool()
 	}
 	if s.Ca != "" {
-		log.WithField("ok", caPool.AppendCertsFromPEM([]byte(s.Ca))).Debug("appending CA certificates")
+		log.V(1).Info("appending CA certificates", "Ok", caPool.AppendCertsFromPEM([]byte(s.Ca)))
 	}
 	var certs []tls.Certificate
 	if s.Cert != "" && s.Key != "" {
+		log.V(1).Info("loading x509 keypair")
 		if cert, err := tls.X509KeyPair([]byte(s.Cert), []byte(s.Key)); err != nil {
-			log.WithError(err).Error("failed to read x509 keypair")
+			log.Error(err, "failed to read x509 keypair")
 		} else {
 			log.Info("successfully read x509 keypair")
 			certs = append(certs, cert)
 		}
 	} else {
-		log.Debug("skipping x509 keypair since one or more required values were empty")
+		log.V(1).Info("skipping x509 keypair since one or more required values were empty")
 	}
 	return &tls.Config{
 		Certificates:       certs,

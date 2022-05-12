@@ -14,10 +14,10 @@ type HelmRemote struct {
 	rem        *EphemeralRemote
 }
 
-func NewHelmRemote(root string, client *http.Client, getPackage repo.GetPackageFunc) *HelmRemote {
+func NewHelmRemote(ctx context.Context, root string, client *http.Client, getPackage repo.GetPackageFunc) *HelmRemote {
 	return &HelmRemote{
 		getPackage: getPackage,
-		rem:        NewEphemeralRemote(root, client),
+		rem:        NewEphemeralRemote(ctx, root, client),
 	}
 }
 

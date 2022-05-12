@@ -2,28 +2,31 @@ package main
 
 import (
 	"context"
+	"github.com/djcass44/go-utils/logging"
+	"github.com/djcass44/go-utils/otel"
 	"github.com/gorilla/mux"
 	"github.com/hibiken/asynq"
 	"github.com/kelseyhightower/envconfig"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
-	"gitlab.com/av1o/cap10-ingress/pkg/logging"
 	"gitlab.com/go-prism/prism3/batch/internal/task"
 	"gitlab.com/go-prism/prism3/batch/internal/task/helmidx"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
-	"gitlab.com/go-prism/prism3/core/pkg/sre"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"net/http"
+	"os"
 	"time"
 )
 
 type environment struct {
 	Port int `envconfig:"PORT" default:"8080"`
-	Log  logging.Config
-
+	Log  struct {
+		Level int `split_words:"true"`
+	}
 	DB struct {
 		DSN        string `split_words:"true" required:"true"`
 		DSNReplica string `split_words:"true"`
@@ -41,30 +44,37 @@ type environment struct {
 
 func main() {
 	var e environment
-	if err := envconfig.Process("prism", &e); err != nil {
-		log.WithError(err).Fatal("failed to read environment")
-		return
-	}
-	logging.Init(&e.Log)
-	log.AddHook(&sre.UserHook{})
+	envconfig.MustProcess("prism", &e)
+	// configure logging
+	zc := zap.NewProductionConfig()
+	zc.Level = zap.NewAtomicLevelAt(zapcore.Level(e.Log.Level))
+	log, ctx := logging.NewZap(context.TODO(), zc)
 
 	// setup otel
-	if err := tracing.Init(tracing.ServiceNameBatch, &e.Otel); err != nil {
-		log.WithError(err).Fatal("failed to setup tracing")
+	err := otel.Build(context.TODO(), otel.Options{
+		ServiceName:   tracing.ServiceNameCore,
+		Environment:   e.Otel.Environment,
+		KubeNamespace: os.Getenv("KUBE_NAMESPACE"),
+		SampleRate:    e.Otel.SampleRate,
+	})
+	if err != nil {
+		log.Error(err, "failed to setup tracing")
+		os.Exit(1)
 		return
 	}
-	log.AddHook(&sre.TraceHook{})
 
 	// configure database
-	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)
+	database, err := db.NewDatabase(ctx, e.DB.DSN, e.DB.DSNReplica)
 	if err != nil {
-		log.WithError(err).Fatal("failed to setup database layer")
+		log.Error(err, "failed to setup database layer")
+		os.Exit(1)
 		return
 	}
 	repos := repo.NewRepos(database.DB())
 	s3, err := storage.NewS3(context.Background(), e.S3)
 	if err != nil {
-		log.WithError(err).Fatal("failed to connect to object storage")
+		log.Error(err, "failed to connect to object storage")
+		os.Exit(1)
 		return
 	}
 
@@ -86,34 +96,39 @@ func main() {
 	handler.HandleFunc(tasks.TypeIndexRemoteAll, rp.HandleIndexAllTask)
 
 	mgr, err := asynq.NewPeriodicTaskManager(asynq.PeriodicTaskManagerOpts{
-		PeriodicTaskConfigProvider: task.NewStaticConfigProvider(rp),
+		PeriodicTaskConfigProvider: task.NewStaticConfigProvider(ctx, rp),
 		RedisConnOpt:               redisOpt,
 		SyncInterval:               time.Minute,
 	})
 	if err != nil {
-		log.WithError(err).Fatal("failed to start cron scheduler")
+		log.Error(err, "failed to start cron scheduler")
+		os.Exit(1)
 		return
 	}
 
 	go func() {
 		if err := srv.Run(handler); err != nil {
-			log.WithError(err).Fatal("failed to run asynq server")
+			log.Error(err, "failed to run asynq server")
+			os.Exit(1)
 		}
 	}()
 
 	go func() {
 		if err := mgr.Run(); err != nil {
-			log.WithError(err).Fatal("failed to run asynq scheduler")
+			log.Error(err, "failed to run asynq scheduler")
+			os.Exit(1)
 		}
 	}()
 
 	// configure routing
 	router := mux.NewRouter()
+	router.Use(logging.NewMiddleware(log).ServeHTTP)
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
 	serverless.NewBuilder(router).
 		WithPort(e.Port).
 		WithHandlers(e.Dev.Handlers).
+		WithLogger(log).
 		Run()
 }

@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	jsonyaml "github.com/ghodss/yaml"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
@@ -29,6 +29,7 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.BackedRefraction) (io.
 	index := helmrepo.NewIndexFile()
 	refraction := ref.Model()
 	remotes := refraction.Remotes
+	log := logr.FromContextOrDiscard(ctx).WithName("helm").WithValues("Name", refraction.Name)
 
 	span.SetAttributes(attribute.String("refraction", refraction.Name))
 
@@ -37,12 +38,12 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.BackedRefraction) (io.
 		remoteID[i] = remotes[i].ID
 	}
 
-	log.WithContext(ctx).Infof("downloading %d helm indices from refraction '%s'", len(remotes), refraction.Name)
+	log.Info("downloading helm indices from refraction", "Count", len(remotes))
 	packages, err := svc.repos.HelmPackageRepo.GetPackagesInRemotes(ctx, remoteID)
 	if err != nil {
 		return nil, err
 	}
-	log.WithContext(ctx).Infof("collected %d helm packages", len(packages))
+	log.Info("collected helm packages", "Count", len(packages))
 	for _, p := range packages {
 		if err := index.MustAdd(&chart.Metadata{
 			Name:        p.Name,
@@ -53,13 +54,13 @@ func (svc *Index) Serve(ctx context.Context, ref *refract.BackedRefraction) (io.
 			KubeVersion: p.KubeVersion,
 			Type:        p.Type,
 		}, p.Filename, fmt.Sprintf("%s/api/v1/%s/-/", svc.publicURL, refraction.Name), p.Digest); err != nil {
-			log.WithContext(ctx).WithError(err).Error("failed to add chart")
+			log.Error(err, "failed to add chart")
 			continue
 		}
 	}
 	data, err := jsonyaml.Marshal(index)
 	if err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to convert index to yaml")
+		log.Error(err, "failed to convert index to yaml")
 		return nil, err
 	}
 	return bytes.NewReader(data), nil

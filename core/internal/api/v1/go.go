@@ -2,7 +2,7 @@ package v1
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -14,7 +14,9 @@ import (
 func (g *Gateway) ServeGo(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_go")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("go")
 	if g.goProxy == nil {
+		log.V(1).Info("goproxy is disabled, skipping request")
 		http.NotFound(w, r)
 		return
 	}
@@ -28,7 +30,7 @@ func (g *Gateway) ServeGo(w http.ResponseWriter, r *http.Request) {
 		if !ok {
 			return nil
 		}
-		log.WithContext(ctx).Debugf("name: %s, version: %s", n, v)
+		log.V(1).Info("extracted Go metadata", "Name", n, "Version", v)
 		go func() {
 			_ = g.artifactRepo.CreateArtifact(context.TODO(), strings.TrimPrefix(name, "/"), db.GoRemote)
 		}()

@@ -5,14 +5,15 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/djcass44/go-utils/flagging"
+	"github.com/djcass44/go-utils/logging"
+	"github.com/djcass44/go-utils/otel"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/hibiken/asynq"
 	"github.com/kelseyhightower/envconfig"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/autokubeops/serverless"
-	"gitlab.com/av1o/cap10-ingress/pkg/logging"
 	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/av1o/cap10/pkg/verify"
 	v1 "gitlab.com/go-prism/prism3/core/internal/api/v1"
@@ -25,18 +26,23 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/errtack"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
-	"gitlab.com/go-prism/prism3/core/pkg/sre"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	stdlog "log"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
 type environment struct {
 	Port int `envconfig:"PORT" default:"8080"`
-	Log  logging.Config
+	Log  struct {
+		Level int `split_words:"true"`
+	}
 
 	PublicURL string `split_words:"true" required:"true"`
 
@@ -67,53 +73,74 @@ type environment struct {
 func main() {
 	var e environment
 	if err := envconfig.Process("prism", &e); err != nil {
-		log.WithError(err).Fatal("failed to read environment")
+		stdlog.Fatalf("failed to read environment: %s", err)
 		return
 	}
-	logging.Init(&e.Log)
-	flag.Init(e.Flag)
-	log.AddHook(&sre.UserHook{})
+	// configure logging
+	zc := zap.NewProductionConfig()
+	zc.Level = zap.NewAtomicLevelAt(zapcore.Level(e.Log.Level))
+	log, ctx := logging.NewZap(context.TODO(), zc)
+
+	flagging.Build(ctx, flagging.Options{
+		Token: e.Flag.Token,
+		Name:  e.Flag.Name,
+		URL:   e.Flag.URL,
+		Env:   e.Flag.Env,
+	})
 
 	// setup sentry
 	if e.Sentry.DSN != "" {
-		_ = errtack.Init(e.Sentry)
+		log.V(1).Info("enabling Sentry")
+		_ = errtack.Init(ctx, e.Sentry)
 	}
 
 	// setup otel
-	if err := tracing.Init(tracing.ServiceNameCore, &e.Otel); err != nil {
-		log.WithError(err).Fatal("failed to setup tracing")
+	err := otel.Build(context.TODO(), otel.Options{
+		ServiceName:   tracing.ServiceNameCore,
+		Environment:   e.Otel.Environment,
+		KubeNamespace: os.Getenv("KUBE_NAMESPACE"),
+		SampleRate:    e.Otel.SampleRate,
+	})
+	if err != nil {
+		log.Error(err, "failed to setup tracing")
+		os.Exit(1)
 		return
 	}
-	log.AddHook(&sre.TraceHook{})
 
 	// configure database
-	database, err := db.NewDatabase(e.DB.DSN, e.DB.DSNReplica)
+	database, err := db.NewDatabase(ctx, e.DB.DSN, e.DB.DSNReplica)
 	if err != nil {
-		log.WithError(err).Fatal("failed to setup database layer")
+		log.Error(err, "failed to setup database layer")
+		os.Exit(1)
 		return
 	}
 	if err := database.Init(e.Auth.SuperUser); err != nil {
-		log.WithError(err).Fatal("failed to initialise database")
+		log.Error(err, "failed to setup initialise database")
+		os.Exit(1)
 		return
 	}
-	notifier, err := notify.NewNotifier(database.DB(), e.DB.DSN, schemas.NotifyTables...)
+	notifier, err := notify.NewNotifier(ctx, database.DB(), e.DB.DSN, schemas.NotifyTables...)
 	if err != nil {
-		log.WithError(err).Fatal("failed to initialise listeners")
+		log.Error(err, "failed to initialise listeners")
+		os.Exit(1)
 		return
 	}
 	notifier.Listen()
 	repos := repo.NewRepos(database.DB())
 	s3, err := storage.NewS3(context.Background(), e.S3)
 	if err != nil {
-		log.WithError(err).Fatal("failed to connect to object storage")
+		log.Error(err, "failed to connect to object storage")
+		os.Exit(1)
 		return
 	}
 
 	var goProxyURL *url.URL
 	if e.Plugin.GoURL != "" {
+		log.V(1).Info("checking GoProxy URL", "Url", e.Plugin.GoURL)
 		goProxyURL, err = url.Parse(e.Plugin.GoURL)
 		if err != nil {
-			log.WithError(err).Fatal("failed to parse GoProxy URL")
+			log.Error(err, "failed to parse GoProxy URL")
+			os.Exit(1)
 			return
 		}
 	}
@@ -125,13 +152,13 @@ func main() {
 
 	// configure graphql
 	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3, batchClient, notifier)}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(ctx, repos, s3, batchClient, notifier)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				log.WithContext(r.Context()).Infof("websocket origin: %s", r.Header.Get("Origin"))
+				log.V(1).Info("validating websocket origin", r.Header.Get("Origin"))
 				return true
 			},
 		},
@@ -140,6 +167,7 @@ func main() {
 
 	// configure routing
 	router := mux.NewRouter()
+	router.Use(logging.NewMiddleware(log).ServeHTTP)
 	router.Use(sentryhttp.New(sentryhttp.Options{Repanic: true}).Handle)
 	router.Use(otelmux.Middleware(tracing.ServiceNameCore))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -169,5 +197,6 @@ func main() {
 	serverless.NewBuilder(router).
 		WithPort(e.Port).
 		WithHandlers(e.Dev.Handlers).
+		WithLogger(log).
 		Run()
 }

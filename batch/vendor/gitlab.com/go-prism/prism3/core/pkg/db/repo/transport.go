@@ -3,7 +3,7 @@ package repo
 import (
 	"context"
 	"github.com/getsentry/sentry-go"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gorm.io/gorm"
 )
@@ -15,6 +15,8 @@ func NewTransportRepo(db *gorm.DB) *TransportRepo {
 }
 
 func (r *TransportRepo) CreateTransport(ctx context.Context, in *model.NewTransportProfile) (*model.TransportSecurity, error) {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("creating transport")
 	result := model.TransportSecurity{
 		Name:          in.Name,
 		Ca:            in.Ca,
@@ -25,8 +27,8 @@ func (r *TransportRepo) CreateTransport(ctx context.Context, in *model.NewTransp
 		HTTPSProxy:    in.HTTPSProxy,
 		NoProxy:       in.NoProxy,
 	}
-	if err := r.db.Create(&result).Error; err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to create transport")
+	if err := r.db.WithContext(ctx).Create(&result).Error; err != nil {
+		log.Error(err, "failed to create transport")
 		sentry.CaptureException(err)
 		return nil, err
 	}
@@ -34,9 +36,11 @@ func (r *TransportRepo) CreateTransport(ctx context.Context, in *model.NewTransp
 }
 
 func (r *TransportRepo) ListTransports(ctx context.Context) ([]*model.TransportSecurity, error) {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("listing transports")
 	var result []*model.TransportSecurity
-	if err := r.db.Find(&result).Error; err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to list transports")
+	if err := r.db.WithContext(ctx).Find(&result).Error; err != nil {
+		log.Error(err, "failed to list transports")
 		sentry.CaptureException(err)
 		return nil, err
 	}

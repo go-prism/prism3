@@ -3,7 +3,6 @@ package npmapi
 import (
 	"context"
 	_ "embed"
-	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -15,7 +14,6 @@ var input string
 var output string
 
 func TestProvider_rewriteURLs(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
 	p := &Provider{
 		publicURL: "https://prism3.devel",
 	}

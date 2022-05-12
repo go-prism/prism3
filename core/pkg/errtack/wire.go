@@ -1,9 +1,10 @@
 package errtack
 
 import (
+	"context"
 	"fmt"
 	"github.com/getsentry/sentry-go"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"os"
 	"runtime"
 )
@@ -14,14 +15,18 @@ type Options struct {
 	Release     string `split_words:"true"`
 }
 
-func Init(opts Options) error {
+func Init(ctx context.Context, opts Options) error {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("initialising sentry")
+	log.V(2).Info("using sentry configuration", "Options", opts)
 	// get the hostname so we can report
 	// who we are
 	host, err := os.Hostname()
 	if err != nil {
-		log.WithError(err).Error("failed to retrieve system hostname")
+		log.Error(err, "failed to retrieve system hostname")
 		host = "unknown"
 	}
+	log.V(1).Info("resolved hostname", "Hostname", host)
 	err = sentry.Init(sentry.ClientOptions{
 		Dsn:         opts.DSN,
 		ServerName:  host,
@@ -30,8 +35,9 @@ func Init(opts Options) error {
 		Environment: opts.Environment,
 	})
 	if err != nil {
-		log.WithError(err).Error("failed to initialise sentry")
+		log.Error(err, "failed to initialise sentry")
 		return err
 	}
+	log.V(1).Info("successfully initialised sentry")
 	return nil
 }

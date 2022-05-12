@@ -1,7 +1,7 @@
 # github.com/Masterminds/semver/v3 v3.1.1
 ## explicit; go 1.12
 github.com/Masterminds/semver/v3
-# github.com/Unleash/unleash-client-go/v3 v3.3.1
+# github.com/Unleash/unleash-client-go/v3 v3.5.0
 ## explicit; go 1.13
 github.com/Unleash/unleash-client-go/v3
 github.com/Unleash/unleash-client-go/v3/api
@@ -125,7 +125,7 @@ github.com/aws/smithy-go/time
 github.com/aws/smithy-go/transport/http
 github.com/aws/smithy-go/transport/http/internal/io
 github.com/aws/smithy-go/waiter
-# github.com/cenkalti/backoff/v4 v4.1.1
+# github.com/cenkalti/backoff/v4 v4.1.3
 ## explicit; go 1.13
 github.com/cenkalti/backoff/v4
 # github.com/djcass44/go-tracer v0.3.0
@@ -135,6 +135,15 @@ github.com/djcass44/go-tracer/tracer
 ## explicit; go 1.15
 github.com/djcass44/go-utils/pkg/cryptoutils
 github.com/djcass44/go-utils/pkg/httputils
+# github.com/djcass44/go-utils/flagging v0.1.0
+## explicit; go 1.18
+github.com/djcass44/go-utils/flagging
+# github.com/djcass44/go-utils/logging v0.1.0
+## explicit; go 1.18
+github.com/djcass44/go-utils/logging
+# github.com/djcass44/go-utils/otel v0.1.0
+## explicit; go 1.18
+github.com/djcass44/go-utils/otel
 # github.com/felixge/httpsnoop v1.0.2
 ## explicit; go 1.13
 github.com/felixge/httpsnoop
@@ -145,6 +154,9 @@ github.com/go-logr/logr/funcr
 # github.com/go-logr/stdr v1.2.2
 ## explicit; go 1.16
 github.com/go-logr/stdr
+# github.com/go-logr/zapr v1.2.3
+## explicit; go 1.16
+github.com/go-logr/zapr
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/jsonpb
@@ -153,8 +165,8 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
-# github.com/google/go-querystring v1.0.0
-## explicit
+# github.com/google/go-querystring v1.1.0
+## explicit; go 1.10
 github.com/google/go-querystring/query
 # github.com/google/uuid v1.3.0
 ## explicit
@@ -180,24 +192,20 @@ github.com/levigross/grequests
 # github.com/sirupsen/logrus v1.8.1
 ## explicit; go 1.13
 github.com/sirupsen/logrus
-# github.com/twmb/murmur3 v1.1.5
+# github.com/twmb/murmur3 v1.1.6
 ## explicit; go 1.11
 github.com/twmb/murmur3
-# gitlab.com/autokubeops/serverless v0.4.1-rc.1
+# gitlab.com/autokubeops/serverless v0.4.1-rc.2
 ## explicit; go 1.17
 gitlab.com/autokubeops/serverless
-# gitlab.com/av1o/cap10 v0.3.0
-## explicit; go 1.16
+# gitlab.com/av1o/cap10 v0.4.0
+## explicit; go 1.18
 gitlab.com/av1o/cap10/pkg/api
 gitlab.com/av1o/cap10/pkg/client
 gitlab.com/av1o/cap10/pkg/passport
-# gitlab.com/av1o/cap10-ingress v0.0.0-20220212125434-d2886402dc5d
-## explicit; go 1.17
-gitlab.com/av1o/cap10-ingress/pkg/logging
 # gitlab.com/go-prism/prism3/core v0.0.0-00010101000000-000000000000 => ../core
 ## explicit; go 1.18
 gitlab.com/go-prism/prism3/core/pkg/flag
-gitlab.com/go-prism/prism3/core/pkg/sre
 gitlab.com/go-prism/prism3/core/pkg/storage
 gitlab.com/go-prism/prism3/core/pkg/tracing
 # go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws v0.32.0
@@ -221,9 +229,8 @@ go.opentelemetry.io/otel/internal/global
 go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/internal
 go.opentelemetry.io/otel/semconv/v1.10.0
-go.opentelemetry.io/otel/semconv/v1.4.0
 go.opentelemetry.io/otel/semconv/v1.7.0
-# go.opentelemetry.io/otel/exporters/jaeger v1.4.0
+# go.opentelemetry.io/otel/exporters/jaeger v1.7.0
 ## explicit; go 1.16
 go.opentelemetry.io/otel/exporters/jaeger
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/agent
@@ -241,7 +248,7 @@ go.opentelemetry.io/otel/metric/global
 go.opentelemetry.io/otel/metric/number
 go.opentelemetry.io/otel/metric/sdkapi
 go.opentelemetry.io/otel/metric/unit
-# go.opentelemetry.io/otel/sdk v1.6.3
+# go.opentelemetry.io/otel/sdk v1.7.0
 ## explicit; go 1.16
 go.opentelemetry.io/otel/sdk/instrumentation
 go.opentelemetry.io/otel/sdk/internal
@@ -251,13 +258,27 @@ go.opentelemetry.io/otel/sdk/trace
 # go.opentelemetry.io/otel/trace v1.7.0
 ## explicit; go 1.16
 go.opentelemetry.io/otel/trace
+# go.uber.org/atomic v1.9.0
+## explicit; go 1.13
+go.uber.org/atomic
 # go.uber.org/automaxprocs v1.5.2-0.20220426165107-d835ace014b3
 ## explicit; go 1.18
 go.uber.org/automaxprocs
 go.uber.org/automaxprocs/internal/cgroups
 go.uber.org/automaxprocs/internal/runtime
 go.uber.org/automaxprocs/maxprocs
-# golang.org/x/crypto v0.0.0-20220214200702-86341886e292
+# go.uber.org/multierr v1.8.0
+## explicit; go 1.14
+go.uber.org/multierr
+# go.uber.org/zap v1.21.0
+## explicit; go 1.13
+go.uber.org/zap
+go.uber.org/zap/buffer
+go.uber.org/zap/internal/bufferpool
+go.uber.org/zap/internal/color
+go.uber.org/zap/internal/exit
+go.uber.org/zap/zapcore
+# golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122
 ## explicit; go 1.17
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/sha3
@@ -281,7 +302,7 @@ golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/publicsuffix
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20220422013727-9388b58f7150
+# golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
@@ -298,7 +319,7 @@ golang.org/x/text/unicode/norm
 ## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# google.golang.org/genproto v0.0.0-20220426171045-31bebdecfb46
+# google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
 ## explicit; go 1.15
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.46.0

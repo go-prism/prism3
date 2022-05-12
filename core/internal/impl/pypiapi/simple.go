@@ -5,7 +5,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
@@ -35,6 +35,8 @@ func (p *Provider) Index(ctx context.Context, ref *refract.Refraction, pkg strin
 		attribute.String("package", pkg),
 	))
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithName("pypi").WithValues("Package", pkg, "Refraction", ref.String())
+	log.Info("retrieving PyPi package manifest")
 	items := p.fetch(ctx, ref, pkg)
 
 	// template our response
@@ -42,7 +44,7 @@ func (p *Provider) Index(ctx context.Context, ref *refract.Refraction, pkg strin
 	tmpl := template.Must(template.New("index").Parse(indexTemplate))
 	buf := bytes.NewBuffer(nil)
 	if err := tmpl.Execute(buf, idx); err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to generate index.html template")
+		log.Error(err, "failed to generate index.html template")
 		return nil, err
 	}
 	return bytes.NewReader(buf.Bytes()), nil
@@ -53,6 +55,7 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 		attribute.String("package", pkg),
 	))
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithName("pypi").WithValues("Package", pkg, "Refraction", ref.String())
 	remotes := ref.Remotes()
 	var items []*schemas.PyPackage
 
@@ -60,7 +63,7 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 	// can safely collect package info
 	s := &sync.Mutex{}
 	wg := sync.WaitGroup{}
-	log.WithContext(ctx).Infof("fetching PyPi metadata for '%s' from %d remotes (%s)", pkg, len(remotes), ref.String())
+	log.Info("fetching PyPi metadata from remotes", "Count", len(remotes))
 	for i := range remotes {
 		wg.Add(1)
 		j := i
@@ -94,9 +97,10 @@ func (p *Provider) parse(ctx context.Context, pkg string, r io.Reader) ([]*schem
 		attribute.String("package", pkg),
 	))
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithName("pypi").WithValues("Package", pkg)
 	doc, err := html.Parse(r)
 	if err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to parse html")
+		log.Error(err, "failed to parse html")
 		return nil, err
 	}
 	var packages []*schemas.PyPackage

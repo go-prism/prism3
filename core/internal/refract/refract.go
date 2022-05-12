@@ -2,7 +2,7 @@ package refract
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-func NewSimple(name string, remotes []remote.Remote) *Refraction {
+func NewSimple(ctx context.Context, name string, remotes []remote.Remote) *Refraction {
 	return &Refraction{
 		name:    name,
 		remotes: remotes,
 		rp: &sync.Pool{
 			New: func() any {
-				return remote.NewEphemeralRemote("", nil)
+				return remote.NewEphemeralRemote(ctx, "", nil)
 			},
 		},
 	}
@@ -34,11 +34,11 @@ func (r *Refraction) Remotes() []remote.Remote {
 func (r *Refraction) Exists(ctx context.Context, path string, rctx *remote.RequestContext) (*Message, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "refraction_exists")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log.V(2).Info("using request context", "RequestContext", rctx)
 	ch := make(chan Message, 1)
 	// create a goroutine for each remote
-	log.WithContext(ctx).WithFields(log.Fields{
-		"path": path,
-	}).Infof("probing %d remotes", len(r.remotes))
+	log.Info("probing remotes", "Count", len(r.remotes))
 	// create a new context that we use for all
 	// requests, so we can cancel the old ones
 	// todo cancel contexts more aggressively
@@ -61,10 +61,11 @@ func (r *Refraction) Exists(ctx context.Context, path string, rctx *remote.Reque
 		select {
 		case val := <-ch:
 			if val.URI != "" {
-				log.WithContext(ctx).Infof("received final response: %s from remote", val.URI)
+				log.Info("received final response from remote", "Url", val.URI)
 				return &val, nil
 			}
 		case _ = <-ctx.Done():
+			log.V(1).Info("context was cancelled while waiting for a remote to respond")
 			return nil, ctx.Err()
 		}
 		count++

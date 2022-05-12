@@ -2,8 +2,8 @@ package policy
 
 import (
 	"context"
-	"github.com/djcass44/go-utils/pkg/sliceutils"
-	log "github.com/sirupsen/logrus"
+	"github.com/djcass44/go-utils/utilities/sliceutils"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -32,15 +32,19 @@ type RegexEnforcer struct {
 	block     []*regexp.Regexp
 }
 
-func NewRegexEnforcer(r *model.Remote) *RegexEnforcer {
+func NewRegexEnforcer(ctx context.Context, r *model.Remote) *RegexEnforcer {
+	log := logr.FromContextOrDiscard(ctx)
 	allow := make([]*regexp.Regexp, len(r.Security.Allowed))
 	for i := range allow {
+		log.V(2).Info("compiling ALLOW regex", r.Security.Allowed[i])
 		allow[i] = regexp.MustCompile(r.Security.Allowed[i])
 	}
 	block := make([]*regexp.Regexp, len(r.Security.Blocked))
 	for i := range block {
+		log.V(2).Info("compiling BLOCK regex", r.Security.Blocked[i])
 		block[i] = regexp.MustCompile(r.Security.Blocked[i])
 	}
+	log.V(1).Info("successfully compiled regex policies", "AllowedCount", "BlockedCount", len(allow), len(block))
 	return &RegexEnforcer{
 		archetype: r.Archetype,
 		allow:     allow,
@@ -54,12 +58,13 @@ func (r *RegexEnforcer) CanReceive(ctx context.Context, path string) bool {
 		attribute.String("path", path),
 	))
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	if r.anyMatch(path, r.block) {
-		log.WithContext(ctx).WithField("path", path).Debug("blocked by blocklist")
+		log.V(1).Info("blocked by blocklist")
 		return false
 	}
 	if len(r.allow) > 0 && !r.anyMatch(path, r.allow) {
-		log.WithContext(ctx).WithField("path", path).Debug("blocked by allowlist")
+		log.V(1).Info("blocked by allowlist")
 		return false
 	}
 	return true
@@ -71,7 +76,9 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 		attribute.String("path", path),
 	))
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path, "Archetype", r.archetype)
 	if r.archetype == "" {
+		log.V(1).Info("cannot cache data without an archetype")
 		return false
 	}
 	canCache := true
@@ -98,11 +105,7 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 		canCache = r.canCacheGeneric(path)
 	}
 	span.SetAttributes(attribute.Bool("can_cache", canCache))
-	log.WithContext(ctx).WithFields(log.Fields{
-		"path":  path,
-		"cache": canCache,
-		"arch":  r.archetype,
-	}).Debug("checked cache status")
+	log.V(1).Info("successfully checked cache policy", "Cache", canCache)
 	return canCache
 }
 

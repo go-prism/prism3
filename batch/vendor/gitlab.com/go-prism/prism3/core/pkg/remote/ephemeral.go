@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/djcass44/go-utils/pkg/httputils"
+	"github.com/djcass44/go-utils/utilities/httputils"
+	"github.com/go-logr/logr"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/lpar/problem"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -23,11 +23,12 @@ type EphemeralRemote struct {
 	cache  *ttlcache.Cache[string, string]
 }
 
-func NewEphemeralRemote(root string, client *http.Client) *EphemeralRemote {
+func NewEphemeralRemote(ctx context.Context, root string, client *http.Client) *EphemeralRemote {
+	log := logr.FromContextOrDiscard(ctx)
 	c := client
 	// use the default client if we're not given one
 	if client == nil {
-		log.Warning("received nil client - using default")
+		log.Info("received nil client - using default")
 		c = http.DefaultClient
 	}
 	return &EphemeralRemote{
@@ -44,6 +45,8 @@ func (r *EphemeralRemote) String() string {
 func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_exists")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log.V(2).Info("using request context", "RequestContext", rctx)
 	// check the cache
 	cacheKey := path
 	if rctx != nil {
@@ -51,17 +54,13 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *Request
 	}
 	res := r.cache.Get(cacheKey)
 	if res != nil {
-		log.WithContext(ctx).WithFields(log.Fields{
-			"path": path,
-		}).Info("located cached result")
+		log.Info("located cached result")
 		return res.Value(), nil
 	}
 
 	target := fmt.Sprintf("%s/%s", r.root, path)
-	log.WithContext(ctx).WithFields(log.Fields{
-		"path":   path,
-		"target": target,
-	}).Infof("probing remote")
+	log = log.WithValues("Target", target)
+	log.Info("probing remote")
 	_, err := r.Do(ctx, http.MethodHead, target, rctx)
 	if err != nil {
 		return "", err
@@ -74,14 +73,14 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *Request
 func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_download")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log.V(2).Info("using request context", "RequestContext", rctx)
 	target := path
 	if !strings.HasPrefix(path, "https://") {
 		target = fmt.Sprintf("%s/%s", r.root, strings.TrimPrefix(path, "/"))
 	}
-	log.WithContext(ctx).WithFields(log.Fields{
-		"path":   path,
-		"target": target,
-	}).Infof("downloading from remote")
+	log = log.WithValues("Target", target)
+	log.Info("downloading from remote")
 	resp, err := r.Do(ctx, http.MethodGet, target, rctx)
 	if err != nil {
 		return nil, err
@@ -92,9 +91,11 @@ func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *Reque
 func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *RequestContext) (*http.Response, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_do")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log.V(2).Info("using request context", "RequestContext", rctx)
 	req, err := http.NewRequestWithContext(ctx, method, target, nil)
 	if err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to prepare request")
+		log.Error(err, "failed to prepare request")
 		return nil, problem.New(http.StatusBadRequest).Errorf("remote request cannot be created")
 	}
 	// apply authentication
@@ -110,22 +111,19 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *R
 		// swallow the context-cancelled error
 		// since it will happen a lot
 		if errors.Is(err, context.Canceled) {
-			log.WithContext(ctx).Info("cancelling request")
+			log.V(1).Error(err, "cancelling request")
 			return nil, err
 		}
-		log.WithContext(ctx).WithError(err).Error("failed to execute request")
+		log.Error(err, "failed to execute request")
 		return nil, err
 	}
-	log.WithContext(ctx).WithFields(log.Fields{
-		"code":   resp.StatusCode,
-		"dur":    time.Since(start),
-		"method": method,
-	}).Infof("remote request completed")
+	log = log.WithValues("Code", resp.StatusCode, "Duration", time.Since(start), "Method", method)
+	log.Info("remote request completed")
 	if !httputils.IsHTTPSuccess(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
-			log.WithContext(ctx).Debugf("received 401, dumping challenge header: '%s'", resp.Header.Get("WWW-Authenticate"))
+			log.V(1).Info("received 401, dumping challenge header", "WWW=Authenticate", resp.Header.Get("WWW-Authenticate"))
 		}
-		log.WithContext(ctx).WithField("code", resp.StatusCode).Info("marking request as failure due to unexpected response code")
+		log.Info("marking request as failure due to unexpected response code")
 		return nil, problem.New(resp.StatusCode).Errorf("failed to retrieve object from remote")
 	}
 	return resp, nil

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/bluele/gcache"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/impl/helmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
@@ -42,9 +42,11 @@ func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Res
 func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_helm")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithName("helm")
+	log.V(3).Info("handling Helm request", "Payload", req)
 	ref, err := r.cache.Get(req.bucket)
 	if err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
+		log.Error(err, "failed to retrieve requested refraction")
 		return nil, err
 	}
 	refraction := ref.(*refract.BackedRefraction)
@@ -54,25 +56,33 @@ func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, er
 func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_generic")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithName("generic")
+	log.V(3).Info("handling generic request", "Payload", req)
 	ref, err := r.cache.Get(req.bucket)
 	if err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to retrieve requested refraction")
+		log.Error(err, "failed to retrieve requested refraction")
 		return nil, err
 	}
 	return ref.(*refract.BackedRefraction).Download(ctx, req.path, &remote.RequestContext{})
 }
 
 func (r *Resolver) getRefraction(v any) (any, error) {
+	log := logr.FromContextOrDiscard(r.ctx)
+	log.V(1).Info("building new refraction")
 	name, ok := v.(string)
 	if !ok {
+		log.V(1).Info("unable to build refraction as input was not a string")
 		return nil, errors.New("expected string")
 	}
-	log.Infof("fetching refraction from database: %s", name)
-	ref, err := r.repos.RefractRepo.GetRefractionByName(context.TODO(), name)
+	log = log.WithValues("Name", name)
+	log.V(1).Info("fetching refraction from database", name)
+	ctx := logr.NewContext(context.TODO(), log)
+	ref, err := r.repos.RefractRepo.GetRefractionByName(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 	return refract.NewBackedRefraction(
+		r.ctx,
 		ref,
 		r.store,
 		r.repos.ArtifactRepo.CreateArtifact,

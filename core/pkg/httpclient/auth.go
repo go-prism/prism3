@@ -2,7 +2,7 @@ package httpclient
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
 	"net/http"
@@ -25,10 +25,8 @@ type AuthOpts struct {
 func ApplyAuth(ctx context.Context, r *http.Request, opt AuthOpts) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "http_auth")
 	defer span.End()
-	log.WithContext(ctx).WithFields(log.Fields{
-		"mode":   opt.Mode,
-		"header": opt.Header,
-	}).Debug("applying authentication")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Options", opt)
+	log.V(1).Info("applying authentication")
 	switch opt.Mode {
 	case AuthHeader:
 		r.Header.Set(opt.Header, opt.Token)

@@ -1,13 +1,16 @@
 package tasks
 
 import (
+	"context"
+	"github.com/go-logr/logr"
 	"github.com/hibiken/asynq"
-	log "github.com/sirupsen/logrus"
 )
 
-func NewTask[T any](typename string, t *T) (*asynq.Task, error) {
-	log.WithField("type", typename).Debug("creating new batch task")
-	payload, err := Serialise(t)
+func NewTask[T any](ctx context.Context, typename string, t *T) (*asynq.Task, error) {
+	log := logr.FromContextOrDiscard(ctx).WithValues("Type", typename)
+	log.V(1).Info("creating new batch task")
+	log.V(3).Info("serialising task", "Task", t)
+	payload, err := Serialise(ctx, t)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/policy"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
@@ -28,22 +28,22 @@ type BackedRemote struct {
 	store    storage.Reader
 }
 
-func NewBackedRemote(rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
-	client := httpclient.GetConfigured(rm.Transport)
+func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
+	client := httpclient.GetConfigured(ctx, rm.Transport)
 	var eph Remote
 	switch rm.Archetype {
 	case model.ArchetypeHelm:
-		eph = NewHelmRemote(rm.URI, client, getHelm)
+		eph = NewHelmRemote(ctx, rm.URI, client, getHelm)
 	case model.ArchetypePip:
-		eph = NewPyPiRemote(rm.URI, client, getPyPi)
+		eph = NewPyPiRemote(ctx, rm.URI, client, getPyPi)
 	default:
-		eph = NewEphemeralRemote(rm.URI, client)
+		eph = NewEphemeralRemote(ctx, rm.URI, client)
 	}
 	return &BackedRemote{
 		rm:       rm,
 		eph:      eph,
 		onCreate: onCreate,
-		pol:      policy.NewRegexEnforcer(rm),
+		pol:      policy.NewRegexEnforcer(ctx, rm),
 		store:    store,
 	}
 }
@@ -82,20 +82,17 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *RequestCon
 func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log.V(2).Info("using request context", "RequestContext", rctx)
 	canCache := b.pol.CanCache(ctx, path)
 	uploadPath, normalPath := b.getPath(ctx, path, rctx)
-	fields := log.Fields{
-		"path":        path,
-		"cache":       canCache,
-		"path_normal": normalPath,
-		"path_store":  uploadPath,
-	}
+	log = log.WithValues("Cache", canCache, "PathNormal", normalPath, "PathStore", uploadPath)
 	// check the cache first
 	if canCache {
-		log.WithContext(ctx).WithFields(fields).Debug("checking cache for existing file")
+		log.V(1).Info("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
-			log.WithContext(ctx).WithFields(fields).Debug("located existing file in cache")
+			log.V(1).Info("located existing file in cache")
 			if canCache {
 				_ = b.onCreate(ctx, normalPath, b.rm.ID)
 			}
@@ -109,7 +106,7 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestC
 	}
 	// check that this remote is allowed to cache the file
 	if canCache {
-		log.WithContext(ctx).WithFields(fields).Debug("preparing to upload to cache")
+		log.V(1).Info("preparing to upload to cache")
 		_ = b.onCreate(ctx, normalPath, b.rm.ID)
 		buf := new(bytes.Buffer)
 		// duplicate the data, so we can upload it
@@ -125,11 +122,13 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestC
 func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *RequestContext) (string, string) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_getPath")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log.V(2).Info("using request context", "RequestContext", rctx)
 	uploadPath := strings.TrimPrefix(path, b.rm.URI)
 	if strings.HasPrefix(uploadPath, "https://") {
 		uri, err := url.Parse(uploadPath)
 		if err != nil {
-			log.WithContext(ctx).Error("failed to parse URI")
+			log.Error(err, "failed to parse URI")
 		} else {
 			uploadPath = strings.TrimPrefix(uri.Path, "/")
 		}
@@ -137,13 +136,10 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *RequestCo
 	// create the cache partition by appending
 	// the hash of the token
 	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
-		log.WithContext(ctx).Debug("creating partition")
+		log.V(1).Info("creating partition")
 		uploadPath = filepath.Join(uploadPath, hash(rctx.Token))
 	}
-	log.WithContext(ctx).WithFields(log.Fields{
-		"path":       path,
-		"uploadPath": uploadPath,
-	}).Debug("normalised path")
+	log.V(1).Info("normalised path", "UploadPath", uploadPath)
 	return filepath.Join(b.rm.Name, uploadPath), uploadPath
 }
 

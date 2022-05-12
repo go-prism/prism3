@@ -17,7 +17,7 @@ import (
 const (
 	deprecatedSuffix = "/features"
 	clientName       = "unleash-client-go"
-	clientVersion    = "3.3.1"
+	clientVersion    = "3.5.0"
 )
 
 var defaultStrategies = []strategy.Strategy{

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/getsentry/sentry-go"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -21,6 +21,8 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 // CreateCtx creates a model.StoredUser based on the user
 // inside the current context.Context
 func (r *UserRepo) CreateCtx(ctx context.Context) (*model.StoredUser, error) {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("creating or fetching user")
 	user, _ := client.GetContextUser(ctx)
 	u := &model.StoredUser{
 		ID:     user.AsUsername(),
@@ -28,8 +30,8 @@ func (r *UserRepo) CreateCtx(ctx context.Context) (*model.StoredUser, error) {
 		Iss:    user.Iss,
 		Claims: user.Claims,
 	}
-	if err := r.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(u).Error; err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to store user profile")
+	if err := r.db.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(u).Error; err != nil {
+		log.Error(err, "failed to store user profile")
 		sentry.CaptureException(err)
 		return nil, err
 	}
@@ -37,13 +39,15 @@ func (r *UserRepo) CreateCtx(ctx context.Context) (*model.StoredUser, error) {
 }
 
 func (r *UserRepo) SetPreference(ctx context.Context, key, value string) error {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("updating preference")
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
 		return errs.ErrUnauthorised
 	}
-	log.WithContext(ctx).Debugf("updating preference '%s' to '%s'", key, value)
-	if err := r.db.Model(&model.StoredUser{}).Where("id = ?", user.AsUsername()).Update("preferences", gorm.Expr("preferences::jsonb || ?", fmt.Sprintf(`{"%s": "%s"}`, key, value))).Error; err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to update preferences")
+	log.V(2).Info("updating preference", "Key", key, "Value", value)
+	if err := r.db.WithContext(ctx).Model(&model.StoredUser{}).Where("id = ?", user.AsUsername()).Update("preferences", gorm.Expr("preferences::jsonb || ?", fmt.Sprintf(`{"%s": "%s"}`, key, value))).Error; err != nil {
+		log.Error(err, "failed to update preferences")
 		sentry.CaptureException(err)
 		return err
 	}
@@ -51,9 +55,11 @@ func (r *UserRepo) SetPreference(ctx context.Context, key, value string) error {
 }
 
 func (r *UserRepo) Count(ctx context.Context) (int64, error) {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("counting users")
 	var result int64
-	if err := r.db.Model(&model.StoredUser{}).Count(&result).Error; err != nil {
-		log.WithContext(ctx).WithError(err).Error("failed to count users")
+	if err := r.db.WithContext(ctx).Model(&model.StoredUser{}).Count(&result).Error; err != nil {
+		log.Error(err, "failed to count users")
 		sentry.CaptureException(err)
 		return 0, err
 	}

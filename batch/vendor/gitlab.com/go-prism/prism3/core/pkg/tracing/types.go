@@ -23,3 +23,8 @@ const (
 	ServiceNameBatch   = "prism3/batch"
 	ServiceNameGoProxy = "prism3/goproxy"
 )
+
+type OtelOptions struct {
+	Environment string  `split_words:"true" envconfig:"GITLAB_ENVIRONMENT_NAME"`
+	SampleRate  float64 `split_words:"true" default:"0.05"`
+}

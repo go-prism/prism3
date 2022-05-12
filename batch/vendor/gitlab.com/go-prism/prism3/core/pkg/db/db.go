@@ -1,54 +1,63 @@
 package db
 
 import (
+	"context"
 	"github.com/Unleash/unleash-client-go/v3"
+	"github.com/djcass44/go-utils/flagging"
+	"github.com/djcass44/go-utils/orm"
 	"github.com/getsentry/sentry-go"
+	"github.com/go-logr/logr"
 	otelgorm "github.com/kostyay/gorm-opentelemetry"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
-	"gitlab.com/go-prism/prism3/core/pkg/flag"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/plugin/dbresolver"
+	"time"
 )
 import "gorm.io/driver/postgres"
 
-func NewDatabase(dsn string, replicas ...string) (*Database, error) {
+func NewDatabase(ctx context.Context, dsn string, replicas ...string) (*Database, error) {
+	log := logr.FromContextOrDiscard(ctx).WithName("database")
 	// configure primary
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		SkipDefaultTransaction: flag.IsEnabled(features.DBSkipDefaultTransaction, unleash.WithFallback(true)),
+		SkipDefaultTransaction: flagging.IsEnabled(features.DBSkipDefaultTransaction, unleash.WithFallback(true)),
+		Logger:                 orm.NewGormLogger(log, time.Millisecond*200),
 	})
 	if err != nil {
-		log.WithError(err).Error("failed to open database connection")
+		log.Error(err, "failed to open database connection")
 		sentry.CaptureException(err)
 		return nil, err
 	}
-	log.Debugf("default transactions: %v", database.SkipDefaultTransaction)
+	log.V(1).Info("database options", "SkipDefaultTransaction", database.SkipDefaultTransaction)
 	// configure read-replicas
 	var r []gorm.Dialector
 	for i := range replicas {
 		if replicas[i] == "" {
+			log.V(2).Info("skipping empty replica DSN")
 			continue
 		}
+		log.V(2).Info("creating new replica", "DSN", replicas[i])
 		r = append(r, postgres.Open(replicas[i]))
 	}
+	log.V(1).Info("enabling plugins")
 	if err := database.Use(otelgorm.NewPlugin()); err != nil {
 		sentry.CaptureException(err)
-		log.WithError(err).Error("failed to enable SQL OpenTracing plugin")
+		log.Error(err, "failed to enable SQL OpenTracing plugin")
 	}
 	if err := database.Use(dbresolver.Register(dbresolver.Config{
 		Replicas: r,
 		Policy:   dbresolver.RandomPolicy{},
 	})); err != nil {
 		sentry.CaptureException(err)
-		log.WithError(err).Error("failed to establish database replica connections")
+		log.Error(err, "failed to establish database replica connections")
 	}
 	log.Info("established database connection")
 	return &Database{
 		db:  database,
 		dsn: dsn,
+		log: log,
 	}, nil
 }
 
@@ -57,6 +66,7 @@ func (db *Database) DB() *gorm.DB {
 }
 
 func (db *Database) Init(superuser string) error {
+	log := db.log
 	log.Info("running database migrations")
 	err := db.db.AutoMigrate(
 		&model.Remote{},
@@ -71,7 +81,7 @@ func (db *Database) Init(superuser string) error {
 		&schemas.HelmPackage{},
 	)
 	if err != nil {
-		log.WithError(err).Error("failed to run auto-migration")
+		log.Error(err, "failed to run auto-migration")
 		sentry.CaptureException(err)
 		return err
 	}
@@ -83,25 +93,29 @@ func (db *Database) Init(superuser string) error {
 }
 
 func (db *Database) defaults(superuser string) error {
+	log := db.log
 	// create the default transport profile
+	log.V(1).Info("creating default transport profile", "ID", TransportProfileDefault, "Name", "default")
 	if err := db.db.Save(&model.TransportSecurity{ID: TransportProfileDefault, Name: "default"}).Error; err != nil {
-		log.WithError(err).Error("failed to create default transport profile")
+		log.Error(err, "failed to create default transport profile")
 		return err
 	}
 	// create the default role-binding
 	if superuser == "" {
-		log.Warning("Initial superuser has not been set")
+		log.Info("initial superuser has not been set")
 	}
+	log.V(1).Info("creating default rolebinding", "ID", SuperUserDefault, "Name", superuser)
 	err := db.db.Save(&model.RoleBinding{
 		ID:      SuperUserDefault,
 		Subject: superuser,
 		Role:    model.RoleSuper,
 	}).Error
 	if err != nil {
-		log.WithError(err).Error("failed to create default superuser rolebinding")
+		log.Error(err, "failed to create default superuser rolebinding")
 		return err
 	}
 	// create Go remote
+	log.V(1).Info("creating default Go remote", "ID", GoRemote, "Name", "go")
 	defaultGoRemote := &model.Remote{
 		ID:          GoRemote,
 		Name:        "go",
@@ -112,10 +126,11 @@ func (db *Database) defaults(superuser string) error {
 		TransportID: TransportProfileDefault,
 	}
 	if err := db.db.Clauses(clause.OnConflict{DoNothing: true}).Create(defaultGoRemote).Error; err != nil {
-		log.WithError(err).Error("failed to create default Go remote")
+		log.Error(err, "failed to create default Go remote")
 		return err
 	}
 	// create Go refraction
+	log.V(1).Info("creating default Go refraction", "ID", GoRefraction, "Name", "go")
 	err = db.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.Refraction{
 		ID:        GoRefraction,
 		Name:      "go",
@@ -123,8 +138,9 @@ func (db *Database) defaults(superuser string) error {
 		Remotes:   []*model.Remote{defaultGoRemote},
 	}).Error
 	if err != nil {
-		log.WithError(err).Error("failed to create default Go remote")
+		log.Error(err, "failed to create default Go remote")
 		return err
 	}
+	log.V(1).Info("successfully generated default data")
 	return nil
 }

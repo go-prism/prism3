@@ -2,7 +2,8 @@ package remote
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
+	"github.com/go-logr/logr/testr"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"net/http"
@@ -11,14 +12,15 @@ import (
 )
 
 func TestEphemeralRemote_Exists(t *testing.T) {
-	rem := NewEphemeralRemote("https://mirror.aarnet.edu.au/pub/alpine", nil)
-	uri, err := rem.Exists(context.TODO(), "v3.14/main/x86_64/APKINDEX.tar.gz", &RequestContext{})
+	ctx := logr.NewContext(context.TODO(), testr.New(t))
+	rem := NewEphemeralRemote(ctx, "https://mirror.aarnet.edu.au/pub/alpine", nil)
+	uri, err := rem.Exists(ctx, "v3.14/main/x86_64/APKINDEX.tar.gz", &RequestContext{})
 	assert.NoError(t, err)
 	assert.EqualValues(t, "https://mirror.aarnet.edu.au/pub/alpine/v3.14/main/x86_64/APKINDEX.tar.gz", uri)
 }
 
 func TestEphemeralRemote_Do(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
+	ctx := logr.NewContext(context.TODO(), testr.New(t))
 	token := "hunter2"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
@@ -35,9 +37,9 @@ func TestEphemeralRemote_Do(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	rem := NewEphemeralRemote(ts.URL, ts.Client())
+	rem := NewEphemeralRemote(ctx, ts.URL, ts.Client())
 	t.Run("valid token", func(t *testing.T) {
-		_, err := rem.Download(context.TODO(), "", &RequestContext{
+		_, err := rem.Download(ctx, "", &RequestContext{
 			httpclient.AuthOpts{
 				Mode:   httpclient.AuthAuthorization,
 				Header: "Authorization",
@@ -47,7 +49,7 @@ func TestEphemeralRemote_Do(t *testing.T) {
 		assert.NoError(t, err)
 	})
 	t.Run("missing token", func(t *testing.T) {
-		_, err := rem.Download(context.TODO(), "", nil)
+		_, err := rem.Download(ctx, "", nil)
 		assert.Error(t, err)
 	})
 }

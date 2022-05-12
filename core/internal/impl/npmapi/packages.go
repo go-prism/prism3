@@ -3,8 +3,8 @@ package npmapi
 import (
 	"context"
 	"fmt"
+	"github.com/go-logr/logr"
 	"github.com/jellydator/ttlcache/v3"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
@@ -34,11 +34,12 @@ func (p *Provider) Package(ctx context.Context, ref *refract.Refraction, pkg str
 		attribute.String("refraction", ref.String()),
 	))
 	defer span.End()
-	log.WithContext(ctx).WithField("package", pkg).Info("retrieving NPM package manifest")
+	log := logr.FromContextOrDiscard(ctx).WithName("npm").WithValues("Package", pkg, "Refraction", ref.String())
+	log.Info("retrieving NPM package manifest")
 	// check the cache
 	item := p.pkgCache.Get(pkg)
 	if item != nil {
-		log.WithContext(ctx).WithField("package", pkg).Info("found NPM manifest in cache")
+		log.Info("found NPM manifest in cache")
 		return strings.NewReader(item.Value()), nil
 	}
 	p.fetch(ctx, ref, pkg)
@@ -60,18 +61,13 @@ func (p *Provider) PackageVersion(ctx context.Context, ref *refract.Refraction, 
 		attribute.String("refraction", ref.String()),
 	))
 	defer span.End()
-	log.WithContext(ctx).WithFields(log.Fields{
-		"package": pkg,
-		"version": version,
-	}).Info("retrieving NPM package manifest")
+	log := logr.FromContextOrDiscard(ctx).WithName("npm").WithValues("Package", pkg, "Version", version, "Refraction", ref.String())
+	log.Info("retrieving NPM package manifest")
 	// check the cache
 	key := filepath.Join(pkg, version)
 	item := p.pkgVersionCache.Get(key)
 	if item != nil {
-		log.WithContext(ctx).WithFields(log.Fields{
-			"package": pkg,
-			"version": version,
-		}).Info("found NPM manifest in cache")
+		log.Info("found NPM manifest in cache")
 		return strings.NewReader(item.Value()), nil
 	}
 	// check the database
@@ -95,12 +91,13 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 		attribute.String("refraction", ref.String()),
 	))
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithName("npm").WithValues("Package", pkg, "Refraction", ref.String())
 	// download the package
 	remotes := ref.Remotes()
 	roots := make([]string, len(remotes))
 
 	wg := sync.WaitGroup{}
-	log.WithContext(ctx).Infof("fetching NPM metadata for '%s' from %d remotes (%s)", pkg, len(remotes), ref)
+	log.Info("fetching NPM metadata from remotes", "Count", len(remotes))
 	for i := range remotes {
 		wg.Add(1)
 		roots[i] = remotes[i].String()
@@ -115,7 +112,7 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 			}
 			body, err := io.ReadAll(resp)
 			if err != nil {
-				log.WithContext(ctx).WithError(err).Error("failed to read response")
+				log.Error(err, "failed to read response")
 				return
 			}
 			data := p.rewriteURLs(ctx, roots, ref.String(), string(body))

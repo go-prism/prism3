@@ -12,6 +12,7 @@ import (
 )
 
 type Resolver struct {
+	ctx   context.Context
 	repos *repo.Repos
 
 	// caches

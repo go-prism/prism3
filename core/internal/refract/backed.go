@@ -16,14 +16,14 @@ type BackedRefraction struct {
 	rf  *Refraction
 }
 
-func NewBackedRefraction(mod *model.Refraction, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRefraction {
+func NewBackedRefraction(ctx context.Context, mod *model.Refraction, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRefraction {
 	remotes := make([]remote.Remote, len(mod.Remotes))
 	for i := range mod.Remotes {
-		remotes[i] = remote.NewBackedRemote(mod.Remotes[i], store, onCreate, getPyPi, getHelm)
+		remotes[i] = remote.NewBackedRemote(ctx, mod.Remotes[i], store, onCreate, getPyPi, getHelm)
 	}
 	return &BackedRefraction{
 		mod: mod,
-		rf:  NewSimple(mod.Name, remotes),
+		rf:  NewSimple(ctx, mod.Name, remotes),
 	}
 }
 

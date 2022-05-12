@@ -1,18 +1,20 @@
 package task
 
 import (
+	"context"
 	"github.com/hibiken/asynq"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 )
 
-func NewStaticConfigProvider(rp *RemoteProcessor) *StaticConfigProvider {
+func NewStaticConfigProvider(ctx context.Context, rp *RemoteProcessor) *StaticConfigProvider {
 	return &StaticConfigProvider{
-		rp: rp,
+		rp:  rp,
+		ctx: ctx,
 	}
 }
 
 func (p *StaticConfigProvider) GetConfigs() ([]*asynq.PeriodicTaskConfig, error) {
-	indexAll, _ := tasks.NewTask(tasks.TypeIndexRemoteAll, &tasks.IndexRemoteAllPayload{})
+	indexAll, _ := tasks.NewTask(p.ctx, tasks.TypeIndexRemoteAll, &tasks.IndexRemoteAllPayload{})
 	t := []*asynq.PeriodicTaskConfig{
 		{
 			// every hour

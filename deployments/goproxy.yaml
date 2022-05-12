@@ -8,10 +8,11 @@ env:
   PRISM_S3_PATH_STYLE: "true"
   PRISM_S3_ENDPOINT: http://minio.minio.svc.cluster.local:9000
   PRISM_S3_BUCKET: prism
-  PRISM_LOG_DEBUG: "true"
+  PRISM_LOG_LEVEL: "3"
   PRISM_PUBLIC_URL: https://prism3.devel
   AWS_ACCESS_KEY_ID: username
   AWS_SECRET_ACCESS_KEY: password
+  OTEL_EXPORTER_JAEGER_ENDPOINT: http://tempo.grafana.svc.cluster.local:14268/api/traces
 security:
   podContext:
     fsGroup: 1001

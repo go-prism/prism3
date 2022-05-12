@@ -11,8 +11,6 @@ container-scanning:
 
 production:
   resource_group: prod-core
-  before_script:
-    - kubectl config use-context prism/prism3:kube2-prism
   environment:
     name: prod-core
     kubernetes:

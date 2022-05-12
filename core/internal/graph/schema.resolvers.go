@@ -6,7 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -30,7 +30,7 @@ func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemo
 	if err != nil {
 		return nil, err
 	}
-	task, err := tasks.NewTask[tasks.IndexRemotePayload](tasks.TypeIndexRemote, &tasks.IndexRemotePayload{RemoteID: rem.ID})
+	task, err := tasks.NewTask[tasks.IndexRemotePayload](ctx, tasks.TypeIndexRemote, &tasks.IndexRemotePayload{RemoteID: rem.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -139,9 +139,10 @@ func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract strin
 func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_getOverview")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx)
 	store, err := r.storeSizeCache.Get("")
 	if err != nil {
-		log.WithContext(ctx).Error("failed to retrieved storage usage statistics")
+		log.Error(err, "failed to retrieved storage usage statistics")
 		return nil, err
 	}
 	remotes, _ := r.repos.RemoteRepo.Count(ctx)
@@ -161,8 +162,9 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	var m runtime.MemStats
 	// only reveal system information to administrators
 	if err := r.authz.AmI(ctx, model.RoleSuper); err == nil {
-		log.WithContext(ctx).Debug("reading runtime statistics")
+		log.V(1).Info("reading runtime statistics")
 		runtime.ReadMemStats(&m)
+		log.V(2).Info("successfully read memory statistics", "Statistics", m)
 	}
 
 	return &model.Overview{

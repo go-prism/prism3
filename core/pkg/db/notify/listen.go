@@ -18,9 +18,10 @@
 package notify
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/go-logr/logr"
 	"github.com/lib/pq"
-	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -29,15 +30,19 @@ type Listener struct {
 	listener    *pq.Listener
 	failed      chan error
 	handler     chan *Message
+	log         logr.Logger
 }
 
-func NewListener(dsn, channelName string, handler chan *Message) (*Listener, error) {
+func NewListener(ctx context.Context, dsn, channelName string, handler chan *Message) (*Listener, error) {
+	log := logr.FromContextOrDiscard(ctx).WithName("database_listener").WithValues("Channel", channelName)
 	n := new(Listener)
-	log.Infof("opening listener: %s", channelName)
+	n.log = log
+	log.Info("opening listener")
+	log.V(2).Info("establishing connection via listener", "DSN", dsn, "MinInterval", time.Second, "MaxInterval", time.Minute)
 	listener := pq.NewListener(dsn, time.Second, time.Minute, n.logListener)
 	if err := listener.Listen(channelName); err != nil {
-		log.WithError(listener.Close()).Debug("closing listener")
-		log.WithError(err).Error("failed to listen")
+		log.V(1).Error(listener.Close(), "closing listener")
+		log.Error(err, "failed to listen")
 		return nil, err
 	}
 
@@ -49,6 +54,7 @@ func NewListener(dsn, channelName string, handler chan *Message) (*Listener, err
 	// start the event loop in the background
 	go func() {
 		for {
+			log.V(3).Info("waiting for message from listener")
 			_ = n.notify()
 		}
 	}()
@@ -58,7 +64,7 @@ func NewListener(dsn, channelName string, handler chan *Message) (*Listener, err
 
 func (n *Listener) logListener(event pq.ListenerEventType, err error) {
 	if err != nil {
-		log.WithError(err).Errorf("listener error: %s", n.channelName)
+		n.log.Error(err, "listener error")
 	}
 	if event == pq.ListenerEventConnectionAttemptFailed {
 		n.failed <- err
@@ -66,38 +72,44 @@ func (n *Listener) logListener(event pq.ListenerEventType, err error) {
 }
 
 func (n *Listener) notify() error {
+	log := n.log
 	var fetchCounter uint64
 	for {
 		select {
 		case e := <-n.listener.Notify:
 			if e == nil {
+				log.V(1).Info("skipping nil message")
 				continue
 			}
 			fetchCounter++
-			log.Debugf("message %d: %s", fetchCounter, e.Extra)
+			log.V(2).Info("received message from listener", "Count", fetchCounter, "Message", e.Extra, "Pid", e.BePid)
 			msg, err := n.parseMessage(e.Extra)
 			if err != nil {
 				continue
 			}
 			n.handler <- msg
 		case err := <-n.failed:
+			log.V(1).Error(err, "received error from listener")
 			return err
 		case <-time.After(time.Minute):
-			go log.WithError(n.listener.Ping()).Debugf("pinging listener: %s", n.channelName)
+			go log.V(1).Error(n.listener.Ping(), "pinging listener")
 		}
 	}
 }
 
 func (n *Listener) parseMessage(data string) (*Message, error) {
+	log := n.log
+	log.V(2).Info("attempting to parse message", "Message", data)
 	var message Message
 	if err := json.Unmarshal([]byte(data), &message); err != nil {
-		log.WithError(err).Errorf("failed to parse message: %s", data)
+		log.Error(err, "failed to parse message")
 		return nil, err
 	}
 	return &message, nil
 }
 
 func (n *Listener) Close() error {
+	n.log.V(2).Info("closing listener")
 	close(n.failed)
 	return n.listener.Close()
 }

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/go-logr/logr"
 	"gorm.io/gorm"
 )
 
@@ -14,4 +15,5 @@ const (
 type Database struct {
 	db  *gorm.DB
 	dsn string
+	log logr.Logger
 }

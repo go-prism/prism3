@@ -2,12 +2,14 @@ package serverless
 
 import (
 	"fmt"
+	"github.com/go-logr/logr"
+	"github.com/go-logr/stdr"
 	"github.com/gorilla/handlers"
 	_ "go.uber.org/automaxprocs"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
-	"log"
+	stdlog "log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,6 +26,7 @@ type Builder struct {
 	handler        http.Handler
 	gsrv           *grpc.Server
 	port           int
+	log            logr.Logger
 	enableHandlers bool
 }
 
@@ -32,7 +35,19 @@ func NewBuilder(handler http.Handler) *Builder {
 		handler:        handler,
 		port:           8080,
 		enableHandlers: true,
+		log:            stdr.New(stdlog.New(os.Stdout, "", stdlog.LstdFlags)),
 	}
+}
+
+// WithLogger configures the logging implementation that
+// is used.
+//
+// Defaults to https://github.com/go-logr/stdr if
+// this function is not called.
+func (b *Builder) WithLogger(log logr.Logger) *Builder {
+	b.log = log
+	b.log.V(1).Info("building logger")
+	return b
 }
 
 // WithPrometheus enables Prometheus metric collection
@@ -40,13 +55,14 @@ func NewBuilder(handler http.Handler) *Builder {
 //
 // Deprecated
 func (b *Builder) WithPrometheus() *Builder {
-	log.Printf("prometheus metrics collection has been removed due to interferance with other collectors")
+	b.log.Info("prometheus metrics collection has been removed due to interference with other collectors")
 	return b
 }
 
 // WithGRPC allows the server to support hybrid
 // http/grpc calls
 func (b *Builder) WithGRPC(srv *grpc.Server) *Builder {
+	b.log.V(1).Info("building gRPC")
 	b.gsrv = srv
 	return b
 }
@@ -58,6 +74,7 @@ func (b *Builder) WithGRPC(srv *grpc.Server) *Builder {
 // * RecoveryHandler - converts panics into 500 Internal Server Error
 // * CombinedLoggingHandler - logging HTTP requests in a known format
 func (b *Builder) WithHandlers(enabled bool) *Builder {
+	b.log.V(1).Info("building handlers", "Enabled", enabled)
 	b.enableHandlers = enabled
 	return b
 }
@@ -65,14 +82,16 @@ func (b *Builder) WithHandlers(enabled bool) *Builder {
 // WithPort sets the port that the server
 // will run on.
 func (b *Builder) WithPort(port int) *Builder {
+	b.log.V(1).Info("building port", "Port", port)
 	b.port = port
 	return b
 }
 
 func (b *Builder) Run() {
+	log := b.log
 	// setup listener
 	addr := fmt.Sprintf(":%d", b.port)
-	log.Printf("listening on :%d (h2c)", b.port)
+	log.Info("starting h2c server", "Interface", addr)
 
 	// configure HTTP
 	router := http.NewServeMux()
@@ -80,11 +99,14 @@ func (b *Builder) Run() {
 
 	var h http.Handler
 	dualHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.V(3).Info("handling request", "ProtoMajor", r.ProtoMajor, "ContentType", r.Header.Get(HeaderContentType))
 		// if we have a gRPC server, use it
 		if b.gsrv != nil && r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get(HeaderContentType), ApplicationGRPC) {
+			log.V(2).Info("serving gRPC")
 			b.gsrv.ServeHTTP(w, r)
 		} else {
 			// otherwise, fallback to HTTP
+			log.V(2).Info("serving HTTP")
 			router.ServeHTTP(w, r)
 		}
 	})
@@ -102,12 +124,15 @@ func (b *Builder) Run() {
 
 	go func() {
 		// start the server
-		log.Fatal(srv.ListenAndServe())
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error(err, "server exited with error")
+			os.Exit(1)
+		}
 	}()
 
 	// wait for a signal
 	sigC := make(chan os.Signal, 1)
 	signal.Notify(sigC, syscall.SIGTERM, syscall.SIGINT)
 	sig := <-sigC
-	log.Printf("received SIGTERM/SIGINT (%s), shutting down...", sig)
+	log.Info("received SIGTERM/SIGINT (%s), shutting down...", "Signal", sig)
 }

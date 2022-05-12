@@ -26,7 +26,7 @@ import (
 	gen "go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/jaeger"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -121,6 +121,15 @@ func (e *Exporter) Shutdown(ctx context.Context) error {
 	default:
 	}
 	return e.uploader.shutdown(ctx)
+}
+
+// MarshalLog is the marshaling function used by the logging system to represent this exporter.
+func (e *Exporter) MarshalLog() interface{} {
+	return struct {
+		Type string
+	}{
+		Type: "jaeger",
+	}
 }
 
 func spanToThrift(ss sdktrace.ReadOnlySpan) *gen.Span {
