@@ -6,6 +6,7 @@ import (
 	"github.com/go-logr/logr/testr"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,7 +15,7 @@ import (
 func TestEphemeralRemote_Exists(t *testing.T) {
 	ctx := logr.NewContext(context.TODO(), testr.New(t))
 	rem := NewEphemeralRemote(ctx, "https://mirror.aarnet.edu.au/pub/alpine", nil)
-	uri, err := rem.Exists(ctx, "v3.14/main/x86_64/APKINDEX.tar.gz", &RequestContext{})
+	uri, err := rem.Exists(ctx, "v3.14/main/x86_64/APKINDEX.tar.gz", &schemas.RequestContext{})
 	assert.NoError(t, err)
 	assert.EqualValues(t, "https://mirror.aarnet.edu.au/pub/alpine/v3.14/main/x86_64/APKINDEX.tar.gz", uri)
 }
@@ -39,8 +40,9 @@ func TestEphemeralRemote_Do(t *testing.T) {
 
 	rem := NewEphemeralRemote(ctx, ts.URL, ts.Client())
 	t.Run("valid token", func(t *testing.T) {
-		_, err := rem.Download(ctx, "", &RequestContext{
-			httpclient.AuthOpts{
+		_, err := rem.Download(ctx, "", &schemas.RequestContext{
+			PartitionID: "",
+			AuthOpts: httpclient.AuthOpts{
 				Mode:   httpclient.AuthAuthorization,
 				Header: "Authorization",
 				Token:  token,

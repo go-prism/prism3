@@ -8,9 +8,11 @@ import (
 	"errors"
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/internal/partition"
 	"gitlab.com/go-prism/prism3/core/internal/policy"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -19,6 +21,10 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+var partitions = []partition.Partition{
+	partition.NewGitLabPartition(),
+}
 
 type BackedRemote struct {
 	rm       *model.Remote
@@ -52,13 +58,47 @@ func (b *BackedRemote) String() string {
 	return b.eph.String()
 }
 
-func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *RequestContext) (string, error) {
+func (b *BackedRemote) Model() *model.Remote {
+	return b.rm
+}
+
+func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.RequestContext) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_validateContext")
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx)
+	if rctx == nil {
+		log.V(1).Info("skipping context validation as context is nil")
+		return
+	}
+	if rctx.Mode == httpclient.AuthNone {
+		log.V(1).Info("skipping context validation as no authentication information has been provided by the client")
+		return
+	}
+	eph, ok := b.eph.(*EphemeralRemote)
+	if !ok {
+		log.V(1).Info("skipping context validation as remote is not ephemeral")
+		return
+	}
+	log.V(1).Info("starting context validation", "Count", len(partitions))
+	for _, p := range partitions {
+		val, ok := p.Apply(ctx, eph, rctx.Header, rctx.Token)
+		if ok {
+			log.V(1).Info("completed context validation")
+			rctx.PartitionID = val
+			return
+		}
+	}
+	log.V(1).Info("completed context validation with no validator action")
+}
+
+func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_exists")
 	defer span.End()
 	// check that this remote is allowed to receive the file
 	if !b.pol.CanReceive(ctx, path) {
 		return "", errors.New("blocked by policy")
 	}
+	b.validateContext(ctx, rctx)
 	uploadPath, normalPath := b.getPath(ctx, path, rctx)
 	canCache := b.pol.CanCache(ctx, path)
 	if canCache {
@@ -79,11 +119,21 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *RequestCon
 	return uri, nil
 }
 
-func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
+func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
 	log.V(2).Info("using request context", "RequestContext", rctx)
+
+	b.validateContext(ctx, rctx)
+
+	// validate or set auth
+	if b.rm.Security.AuthMode == model.AuthModeNone {
+		log.V(1).Info("wiping request context")
+		rctx.Mode = httpclient.AuthNone
+	}
+
+	log.V(2).Info("using final request context", "RequestContext", rctx)
 	canCache := b.pol.CanCache(ctx, path)
 	uploadPath, normalPath := b.getPath(ctx, path, rctx)
 	log = log.WithValues("Cache", canCache, "PathNormal", normalPath, "PathStore", uploadPath)
@@ -119,7 +169,7 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *RequestC
 	return r, nil
 }
 
-func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *RequestContext) (string, string) {
+func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.RequestContext) (string, string) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_getPath")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
@@ -136,8 +186,15 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *RequestCo
 	// create the cache partition by appending
 	// the hash of the token
 	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
-		log.V(1).Info("creating partition")
-		uploadPath = filepath.Join(uploadPath, hash(rctx.Token))
+		// use the partition ID if present
+		partId := rctx.PartitionID
+		if partId == "" {
+			log.V(2).Info("explicit partition ID is not set, falling back to authorisation token")
+			partId = rctx.Token
+		}
+		partId = hash(partId)
+		log.V(1).Info("creating partition", "PartitionHash", partId, "PartitionID", rctx.PartitionID)
+		uploadPath = filepath.Join(uploadPath, partId)
 	}
 	log.V(1).Info("normalised path", "UploadPath", uploadPath)
 	return filepath.Join(b.rm.Name, uploadPath), uploadPath

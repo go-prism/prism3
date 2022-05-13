@@ -128,10 +128,13 @@ type ComplexityRoot struct {
 	}
 
 	RemoteSecurity struct {
-		Allowed     func(childComplexity int) int
-		AuthHeaders func(childComplexity int) int
-		Blocked     func(childComplexity int) int
-		ID          func(childComplexity int) int
+		Allowed      func(childComplexity int) int
+		AuthHeaders  func(childComplexity int) int
+		AuthMode     func(childComplexity int) int
+		Blocked      func(childComplexity int) int
+		DirectHeader func(childComplexity int) int
+		DirectToken  func(childComplexity int) int
+		ID           func(childComplexity int) int
 	}
 
 	RoleBinding struct {
@@ -728,12 +731,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RemoteSecurity.AuthHeaders(childComplexity), true
 
+	case "RemoteSecurity.authMode":
+		if e.complexity.RemoteSecurity.AuthMode == nil {
+			break
+		}
+
+		return e.complexity.RemoteSecurity.AuthMode(childComplexity), true
+
 	case "RemoteSecurity.blocked":
 		if e.complexity.RemoteSecurity.Blocked == nil {
 			break
 		}
 
 		return e.complexity.RemoteSecurity.Blocked(childComplexity), true
+
+	case "RemoteSecurity.directHeader":
+		if e.complexity.RemoteSecurity.DirectHeader == nil {
+			break
+		}
+
+		return e.complexity.RemoteSecurity.DirectHeader(childComplexity), true
+
+	case "RemoteSecurity.directToken":
+		if e.complexity.RemoteSecurity.DirectToken == nil {
+			break
+		}
+
+		return e.complexity.RemoteSecurity.DirectToken(childComplexity), true
 
 	case "RemoteSecurity.id":
 		if e.complexity.RemoteSecurity.ID == nil {
@@ -995,6 +1019,12 @@ enum Role {
     POWER
 }
 
+enum AuthMode {
+    NONE
+    DIRECT
+    PROXY
+}
+
 type RoleBinding {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     subject: String!
@@ -1053,6 +1083,9 @@ type RemoteSecurity {
     allowed: Strings!
     blocked: Strings!
     authHeaders: Strings!
+    directHeader: String!
+    directToken: String!
+    authMode: AuthMode! @goTag(key: "gorm", value: "default:NONE")
 }
 
 type TransportSecurity {
@@ -1121,6 +1154,7 @@ input NewRemote {
     uri: String!
     archetype: Archetype!
     transport: ID!
+    authMode: AuthMode!
 }
 
 input NewRefract {
@@ -3907,6 +3941,111 @@ func (ec *executionContext) _RemoteSecurity_authHeaders(ctx context.Context, fie
 	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _RemoteSecurity_directHeader(ctx context.Context, field graphql.CollectedField, obj *model.RemoteSecurity) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RemoteSecurity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DirectHeader, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RemoteSecurity_directToken(ctx context.Context, field graphql.CollectedField, obj *model.RemoteSecurity) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RemoteSecurity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DirectToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RemoteSecurity_authMode(ctx context.Context, field graphql.CollectedField, obj *model.RemoteSecurity) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RemoteSecurity",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthMode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.AuthMode)
+	fc.Result = res
+	return ec.marshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _RoleBinding_id(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -5918,6 +6057,14 @@ func (ec *executionContext) unmarshalInputNewRemote(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
+		case "authMode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authMode"))
+			it.AuthMode, err = ec.unmarshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -7070,6 +7217,36 @@ func (ec *executionContext) _RemoteSecurity(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "directHeader":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RemoteSecurity_directHeader(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "directToken":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RemoteSecurity_directToken(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "authMode":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._RemoteSecurity_authMode(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7870,6 +8047,16 @@ func (ec *executionContext) marshalNArtifact2ᚖgitlabᚗcomᚋgoᚑprismᚋpris
 		return graphql.Null
 	}
 	return ec._Artifact(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx context.Context, v interface{}) (model.AuthMode, error) {
+	var res model.AuthMode
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx context.Context, sel ast.SelectionSet, v model.AuthMode) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

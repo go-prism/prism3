@@ -39,9 +39,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 		Archetype: in.Archetype,
 		Enabled:   true,
 		Security: &model.RemoteSecurity{
-			Allowed:     nil,
-			Blocked:     nil,
-			AuthHeaders: nil,
+			AuthMode: in.AuthMode,
 		},
 		Transport: &transport,
 	}

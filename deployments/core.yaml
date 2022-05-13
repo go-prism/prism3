@@ -10,16 +10,18 @@ env:
   PRISM_S3_PATH_STYLE: "true"
   PRISM_S3_ENDPOINT: http://minio.minio.svc.cluster.local:9000
   PRISM_S3_BUCKET: prism
-  PRISM_LOG_DEBUG: "true"
+  PRISM_LOG_LEVEL: "10"
   PRISM_PUBLIC_URL: https://prism3.devel
   PRISM_PLUGIN_GO_URL: http://goproxy3-auto-deploy:8080
   PRISM_REDIS_ADDR: redis-master:6379
   PRISM_REDIS_PASSWORD: password
+  PRISM_OTEL_SAMPLE_RATE: "1"
   AWS_ACCESS_KEY_ID: username
   AWS_SECRET_ACCESS_KEY: password
   HELM_CACHE_HOME: /tmp
   HELM_CONFIG_HOME: /tmp
   HELM_DATA_HOME: /tmp
+  OTEL_EXPORTER_JAEGER_ENDPOINT: http://tempo.grafana.svc.cluster.local:14268/api/traces
 security:
   podContext:
     fsGroup: 1001

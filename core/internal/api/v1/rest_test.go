@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"io"
 	"net/http"
 	"strings"
@@ -12,19 +13,19 @@ import (
 
 type testResolver struct{}
 
-func (t *testResolver) Resolve(context.Context, *resolver.Request) (io.Reader, error) {
+func (t *testResolver) Resolve(context.Context, *resolver.Request, *schemas.RequestContext) (io.Reader, error) {
 	return strings.NewReader("Resolve"), nil
 }
 
-func (t *testResolver) ResolveHelm(context.Context, *resolver.Request) (io.Reader, error) {
+func (t *testResolver) ResolveHelm(context.Context, *resolver.Request, *schemas.RequestContext) (io.Reader, error) {
 	return strings.NewReader("ResolveHelm"), nil
 }
 
-func (t *testResolver) ResolveNPM(context.Context, *resolver.NPMRequest) (io.Reader, error) {
+func (t *testResolver) ResolveNPM(context.Context, *resolver.NPMRequest, *schemas.RequestContext) (io.Reader, error) {
 	return strings.NewReader("ResolveNPM"), nil
 }
 
-func (*testResolver) ResolvePyPi(context.Context, *resolver.Request) (io.Reader, error) {
+func (*testResolver) ResolvePyPi(context.Context, *resolver.Request, *schemas.RequestContext) (io.Reader, error) {
 	return strings.NewReader("ResolvePyPi"), nil
 }
 

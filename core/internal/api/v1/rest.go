@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -35,7 +36,7 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, path)
 	defer g.pool.Put(req)
 	// serve
-	reader, err := g.Serve(ctx, req)
+	reader, err := g.resolver.Resolve(ctx, req, GetRequestContext(ctx, r))
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return
@@ -80,7 +81,7 @@ func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, pkg)
 	defer g.pool.Put(req)
 	// serve
-	reader, err := g.resolver.ResolvePyPi(ctx, req)
+	reader, err := g.resolver.ResolvePyPi(ctx, req, &schemas.RequestContext{})
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return

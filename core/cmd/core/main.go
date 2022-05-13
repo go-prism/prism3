@@ -78,7 +78,7 @@ func main() {
 	}
 	// configure logging
 	zc := zap.NewProductionConfig()
-	zc.Level = zap.NewAtomicLevelAt(zapcore.Level(e.Log.Level))
+	zc.Level = zap.NewAtomicLevelAt(zapcore.Level(e.Log.Level * -1))
 	log, ctx := logging.NewZap(context.TODO(), zc)
 
 	flagging.Build(ctx, flagging.Options{

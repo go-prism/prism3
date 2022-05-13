@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 	"net/http"
@@ -27,7 +28,7 @@ func TestBackedRemote_Exists(t *testing.T) {
 	}, storage.NewNoOp(), func(ctx context.Context, path, remote string) error {
 		return nil
 	}, getPkg, getPkg)
-	uri, err := rem.Exists(context.TODO(), "v3.14/main/x86_64/APKINDEX.tar.gz", &RequestContext{})
+	uri, err := rem.Exists(ctx, "v3.14/main/x86_64/APKINDEX.tar.gz", &schemas.RequestContext{})
 	assert.NoError(t, err)
 	assert.EqualValues(t, "https://mirror.aarnet.edu.au/pub/alpine/v3.14/main/x86_64/APKINDEX.tar.gz", uri)
 }
@@ -58,8 +59,9 @@ func TestBackedRemote_Download(t *testing.T) {
 	}, getPkg, getPkg)
 
 	// download
-	resp, err := rem.Download(context.TODO(), "/file.txt", &RequestContext{
-		httpclient.AuthOpts{
+	resp, err := rem.Download(ctx, "/file.txt", &schemas.RequestContext{
+		PartitionID: "",
+		AuthOpts: httpclient.AuthOpts{
 			Mode:  httpclient.AuthAuthorization,
 			Token: token,
 		},
@@ -70,8 +72,9 @@ func TestBackedRemote_Download(t *testing.T) {
 	assert.EqualValues(t, dummyFile, string(data))
 
 	// download again
-	resp, err = rem.Download(context.TODO(), "/file.txt", &RequestContext{
-		httpclient.AuthOpts{
+	resp, err = rem.Download(ctx, "/file.txt", &schemas.RequestContext{
+		PartitionID: "",
+		AuthOpts: httpclient.AuthOpts{
 			Mode:  httpclient.AuthAuthorization,
 			Token: token,
 		},

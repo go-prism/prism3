@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -69,7 +70,7 @@ func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	req.New(bucket, pkg, version)
 	defer g.npmPool.Put(req)
 	// serve
-	reader, err := g.resolver.ResolveNPM(ctx, req)
+	reader, err := g.resolver.ResolveNPM(ctx, req, &schemas.RequestContext{})
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return

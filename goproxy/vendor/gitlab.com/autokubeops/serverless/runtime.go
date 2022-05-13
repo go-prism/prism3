@@ -99,23 +99,25 @@ func (b *Builder) Run() {
 
 	var h http.Handler
 	dualHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.V(3).Info("handling request", "ProtoMajor", r.ProtoMajor, "ContentType", r.Header.Get(HeaderContentType))
+		log.V(3).Info("attempting to determine request type", "ProtoMajor", r.ProtoMajor, "ContentType", r.Header.Get(HeaderContentType))
 		// if we have a gRPC server, use it
 		if b.gsrv != nil && r.ProtoMajor == 2 && strings.HasPrefix(r.Header.Get(HeaderContentType), ApplicationGRPC) {
-			log.V(2).Info("serving gRPC")
+			log.V(2).Info("detected gRPC")
 			b.gsrv.ServeHTTP(w, r)
 		} else {
 			// otherwise, fallback to HTTP
-			log.V(2).Info("serving HTTP")
+			log.V(2).Info("unable to detect gRPC request, defaulting to HTTP")
 			router.ServeHTTP(w, r)
 		}
 	})
 	// wrap the h2 handler with gorilla's handlers
 	if b.enableHandlers {
-		h = handlers.CombinedLoggingHandler(os.Stdout, handlers.RecoveryHandler()(dualHandler))
+		log.V(2).Info("enabling panic recovery handler")
+		h = handlers.RecoveryHandler()(dualHandler)
 	} else {
 		h = dualHandler
 	}
+	h = loggingMiddleware(log)(h)
 
 	srv := &http.Server{
 		Addr:    addr,

@@ -249,7 +249,7 @@ github.com/docker/go-units
 # github.com/evanphx/json-patch v4.12.0+incompatible
 ## explicit
 github.com/evanphx/json-patch
-# github.com/felixge/httpsnoop v1.0.2
+# github.com/felixge/httpsnoop v1.0.3
 ## explicit; go 1.13
 github.com/felixge/httpsnoop
 # github.com/getsentry/sentry-go v0.13.0
@@ -523,7 +523,7 @@ github.com/twmb/murmur3
 # github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 ## explicit
 github.com/xlab/treeprint
-# gitlab.com/autokubeops/serverless v0.4.1-rc.2
+# gitlab.com/autokubeops/serverless v0.4.1
 ## explicit; go 1.17
 gitlab.com/autokubeops/serverless
 # gitlab.com/av1o/cap10 v0.4.0
@@ -536,6 +536,7 @@ gitlab.com/av1o/cap10/pkg/passport
 gitlab.com/go-prism/prism3/core/internal/errs
 gitlab.com/go-prism/prism3/core/internal/features
 gitlab.com/go-prism/prism3/core/internal/graph/model
+gitlab.com/go-prism/prism3/core/internal/partition
 gitlab.com/go-prism/prism3/core/internal/policy
 gitlab.com/go-prism/prism3/core/pkg/db
 gitlab.com/go-prism/prism3/core/pkg/db/datatypes
@@ -692,7 +693,7 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20220426171045-31bebdecfb46
+# google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
 ## explicit; go 1.15
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.46.0

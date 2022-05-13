@@ -1,115 +1,115 @@
-apiVersion: skaffold/v2beta27
+apiVersion: skaffold/v2beta28
 kind: Config
 metadata:
   name: core
 build:
   artifacts:
-    - image: dev.local/prism3/core
-      context: core
-      buildpacks:
-        builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
-        runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
-        dependencies:
-          paths:
-            - cmd/core/
-            - internal/
-            - pkg/
+  - image: dev.local/prism3/core
+    context: core
+    buildpacks:
+      builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
+      runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+      dependencies:
+        paths:
+        - cmd/core/
+        - internal/
+        - pkg/
   local:
     push: false
 deploy:
+  helm:
+    releases:
+    - name: postgresql
+      remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/postgresql-11.1.17.tgz
+      valuesFiles:
+      - deployments/postgresql.yaml
+      namespace: prism
+      skipBuildDependencies: true
+      upgradeOnChange: true
+    - name: core3
+      remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+      valuesFiles:
+      - deployments/core.yaml
+      artifactOverrides:
+        image: dev.local/prism3/core
+      namespace: prism
+      skipBuildDependencies: true
+      upgradeOnChange: true
+      imageStrategy:
+        helm: {}
   kubectl:
     defaultNamespace: prism
   kubeContext: minikube
-  helm:
-    releases:
-      - name: postgresql
-        namespace: prism
-        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/postgresql-11.1.17.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        valuesFiles:
-          - deployments/postgresql.yaml
-      - name: core3
-        namespace: prism
-        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        artifactOverrides:
-          image: dev.local/prism3/core
-        valuesFiles:
-          - deployments/core.yaml
-        imageStrategy:
-          helm: {}
 ---
-apiVersion: skaffold/v2beta27
+apiVersion: skaffold/v2beta28
 kind: Config
 metadata:
   name: goproxy
 build:
   artifacts:
-    - image: dev.local/prism3/goproxy
-      context: goproxy
-      docker:
-        buildArgs:
-          GITLAB_PREFIX: "harbor.dcas.dev/"
+  - image: dev.local/prism3/goproxy
+    context: goproxy
+    docker:
+      buildArgs:
+        GITLAB_PREFIX: harbor.dcas.dev/
   local:
     push: false
 deploy:
+  helm:
+    releases:
+    - name: goproxy3
+      remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+      valuesFiles:
+      - deployments/goproxy.yaml
+      artifactOverrides:
+        image: dev.local/prism3/goproxy
+      namespace: prism
+      skipBuildDependencies: true
+      upgradeOnChange: true
+      imageStrategy:
+        helm: {}
   kubectl:
     defaultNamespace: prism
   kubeContext: minikube
-  helm:
-    releases:
-      - name: goproxy3
-        namespace: prism
-        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        artifactOverrides:
-          image: dev.local/prism3/goproxy
-        valuesFiles:
-          - deployments/goproxy.yaml
-        imageStrategy:
-          helm: {}
 ---
-apiVersion: skaffold/v2beta27
+apiVersion: skaffold/v2beta28
 kind: Config
 metadata:
   name: batch
 build:
   artifacts:
-    - image: dev.local/prism3/batch
-      context: batch
-      buildpacks:
-        builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
-        runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
-        dependencies:
-          paths:
-            - cmd/batch/
-            - internal/
+  - image: dev.local/prism3/batch
+    context: batch
+    buildpacks:
+      builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
+      runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+      dependencies:
+        paths:
+        - cmd/batch/
+        - internal/
   local:
     push: false
 deploy:
+  helm:
+    releases:
+    - name: redis
+      remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/redis-16.8.2.tgz
+      valuesFiles:
+      - deployments/redis.yaml
+      namespace: prism
+      skipBuildDependencies: true
+      upgradeOnChange: true
+    - name: batch3
+      remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+      valuesFiles:
+      - deployments/batch.yaml
+      artifactOverrides:
+        image: dev.local/prism3/batch
+      namespace: prism
+      skipBuildDependencies: true
+      upgradeOnChange: true
+      imageStrategy:
+        helm: {}
   kubectl:
     defaultNamespace: prism
   kubeContext: minikube
-  helm:
-    releases:
-      - name: redis
-        namespace: prism
-        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/redis-16.8.2.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        valuesFiles:
-          - deployments/redis.yaml
-      - name: batch3
-        namespace: prism
-        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
-        skipBuildDependencies: true
-        upgradeOnChange: true
-        artifactOverrides:
-          image: dev.local/prism3/batch
-        valuesFiles:
-          - deployments/batch.yaml
-        imageStrategy:
-          helm: {}

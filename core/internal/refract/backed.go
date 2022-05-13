@@ -5,6 +5,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -27,7 +28,7 @@ func NewBackedRefraction(ctx context.Context, mod *model.Refraction, store stora
 	}
 }
 
-func (b *BackedRefraction) Exists(ctx context.Context, path string, rctx *remote.RequestContext) (string, error) {
+func (b *BackedRefraction) Exists(ctx context.Context, path string, rctx *schemas.RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "refraction_backed_exists")
 	defer span.End()
 	msg, err := b.rf.Exists(ctx, path, rctx)
@@ -37,7 +38,7 @@ func (b *BackedRefraction) Exists(ctx context.Context, path string, rctx *remote
 	return msg.URI, nil
 }
 
-func (b *BackedRefraction) Download(ctx context.Context, path string, rctx *remote.RequestContext) (io.Reader, error) {
+func (b *BackedRefraction) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "refraction_backed_download")
 	defer span.End()
 	return b.rf.Download(ctx, path, rctx)

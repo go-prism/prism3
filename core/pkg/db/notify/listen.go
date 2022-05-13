@@ -92,7 +92,12 @@ func (n *Listener) notify() error {
 			log.V(1).Error(err, "received error from listener")
 			return err
 		case <-time.After(time.Minute):
-			go log.V(1).Error(n.listener.Ping(), "pinging listener")
+			go func() {
+				log.V(2).Info("pinging listener")
+				if err := n.listener.Ping(); err != nil {
+					log.V(1).Error(err, "failed to ping listener")
+				}
+			}()
 		}
 	}
 }

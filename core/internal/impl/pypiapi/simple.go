@@ -8,7 +8,6 @@ import (
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
-	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -71,7 +70,7 @@ func (p *Provider) fetch(ctx context.Context, ref *refract.Refraction, pkg strin
 		go func() {
 			defer wg.Done()
 			// todo support request context
-			resp, err := remotes[j].Download(ctx, fmt.Sprintf("/%s/", pkg), &remote.RequestContext{})
+			resp, err := remotes[j].Download(ctx, fmt.Sprintf("/%s/", pkg), &schemas.RequestContext{})
 			if err != nil {
 				return
 			}

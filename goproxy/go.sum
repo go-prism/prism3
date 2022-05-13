@@ -82,8 +82,9 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.m
 github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.mod h1:KJwIaB5Mv44NWtYuAOFCVOjcI94vtpEz2JU/D2v6IjE=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
-github.com/felixge/httpsnoop v1.0.2 h1:+nS9g82KMXccJ/wp0zyRW9ZBHFETmMGtkk+2CTTrW4o=
 github.com/felixge/httpsnoop v1.0.2/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
+github.com/felixge/httpsnoop v1.0.3 h1:s/nj+GCswXYzN5v2DpNMuMQYe+0DDwt5WVCU6CWBdXk=
+github.com/felixge/httpsnoop v1.0.3/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-logr/logr v1.2.0/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.2.1/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
@@ -173,8 +174,8 @@ github.com/twmb/murmur3 v1.1.5/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq
 github.com/twmb/murmur3 v1.1.6 h1:mqrRot1BRxm+Yct+vavLMou2/iJt0tNVTTC0QoIjaZg=
 github.com/twmb/murmur3 v1.1.6/go.mod h1:Qq/R7NUyOfr65zD+6Q5IHKsJLwP7exErjN6lyyq3OSQ=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-gitlab.com/autokubeops/serverless v0.4.1-rc.2 h1:5q10c8l5rdIWwb4WttsxiDrt3OKNcL5jPgTx4SNc2zA=
-gitlab.com/autokubeops/serverless v0.4.1-rc.2/go.mod h1:4vdyl4GD72F25SjzJ6v9tS/GZV5725j9W+GcxwmxjnU=
+gitlab.com/autokubeops/serverless v0.4.1 h1:N64aFIjlCdR5ka/O+Svq6iHD74bweTW3CyCC5b4ahgk=
+gitlab.com/autokubeops/serverless v0.4.1/go.mod h1:3SFWb2ro3N8dEXsMJqRAhGFYsk8BNqvlLhiwdgANKdI=
 gitlab.com/av1o/cap10 v0.4.0 h1:F456hSYsgIPwvnl51ZyofFXkkIA0XLpeDdRXizemUQQ=
 gitlab.com/av1o/cap10 v0.4.0/go.mod h1:Br6dJT6nmawFdP8x27x/bglpmR6WnzHm4Jlz/MTU9fU=
 go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws v0.32.0 h1:t1DHu+/vJsCXzyT5WoUHO4e06GK5BvHUKMbz1gMUEAk=

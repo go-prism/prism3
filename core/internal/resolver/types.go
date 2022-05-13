@@ -7,6 +7,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"io"
 )
@@ -26,10 +27,10 @@ type Resolver struct {
 }
 
 type IResolver interface {
-	Resolve(ctx context.Context, req *Request) (io.Reader, error)
-	ResolveHelm(ctx context.Context, req *Request) (io.Reader, error)
-	ResolveNPM(ctx context.Context, req *NPMRequest) (io.Reader, error)
-	ResolvePyPi(ctx context.Context, req *Request) (io.Reader, error)
+	Resolve(ctx context.Context, req *Request, rctx *schemas.RequestContext) (io.Reader, error)
+	ResolveHelm(ctx context.Context, req *Request, rctx *schemas.RequestContext) (io.Reader, error)
+	ResolveNPM(ctx context.Context, req *NPMRequest, rctx *schemas.RequestContext) (io.Reader, error)
+	ResolvePyPi(ctx context.Context, req *Request, rctx *schemas.RequestContext) (io.Reader, error)
 }
 
 type Request struct {

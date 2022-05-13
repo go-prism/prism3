@@ -144,7 +144,7 @@ github.com/djcass44/go-utils/logging
 # github.com/djcass44/go-utils/otel v0.1.0
 ## explicit; go 1.18
 github.com/djcass44/go-utils/otel
-# github.com/felixge/httpsnoop v1.0.2
+# github.com/felixge/httpsnoop v1.0.3
 ## explicit; go 1.13
 github.com/felixge/httpsnoop
 # github.com/go-logr/logr v1.2.3
@@ -195,7 +195,7 @@ github.com/sirupsen/logrus
 # github.com/twmb/murmur3 v1.1.6
 ## explicit; go 1.11
 github.com/twmb/murmur3
-# gitlab.com/autokubeops/serverless v0.4.1-rc.2
+# gitlab.com/autokubeops/serverless v0.4.1
 ## explicit; go 1.17
 gitlab.com/autokubeops/serverless
 # gitlab.com/av1o/cap10 v0.4.0

@@ -3,6 +3,7 @@ package remote
 import (
 	"context"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
 	"io"
@@ -21,13 +22,13 @@ func NewHelmRemote(ctx context.Context, root string, client *http.Client, getPac
 	}
 }
 
-func (h *HelmRemote) Exists(ctx context.Context, path string, _ *RequestContext) (string, error) {
+func (h *HelmRemote) Exists(ctx context.Context, path string, _ *schemas.RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_helm_exists")
 	defer span.End()
 	return h.getPackage(ctx, path)
 }
 
-func (h *HelmRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
+func (h *HelmRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_helm_download")
 	defer span.End()
 	return h.rem.Download(ctx, path, rctx)

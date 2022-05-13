@@ -23,6 +23,12 @@ enum Role {
     POWER
 }
 
+enum AuthMode {
+    NONE
+    DIRECT
+    PROXY
+}
+
 type RoleBinding {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     subject: String!
@@ -81,6 +87,9 @@ type RemoteSecurity {
     allowed: Strings!
     blocked: Strings!
     authHeaders: Strings!
+    directHeader: String!
+    directToken: String!
+    authMode: AuthMode! @goTag(key: "gorm", value: "default:NONE")
 }
 
 type TransportSecurity {
@@ -149,6 +158,7 @@ input NewRemote {
     uri: String!
     archetype: Archetype!
     transport: ID!
+    authMode: AuthMode!
 }
 
 input NewRefract {

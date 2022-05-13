@@ -13,7 +13,7 @@ require (
 	github.com/goproxy/goproxy v0.10.2
 	github.com/gorilla/mux v1.8.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	gitlab.com/autokubeops/serverless v0.4.1-rc.2
+	gitlab.com/autokubeops/serverless v0.4.1
 	gitlab.com/go-prism/prism3/core v0.0.0-00010101000000-000000000000
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.28.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.28.1-0.20220210160856-10051614d2b8
@@ -46,7 +46,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/djcass44/go-tracer v0.3.0 // indirect
 	github.com/djcass44/go-utils v0.2.1-0.20210516001550-3d288882b7f4 // indirect
-	github.com/felixge/httpsnoop v1.0.2 // indirect
+	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

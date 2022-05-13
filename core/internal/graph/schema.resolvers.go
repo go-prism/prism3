@@ -6,20 +6,20 @@ package graph
 import (
 	"context"
 	"fmt"
-	"github.com/go-logr/logr"
-	"gitlab.com/go-prism/prism3/core/pkg/schemas"
-	"gitlab.com/go-prism/prism3/core/pkg/tracing"
-	"go.opentelemetry.io/otel"
 	"runtime"
 	"runtime/debug"
 
+	"github.com/go-logr/logr"
 	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {

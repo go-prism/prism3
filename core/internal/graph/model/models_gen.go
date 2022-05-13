@@ -31,6 +31,7 @@ type NewRemote struct {
 	URI       string    `json:"uri"`
 	Archetype Archetype `json:"archetype"`
 	Transport string    `json:"transport"`
+	AuthMode  AuthMode  `json:"authMode"`
 }
 
 type NewRoleBinding struct {
@@ -101,10 +102,13 @@ type RemoteOverview struct {
 }
 
 type RemoteSecurity struct {
-	ID          string              `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
-	Allowed     datatypes.JSONArray `json:"allowed"`
-	Blocked     datatypes.JSONArray `json:"blocked"`
-	AuthHeaders datatypes.JSONArray `json:"authHeaders"`
+	ID           string              `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
+	Allowed      datatypes.JSONArray `json:"allowed"`
+	Blocked      datatypes.JSONArray `json:"blocked"`
+	AuthHeaders  datatypes.JSONArray `json:"authHeaders"`
+	DirectHeader string              `json:"directHeader"`
+	DirectToken  string              `json:"directToken"`
+	AuthMode     AuthMode            `json:"authMode" gorm:"default:NONE"`
 }
 
 type RoleBinding struct {
@@ -191,6 +195,49 @@ func (e *Archetype) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Archetype) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type AuthMode string
+
+const (
+	AuthModeNone   AuthMode = "NONE"
+	AuthModeDirect AuthMode = "DIRECT"
+	AuthModeProxy  AuthMode = "PROXY"
+)
+
+var AllAuthMode = []AuthMode{
+	AuthModeNone,
+	AuthModeDirect,
+	AuthModeProxy,
+}
+
+func (e AuthMode) IsValid() bool {
+	switch e {
+	case AuthModeNone, AuthModeDirect, AuthModeProxy:
+		return true
+	}
+	return false
+}
+
+func (e AuthMode) String() string {
+	return string(e)
+}
+
+func (e *AuthMode) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AuthMode(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AuthMode", str)
+	}
+	return nil
+}
+
+func (e AuthMode) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

@@ -10,7 +10,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
 	"gitlab.com/go-prism/prism3/core/internal/refract"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
-	"gitlab.com/go-prism/prism3/core/pkg/remote"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -39,7 +39,7 @@ func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Res
 	return r
 }
 
-func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, error) {
+func (r *Resolver) ResolveHelm(ctx context.Context, req *Request, _ *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_helm")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithName("helm")
@@ -53,7 +53,7 @@ func (r *Resolver) ResolveHelm(ctx context.Context, req *Request) (io.Reader, er
 	return r.helm.Serve(ctx, refraction)
 }
 
-func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error) {
+func (r *Resolver) Resolve(ctx context.Context, req *Request, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "resolver_generic")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithName("generic")
@@ -63,7 +63,7 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request) (io.Reader, error)
 		log.Error(err, "failed to retrieve requested refraction")
 		return nil, err
 	}
-	return ref.(*refract.BackedRefraction).Download(ctx, req.path, &remote.RequestContext{})
+	return ref.(*refract.BackedRefraction).Download(ctx, req.path, rctx)
 }
 
 func (r *Resolver) getRefraction(v any) (any, error) {

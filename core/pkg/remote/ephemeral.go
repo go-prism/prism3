@@ -9,6 +9,7 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
 	"io"
@@ -42,7 +43,7 @@ func (r *EphemeralRemote) String() string {
 	return r.root
 }
 
-func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *RequestContext) (string, error) {
+func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *schemas.RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_exists")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
@@ -70,7 +71,7 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *Request
 	return target, nil
 }
 
-func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *RequestContext) (io.Reader, error) {
+func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_download")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
@@ -88,7 +89,7 @@ func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *Reque
 	return resp.Body, nil
 }
 
-func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *RequestContext) (*http.Response, error) {
+func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *schemas.RequestContext) (*http.Response, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_do")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
@@ -121,7 +122,7 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *R
 	log.Info("remote request completed")
 	if !httputils.IsHTTPSuccess(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
-			log.V(1).Info("received 401, dumping challenge header", "WWW=Authenticate", resp.Header.Get("WWW-Authenticate"))
+			log.V(1).Info("received 401, dumping challenge header", "WWW-Authenticate", resp.Header.Get("WWW-Authenticate"))
 		}
 		log.Info("marking request as failure due to unexpected response code")
 		return nil, problem.New(resp.StatusCode).Errorf("failed to retrieve object from remote")
