@@ -1,5 +1,10 @@
 mutation createRemote($name: String!, $uri: String!, $archetype: Archetype!, $transport: ID!) {
-    createRemote(input: {name: $name, uri: $uri, archetype: $archetype, transport: $transport}) {
+    createRemote(input: {name: $name, uri: $uri, archetype: $archetype, transport: $transport, authMode: NONE}) {
+        id
+    }
+}
+mutation patchRemote($id: ID!, $transportID: ID!, $allowed: [String!]!, $blocked: [String!]!, $authHeaders: [String!]!, $directHeader: String!, $directToken: String!, $authMode: AuthMode!) {
+    patchRemote(id: $id, input: {transportID: $transportID, allowed: $allowed, blocked: $blocked, authHeaders: $authHeaders, directHeader: $directHeader, directToken: $directToken, authMode: $authMode}) {
         id
     }
 }
@@ -12,6 +17,15 @@ query getRemote($id: ID!) {
         uri
         archetype
         enabled
+        security {
+            id
+            allowed
+            blocked
+            authMode
+            directHeader
+            directToken
+            authHeaders
+        }
         transport {
             id
             name

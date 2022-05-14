@@ -23,9 +23,10 @@ func (r *Request) New(bucket, path string) {
 	r.path = path
 }
 
-func NewResolver(repos *repo.Repos, store storage.Reader, publicURL string) *Resolver {
+func NewResolver(ctx context.Context, repos *repo.Repos, store storage.Reader, publicURL string) *Resolver {
 	r := new(Resolver)
 	r.repos = repos
+	r.ctx = ctx
 
 	// caches
 	r.cache = gcache.New(1000).ARC().Expiration(time.Minute * 5).LoaderFunc(r.getRefraction).Build()
@@ -61,6 +62,7 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request, rctx *schemas.Requ
 	ref, err := r.cache.Get(req.bucket)
 	if err != nil {
 		log.Error(err, "failed to retrieve requested refraction")
+		span.RecordError(err)
 		return nil, err
 	}
 	return ref.(*refract.BackedRefraction).Download(ctx, req.path, rctx)

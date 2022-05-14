@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
 	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
@@ -26,9 +27,16 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_generic_serve")
 	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
-	span.SetAttributes(attribute.String("bucket", bucket))
+	span.SetAttributes(
+		attribute.String("bucket", bucket),
+		attribute.String("url", r.URL.String()),
+	)
+	log := logr.FromContextOrDiscard(ctx).WithValues("Bucket", bucket)
+	log.V(2).Info("serving on generic gateway")
 	path, ok := g.getPath(r.URL)
 	if !ok {
+		span.AddEvent("malformed path")
+		log.V(1).Info("failed to parse path", "Url", r.URL)
 		_ = problem.MustWrite(w, problem.New(http.StatusBadRequest).Errorf("malformed path"))
 		return
 	}
@@ -50,8 +58,11 @@ func (g *Gateway) ServeHTTPHelm(w http.ResponseWriter, r *http.Request) {
 	defer span.End()
 	bucket := mux.Vars(r)["bucket"]
 	span.SetAttributes(attribute.String("bucket", bucket))
+	log := logr.FromContextOrDiscard(ctx).WithValues("Bucket", bucket)
+	log.V(2).Info("serving on helm gateway")
 	path, ok := g.getPath(r.URL)
 	if !ok {
+		log.V(1).Info("failed to parse path", "Url", r.URL)
 		_ = problem.MustWrite(w, problem.New(http.StatusBadRequest).Errorf("malformed path"))
 		return
 	}
@@ -77,6 +88,8 @@ func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
 		attribute.String("bucket", bucket),
 		attribute.String("package", pkg),
 	)
+	log := logr.FromContextOrDiscard(ctx).WithValues("Bucket", bucket, "Package", pkg)
+	log.V(2).Info("serving on helm gateway")
 	req := g.pool.Get().(*resolver.Request)
 	req.New(bucket, pkg)
 	defer g.pool.Put(req)

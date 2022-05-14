@@ -16,6 +16,8 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/url"
 	"path/filepath"
@@ -70,6 +72,7 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 		log.V(1).Info("skipping context validation as context is nil")
 		return
 	}
+	span.SetAttributes(attribute.Int("auth_mode", int(rctx.Mode)))
 	if rctx.Mode == httpclient.AuthNone {
 		log.V(1).Info("skipping context validation as no authentication information has been provided by the client")
 		return
@@ -85,6 +88,7 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 		if ok {
 			log.V(1).Info("completed context validation")
 			rctx.PartitionID = val
+			span.SetAttributes(attribute.String("auth_partition_id", val))
 			return
 		}
 	}
@@ -94,6 +98,7 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_exists")
 	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	// check that this remote is allowed to receive the file
 	if !b.pol.CanReceive(ctx, path) {
 		return "", errors.New("blocked by policy")
@@ -101,9 +106,17 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.Re
 	b.validateContext(ctx, rctx)
 	uploadPath, normalPath := b.getPath(ctx, path, rctx)
 	canCache := b.pol.CanCache(ctx, path)
+	log = log.WithValues("Cache", canCache, "PathNormal", normalPath, "PathStore", uploadPath)
+	span.SetAttributes(
+		attribute.Bool("can_cache", canCache),
+		attribute.String("path_normal", normalPath),
+		attribute.String("path_store", uploadPath),
+	)
 	if canCache {
+		log.V(1).Info("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			log.V(1).Info("located existing file in cache")
 			return path, nil
 		}
 	}
@@ -120,7 +133,7 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.Re
 }
 
 func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
-	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download")
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download", trace.WithAttributes(attribute.String("path", path)))
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
 	log.V(2).Info("using request context", "RequestContext", rctx)
@@ -137,6 +150,11 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 	canCache := b.pol.CanCache(ctx, path)
 	uploadPath, normalPath := b.getPath(ctx, path, rctx)
 	log = log.WithValues("Cache", canCache, "PathNormal", normalPath, "PathStore", uploadPath)
+	span.SetAttributes(
+		attribute.Bool("can_cache", canCache),
+		attribute.String("path_normal", normalPath),
+		attribute.String("path_store", uploadPath),
+	)
 	// check the cache first
 	if canCache {
 		log.V(1).Info("checking cache for existing file")
@@ -188,12 +206,14 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.R
 	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
 		// use the partition ID if present
 		partId := rctx.PartitionID
+		span.SetAttributes(attribute.String("auth_partition_id", partId))
 		if partId == "" {
 			log.V(2).Info("explicit partition ID is not set, falling back to authorisation token")
 			partId = rctx.Token
 		}
 		partId = hash(partId)
 		log.V(1).Info("creating partition", "PartitionHash", partId, "PartitionID", rctx.PartitionID)
+		span.SetAttributes(attribute.String("auth_partition_hash", partId))
 		uploadPath = filepath.Join(uploadPath, partId)
 	}
 	log.V(1).Info("normalised path", "UploadPath", uploadPath)

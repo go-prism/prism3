@@ -64,6 +64,7 @@ type ComplexityRoot struct {
 		DeleteRefraction       func(childComplexity int, id string) int
 		DeleteRemote           func(childComplexity int, id string) int
 		PatchRefraction        func(childComplexity int, id string, input model.PatchRefract) int
+		PatchRemote            func(childComplexity int, id string, input model.PatchRemote) int
 		SetPreference          func(childComplexity int, key string, value string) int
 	}
 
@@ -176,6 +177,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error)
+	PatchRemote(ctx context.Context, id string, input model.PatchRemote) (*model.Remote, error)
 	DeleteRemote(ctx context.Context, id string) (bool, error)
 	CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error)
 	PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error)
@@ -349,6 +351,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.PatchRefraction(childComplexity, args["id"].(string), args["input"].(model.PatchRefract)), true
+
+	case "Mutation.patchRemote":
+		if e.complexity.Mutation.PatchRemote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_patchRemote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PatchRemote(childComplexity, args["id"].(string), args["input"].(model.PatchRemote)), true
 
 	case "Mutation.setPreference":
 		if e.complexity.Mutation.SetPreference == nil {
@@ -1080,9 +1094,9 @@ type Remote {
 
 type RemoteSecurity {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-    allowed: Strings!
-    blocked: Strings!
-    authHeaders: Strings!
+    allowed: Strings! @goTag(key: "gorm", value: "default:'[]'::jsonb")
+    blocked: Strings! @goTag(key: "gorm", value: "default:'[]'::jsonb")
+    authHeaders: Strings! @goTag(key: "gorm", value: "default:'[]'::jsonb")
     directHeader: String!
     directToken: String!
     authMode: AuthMode! @goTag(key: "gorm", value: "default:NONE")
@@ -1168,6 +1182,16 @@ input PatchRefract {
     remotes: [ID!]!
 }
 
+input PatchRemote {
+    transportID: ID!
+    allowed: [String!]!
+    blocked: [String!]!
+    authHeaders: [String!]!
+    directHeader: String!
+    directToken: String!
+    authMode: AuthMode!
+}
+
 input NewRoleBinding {
     subject: String!
     role: Role!
@@ -1187,6 +1211,7 @@ input NewTransportProfile {
 
 type Mutation {
     createRemote(input: NewRemote!): Remote!
+    patchRemote(id: ID!, input: PatchRemote!): Remote!
     deleteRemote(id: ID!): Boolean!
 
     createRefraction(input: NewRefract!): Refraction!
@@ -1313,6 +1338,30 @@ func (ec *executionContext) field_Mutation_patchRefraction_args(ctx context.Cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg1, err = ec.unmarshalNPatchRefract2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐPatchRefract(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_patchRemote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.PatchRemote
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNPatchRemote2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐPatchRemote(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1789,6 +1838,48 @@ func (ec *executionContext) _Mutation_createRemote(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateRemote(rctx, args["input"].(model.NewRemote))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Remote)
+	fc.Result = res
+	return ec.marshalNRemote2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRemote(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_patchRemote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_patchRemote_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PatchRemote(rctx, args["id"].(string), args["input"].(model.PatchRemote))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6224,6 +6315,77 @@ func (ec *executionContext) unmarshalInputPatchRefract(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPatchRemote(ctx context.Context, obj interface{}) (model.PatchRemote, error) {
+	var it model.PatchRemote
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "transportID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transportID"))
+			it.TransportID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "allowed":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("allowed"))
+			it.Allowed, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "blocked":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("blocked"))
+			it.Blocked, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "authHeaders":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authHeaders"))
+			it.AuthHeaders, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "directHeader":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("directHeader"))
+			it.DirectHeader, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "directToken":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("directToken"))
+			it.DirectToken, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "authMode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("authMode"))
+			it.AuthMode, err = ec.unmarshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -6345,6 +6507,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createRemote":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createRemote(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "patchRemote":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_patchRemote(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -8175,6 +8347,11 @@ func (ec *executionContext) unmarshalNPatchRefract2gitlabᚗcomᚋgoᚑprismᚋp
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNPatchRemote2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐPatchRemote(ctx context.Context, v interface{}) (model.PatchRemote, error) {
+	res, err := ec.unmarshalInputPatchRemote(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNRefraction2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRefraction(ctx context.Context, sel ast.SelectionSet, v model.Refraction) graphql.Marshaler {
 	return ec._Refraction(ctx, sel, &v)
 }
@@ -8410,6 +8587,38 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNStringMap2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONMap(ctx context.Context, v interface{}) (datatypes.JSONMap, error) {

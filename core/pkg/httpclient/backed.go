@@ -6,7 +6,9 @@ import (
 	"crypto/x509"
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/net/http/httpproxy"
+	"golang.org/x/net/http2"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,14 +19,15 @@ func GetConfigured(ctx context.Context, security *model.TransportSecurity) *http
 	tlsConfig := getTLSConfig(ctx, security)
 	proxy := getProxyConfig(ctx, security)
 
-	transport := getTransport()
+	transport := getTransport(ctx)
 	transport.Proxy = func(r *http.Request) (*url.URL, error) {
 		return proxy.ProxyFunc()(r.URL)
 	}
 	transport.TLSClientConfig = tlsConfig
 	log.V(3).Info("generated transport", "Transport", transport)
 	return &http.Client{
-		Transport:     transport,
+		// inject OpenTelemetry
+		Transport:     otelhttp.NewTransport(transport),
 		CheckRedirect: http.DefaultClient.CheckRedirect,
 		Timeout:       http.DefaultClient.Timeout,
 	}
@@ -32,12 +35,18 @@ func GetConfigured(ctx context.Context, security *model.TransportSecurity) *http
 
 // getTransport returns a slightly modified version
 // of http.DefaultTransport
-func getTransport() *http.Transport {
+func getTransport(ctx context.Context) *http.Transport {
+	log := logr.FromContextOrDiscard(ctx)
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxIdleConns = 100
 	transport.MaxConnsPerHost = 100
 	transport.MaxIdleConnsPerHost = 100
 	transport.ForceAttemptHTTP2 = true
+
+	// ensure that http2 is enabled
+	if err := http2.ConfigureTransport(transport); err != nil {
+		log.V(2).Error(err, "failed to configure http/2 transport")
+	}
 
 	return transport
 }

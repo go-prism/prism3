@@ -5,6 +5,10 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +19,8 @@ func NewRBACRepo(db *gorm.DB) *RBACRepo {
 }
 
 func (r *RBACRepo) Create(ctx context.Context, in *model.NewRoleBinding) (*model.RoleBinding, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_rbac_create")
+	defer span.End()
 	log := logr.FromContextOrDiscard(ctx)
 	log.V(1).Info("creating RoleBinding")
 	rb := &model.RoleBinding{
@@ -31,6 +37,8 @@ func (r *RBACRepo) Create(ctx context.Context, in *model.NewRoleBinding) (*model
 }
 
 func (r *RBACRepo) List(ctx context.Context) ([]*model.RoleBinding, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_rbac_list")
+	defer span.End()
 	log := logr.FromContextOrDiscard(ctx)
 	log.V(1).Info("listing RoleBindings")
 	var results []*model.RoleBinding
@@ -43,6 +51,10 @@ func (r *RBACRepo) List(ctx context.Context) ([]*model.RoleBinding, error) {
 }
 
 func (r *RBACRepo) ListForRole(ctx context.Context, role model.Role) ([]*model.RoleBinding, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_rbac_listForRole", trace.WithAttributes(
+		attribute.String("role", string(role)),
+	))
+	defer span.End()
 	log := logr.FromContextOrDiscard(ctx)
 	log.V(1).Info("listing bindings for role", "Role", role.String())
 	var results []*model.RoleBinding
@@ -55,6 +67,10 @@ func (r *RBACRepo) ListForRole(ctx context.Context, role model.Role) ([]*model.R
 }
 
 func (r *RBACRepo) ListForSubject(ctx context.Context, user string) ([]*model.RoleBinding, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_rbac_listForSubject", trace.WithAttributes(
+		attribute.String("subject", user),
+	))
+	defer span.End()
 	log := logr.FromContextOrDiscard(ctx)
 	log.V(1).Info("listing bindings for subject", "Subject", user)
 	var results []*model.RoleBinding

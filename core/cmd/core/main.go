@@ -151,14 +151,14 @@ func main() {
 	})
 
 	// configure graphql
-	h := v1.NewGateway(resolver.NewResolver(repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
+	h := v1.NewGateway(resolver.NewResolver(ctx, repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(ctx, repos, s3, batchClient, notifier)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				log.V(1).Info("validating websocket origin", r.Header.Get("Origin"))
+				log.V(1).Info("validating websocket origin", "Origin", r.Header.Get("Origin"))
 				return true
 			},
 		},

@@ -11,7 +11,9 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"io"
 	"net/http"
 	"strings"
@@ -31,6 +33,8 @@ func NewEphemeralRemote(ctx context.Context, root string, client *http.Client) *
 	if client == nil {
 		log.Info("received nil client - using default")
 		c = http.DefaultClient
+		// make sure we use the OpenTelemetry transport
+		c.Transport = otelhttp.NewTransport(http.DefaultTransport)
 	}
 	return &EphemeralRemote{
 		root:   root,
@@ -46,7 +50,7 @@ func (r *EphemeralRemote) String() string {
 func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *schemas.RequestContext) (string, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_exists")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 	// check the cache
 	cacheKey := path
@@ -106,9 +110,11 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *s
 
 	// start the clock
 	start := time.Now()
+	span.SetAttributes(attribute.String("time_start", start.String()))
 	// execute the request
 	resp, err := r.client.Do(req)
 	if err != nil {
+		span.RecordError(err)
 		// swallow the context-cancelled error
 		// since it will happen a lot
 		if errors.Is(err, context.Canceled) {
@@ -118,9 +124,14 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *s
 		log.Error(err, "failed to execute request")
 		return nil, err
 	}
-	log = log.WithValues("Code", resp.StatusCode, "Duration", time.Since(start), "Method", method)
+	duration := time.Since(start)
+	span.SetAttributes(
+		attribute.String("time_end", time.Now().String()),
+		attribute.String("time_elapsed", duration.String()),
+	)
+	log = log.WithValues("Code", resp.StatusCode, "Duration", duration, "Method", method)
 	log.Info("remote request completed")
-	if !httputils.IsHTTPSuccess(resp.StatusCode) {
+	if httputils.IsHTTPError(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
 			log.V(1).Info("received 401, dumping challenge header", "WWW-Authenticate", resp.Header.Get("WWW-Authenticate"))
 		}

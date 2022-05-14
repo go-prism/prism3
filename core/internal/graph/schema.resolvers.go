@@ -38,6 +38,13 @@ func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemo
 	return rem, err
 }
 
+func (r *mutationResolver) PatchRemote(ctx context.Context, id string, input model.PatchRemote) (*model.Remote, error) {
+	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
+	return r.repos.RemoteRepo.PatchRemote(ctx, id, &input)
+}
+
 func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, error) {
 	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
 		return false, err
@@ -93,11 +100,11 @@ func (r *mutationResolver) SetPreference(ctx context.Context, key string, value 
 }
 
 func (r *queryResolver) ListRemotes(ctx context.Context, arch string) ([]*model.Remote, error) {
-	return r.repos.RemoteRepo.ListRemotes(ctx, model.Archetype(arch))
+	return r.repos.RemoteRepo.ListRemotes(ctx, model.Archetype(arch), r.authz.AmI(ctx, model.RoleSuper) == nil)
 }
 
 func (r *queryResolver) GetRemote(ctx context.Context, id string) (*model.Remote, error) {
-	return r.repos.RemoteRepo.GetRemote(ctx, id)
+	return r.repos.RemoteRepo.GetRemote(ctx, id, r.authz.AmI(ctx, model.RoleSuper) == nil)
 }
 
 func (r *queryResolver) ListRefractions(ctx context.Context) ([]*model.Refraction, error) {

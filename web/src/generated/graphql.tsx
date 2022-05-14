@@ -41,6 +41,12 @@ export type Artifact = {
   uri: Scalars['String'];
 };
 
+export enum AuthMode {
+  Direct = 'DIRECT',
+  None = 'NONE',
+  Proxy = 'PROXY'
+}
+
 export type Mutation = {
   __typename?: 'Mutation';
   createRefraction: Refraction;
@@ -50,6 +56,7 @@ export type Mutation = {
   deleteRefraction: Scalars['Boolean'];
   deleteRemote: Scalars['Boolean'];
   patchRefraction: Refraction;
+  patchRemote: Remote;
   setPreference: Scalars['Boolean'];
 };
 
@@ -90,6 +97,12 @@ export type MutationPatchRefractionArgs = {
 };
 
 
+export type MutationPatchRemoteArgs = {
+  id: Scalars['ID'];
+  input: PatchRemote;
+};
+
+
 export type MutationSetPreferenceArgs = {
   key: Scalars['String'];
   value: Scalars['String'];
@@ -103,6 +116,7 @@ export type NewRefract = {
 
 export type NewRemote = {
   archetype: Archetype;
+  authMode: AuthMode;
   name: Scalars['String'];
   transport: Scalars['ID'];
   uri: Scalars['String'];
@@ -146,6 +160,16 @@ export type Overview = {
 export type PatchRefract = {
   name: Scalars['String'];
   remotes: Array<Scalars['ID']>;
+};
+
+export type PatchRemote = {
+  allowed: Array<Scalars['String']>;
+  authHeaders: Array<Scalars['String']>;
+  authMode: AuthMode;
+  blocked: Array<Scalars['String']>;
+  directHeader: Scalars['String'];
+  directToken: Scalars['String'];
+  transportID: Scalars['ID'];
 };
 
 export type Query = {
@@ -239,7 +263,10 @@ export type RemoteSecurity = {
   __typename?: 'RemoteSecurity';
   allowed: Scalars['Strings'];
   authHeaders: Scalars['Strings'];
+  authMode: AuthMode;
   blocked: Scalars['Strings'];
+  directHeader: Scalars['String'];
+  directToken: Scalars['String'];
   id: Scalars['ID'];
 };
 
@@ -380,12 +407,26 @@ export type CreateRemoteMutationVariables = Exact<{
 
 export type CreateRemoteMutation = { __typename?: 'Mutation', createRemote: { __typename?: 'Remote', id: string } };
 
+export type PatchRemoteMutationVariables = Exact<{
+  id: Scalars['ID'];
+  transportID: Scalars['ID'];
+  allowed: Array<Scalars['String']> | Scalars['String'];
+  blocked: Array<Scalars['String']> | Scalars['String'];
+  authHeaders: Array<Scalars['String']> | Scalars['String'];
+  directHeader: Scalars['String'];
+  directToken: Scalars['String'];
+  authMode: AuthMode;
+}>;
+
+
+export type PatchRemoteMutation = { __typename?: 'Mutation', patchRemote: { __typename?: 'Remote', id: string } };
+
 export type GetRemoteQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type GetRemoteQuery = { __typename?: 'Query', getRemote: { __typename?: 'Remote', id: string, createdAt: number, updatedAt: number, name: string, uri: string, archetype: Archetype, enabled: boolean, transport: { __typename?: 'TransportSecurity', id: string, name: string, cert: string, key: string, ca: string, skipTLSVerify: boolean, httpProxy: string, httpsProxy: string, noProxy: string } } };
+export type GetRemoteQuery = { __typename?: 'Query', getRemote: { __typename?: 'Remote', id: string, createdAt: number, updatedAt: number, name: string, uri: string, archetype: Archetype, enabled: boolean, security: { __typename?: 'RemoteSecurity', id: string, allowed: any, blocked: any, authMode: AuthMode, directHeader: string, directToken: string, authHeaders: any }, transport: { __typename?: 'TransportSecurity', id: string, name: string, cert: string, key: string, ca: string, skipTLSVerify: boolean, httpProxy: string, httpsProxy: string, noProxy: string } } };
 
 export type ListRemotesQueryVariables = Exact<{
   arch: Scalars['String'];
@@ -872,7 +913,7 @@ export type RefSelectQueryResult = Apollo.QueryResult<RefSelectQuery, RefSelectQ
 export const CreateRemoteDocument = gql`
     mutation createRemote($name: String!, $uri: String!, $archetype: Archetype!, $transport: ID!) {
   createRemote(
-    input: {name: $name, uri: $uri, archetype: $archetype, transport: $transport}
+    input: {name: $name, uri: $uri, archetype: $archetype, transport: $transport, authMode: NONE}
   ) {
     id
   }
@@ -907,6 +948,49 @@ export function useCreateRemoteMutation(baseOptions?: Apollo.MutationHookOptions
 export type CreateRemoteMutationHookResult = ReturnType<typeof useCreateRemoteMutation>;
 export type CreateRemoteMutationResult = Apollo.MutationResult<CreateRemoteMutation>;
 export type CreateRemoteMutationOptions = Apollo.BaseMutationOptions<CreateRemoteMutation, CreateRemoteMutationVariables>;
+export const PatchRemoteDocument = gql`
+    mutation patchRemote($id: ID!, $transportID: ID!, $allowed: [String!]!, $blocked: [String!]!, $authHeaders: [String!]!, $directHeader: String!, $directToken: String!, $authMode: AuthMode!) {
+  patchRemote(
+    id: $id
+    input: {transportID: $transportID, allowed: $allowed, blocked: $blocked, authHeaders: $authHeaders, directHeader: $directHeader, directToken: $directToken, authMode: $authMode}
+  ) {
+    id
+  }
+}
+    `;
+export type PatchRemoteMutationFn = Apollo.MutationFunction<PatchRemoteMutation, PatchRemoteMutationVariables>;
+
+/**
+ * __usePatchRemoteMutation__
+ *
+ * To run a mutation, you first call `usePatchRemoteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePatchRemoteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [patchRemoteMutation, { data, loading, error }] = usePatchRemoteMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      transportID: // value for 'transportID'
+ *      allowed: // value for 'allowed'
+ *      blocked: // value for 'blocked'
+ *      authHeaders: // value for 'authHeaders'
+ *      directHeader: // value for 'directHeader'
+ *      directToken: // value for 'directToken'
+ *      authMode: // value for 'authMode'
+ *   },
+ * });
+ */
+export function usePatchRemoteMutation(baseOptions?: Apollo.MutationHookOptions<PatchRemoteMutation, PatchRemoteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<PatchRemoteMutation, PatchRemoteMutationVariables>(PatchRemoteDocument, options);
+      }
+export type PatchRemoteMutationHookResult = ReturnType<typeof usePatchRemoteMutation>;
+export type PatchRemoteMutationResult = Apollo.MutationResult<PatchRemoteMutation>;
+export type PatchRemoteMutationOptions = Apollo.BaseMutationOptions<PatchRemoteMutation, PatchRemoteMutationVariables>;
 export const GetRemoteDocument = gql`
     query getRemote($id: ID!) {
   getRemote(id: $id) {
@@ -917,6 +1001,15 @@ export const GetRemoteDocument = gql`
     uri
     archetype
     enabled
+    security {
+      id
+      allowed
+      blocked
+      authMode
+      directHeader
+      directToken
+      authHeaders
+    }
     transport {
       id
       name

@@ -73,6 +73,16 @@ type PatchRefract struct {
 	Remotes []string `json:"remotes"`
 }
 
+type PatchRemote struct {
+	TransportID  string   `json:"transportID"`
+	Allowed      []string `json:"allowed"`
+	Blocked      []string `json:"blocked"`
+	AuthHeaders  []string `json:"authHeaders"`
+	DirectHeader string   `json:"directHeader"`
+	DirectToken  string   `json:"directToken"`
+	AuthMode     AuthMode `json:"authMode"`
+}
+
 type Refraction struct {
 	ID        string    `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	CreatedAt int64     `json:"createdAt"`
@@ -103,9 +113,9 @@ type RemoteOverview struct {
 
 type RemoteSecurity struct {
 	ID           string              `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
-	Allowed      datatypes.JSONArray `json:"allowed"`
-	Blocked      datatypes.JSONArray `json:"blocked"`
-	AuthHeaders  datatypes.JSONArray `json:"authHeaders"`
+	Allowed      datatypes.JSONArray `json:"allowed" gorm:"default:'[]'::jsonb"`
+	Blocked      datatypes.JSONArray `json:"blocked" gorm:"default:'[]'::jsonb"`
+	AuthHeaders  datatypes.JSONArray `json:"authHeaders" gorm:"default:'[]'::jsonb"`
 	DirectHeader string              `json:"directHeader"`
 	DirectToken  string              `json:"directToken"`
 	AuthMode     AuthMode            `json:"authMode" gorm:"default:NONE"`

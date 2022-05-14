@@ -84,9 +84,9 @@ type Remote {
 
 type RemoteSecurity {
     id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
-    allowed: Strings!
-    blocked: Strings!
-    authHeaders: Strings!
+    allowed: Strings! @goTag(key: "gorm", value: "default:'[]'::jsonb")
+    blocked: Strings! @goTag(key: "gorm", value: "default:'[]'::jsonb")
+    authHeaders: Strings! @goTag(key: "gorm", value: "default:'[]'::jsonb")
     directHeader: String!
     directToken: String!
     authMode: AuthMode! @goTag(key: "gorm", value: "default:NONE")
@@ -172,6 +172,16 @@ input PatchRefract {
     remotes: [ID!]!
 }
 
+input PatchRemote {
+    transportID: ID!
+    allowed: [String!]!
+    blocked: [String!]!
+    authHeaders: [String!]!
+    directHeader: String!
+    directToken: String!
+    authMode: AuthMode!
+}
+
 input NewRoleBinding {
     subject: String!
     role: Role!
@@ -191,6 +201,7 @@ input NewTransportProfile {
 
 type Mutation {
     createRemote(input: NewRemote!): Remote!
+    patchRemote(id: ID!, input: PatchRemote!): Remote!
     deleteRemote(id: ID!): Boolean!
 
     createRefraction(input: NewRefract!): Refraction!

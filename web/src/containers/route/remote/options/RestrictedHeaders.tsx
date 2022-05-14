@@ -15,28 +15,34 @@
  *
  */
 
-import React, {useMemo, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
 	Alert,
-	Button,
-	Card,
+	Box,
 	Collapse,
+	FormControl,
+	FormControlLabel,
+	FormLabel,
+	IconButton,
 	List,
 	ListItem,
-	ListItemIcon,
 	ListItemSecondaryAction,
 	ListItemText,
 	ListSubheader,
-	Switch,
+	Radio,
+	RadioGroup,
 	Theme,
 	Typography,
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {GenericIconButton, ValidatedData, ValidatedTextField} from "jmp-coreui";
+import {Plus} from "tabler-icons-react";
 import {mdiDeleteOutline} from "@mdi/js";
 import {useTheme} from "@mui/material/styles";
-import {DEFAULT_RESTRICTED_HEADERS} from "../../../../config/constants";
-import {DataIsValid} from "../../../../utils/data";
+import {AuthMode} from "../../../../generated/graphql";
+import InlineNotFound from "../../../widgets/InlineNotFound";
+import Flexbox from "../../../widgets/Flexbox";
+import TextEntryModal from "../../../../components/modal/TextEntryModal";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	button: {
@@ -51,17 +57,16 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }));
 
 interface RestrictedHeadersProps {
-	stripRestricted: boolean;
-	setStripRestricted: (v: boolean) => void;
-	restrictedHeaders: string[];
-	setRestrictedHeaders: (v: string[]) => void;
+	headers: string[];
+	setHeaders: (v: string[]) => void;
+	directHeader: string;
+	setDirectHeader: (s: string) => void;
+	directToken: string;
+	setDirectToken: (s: string) => void;
+	authMode: AuthMode;
+	setAuthMode: (m: AuthMode) => void;
 	loading?: boolean;
 	disabled?: boolean;
-}
-
-interface Header {
-	key: string;
-	readonly: boolean;
 }
 
 const initialHeader: ValidatedData = {
@@ -70,11 +75,21 @@ const initialHeader: ValidatedData = {
 	regex: new RegExp(/^([-!#-'*+.0-9A-Z^-z|~]+)/)
 }
 
+const initialValue: ValidatedData = {
+	value: "",
+	error: "",
+	regex: new RegExp(/.+/)
+}
+
 const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
-	stripRestricted,
-	setStripRestricted,
-	restrictedHeaders,
-	setRestrictedHeaders,
+	headers,
+	setHeaders,
+	directHeader,
+	setDirectHeader,
+	directToken,
+	setDirectToken,
+	authMode,
+	setAuthMode,
 	loading,
 	disabled = false
 }): JSX.Element => {
@@ -82,32 +97,20 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 	const theme = useTheme();
 	const {classes} = useStyles();
 
-	// local state
-	const [header, setHeader] = useState<ValidatedData>(initialHeader);
-	const headers = useMemo(() => {
-		const headerObj: Header[] = DEFAULT_RESTRICTED_HEADERS.map(h => ({key: h, readonly: true})).concat(restrictedHeaders.map(h => ({key: h, readonly: false})));
-		return headerObj.map(h => <ListItem
-			dense
-			key={h.key}>
-			<ListItemText
-				primaryTypographyProps={{color: h.readonly ? "textSecondary" : "textPrimary"}}>
-				{h.key}
-			</ListItemText>
-			{!h.readonly && <ListItemSecondaryAction>
-				<GenericIconButton
-					title="Delete"
-					icon={mdiDeleteOutline}
-					colour={theme.palette.error.main}
-					onClick={() => setRestrictedHeaders(restrictedHeaders.filter(k => k !== h.key))}
-					disabled={loading || disabled}
-				/>
-			</ListItemSecondaryAction>}
-		</ListItem>)
-	}, [restrictedHeaders, loading, disabled]);
+	const [dHeader, setDHeader] = useState<ValidatedData>({...initialHeader, value: directHeader});
+	const [directValue, setDirectValue] = useState<ValidatedData>(initialValue);
 
-	const onCreateHeader = (): void => {
-		setRestrictedHeaders([...restrictedHeaders, header.value]);
-	}
+	const [addProxyHeader, setAddProxyHeader] = useState<ValidatedData>({...initialHeader, value: directToken});
+	const [openHeaderModal, setOpenHeaderModal] = useState<boolean>(false);
+
+	useEffect(() => {
+		if (dHeader.error === "") {
+			setDirectHeader(dHeader.value);
+		}
+		if (directValue.error === "") {
+			setDirectToken(directValue.value);
+		}
+	}, [dHeader, directValue]);
 
 	return (
 		<div>
@@ -115,60 +118,126 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 				className={classes.text}
 				color="textSecondary"
 				variant="body2">
-				Restricted headers are combined and hashed to create a "unique" cache partition for individual requests.
-				Optionally, these headers can be removed entirely. This is useful when creating remotes that target public sources (e.g. Maven Central).
+				Authentication headers are hashed to create a "unique" cache partition for individual requests.
+				By default, authentication information is removed entirely so that you can anonymously retrieve artifacts from remotes that target public sources (e.g. Maven Central).
 			</Typography>
+			<ListItem>
+				<FormControl
+					disabled={disabled || loading}>
+					<FormLabel>Authentication mode</FormLabel>
+					<RadioGroup
+						value={authMode}
+						onChange={(event, value) => setAuthMode(value as AuthMode)}>
+						<FormControlLabel
+							value={AuthMode.None}
+							control={<Radio/>}
+							label="None"
+						/>
+						<FormControlLabel
+							value={AuthMode.Proxy}
+							control={<Radio/>}
+							label="Pass-through"
+						/>
+						<FormControlLabel
+							value={AuthMode.Direct}
+							control={<Radio/>}
+							label="Direct"
+						/>
+					</RadioGroup>
+				</FormControl>
+			</ListItem>
 			<Collapse
-				in={stripRestricted}>
+				in={authMode === AuthMode.None}>
 				<Alert
 					severity="warning">
-					Stripping restricted headers will cause authentication to fail.
-					Only anonymous objects will be retrievable from this remote.
+					With authentication disabled, only anonymous artifacts will be retrievable from this remote.
 				</Alert>
 			</Collapse>
-			<ListItem>
-				<ListItemIcon>
-					<Switch
-						color="primary"
-						checked={stripRestricted}
-						onChange={(_, checked) => setStripRestricted(checked)}
-						disabled={loading || disabled}
+			<Flexbox>
+				{authMode !== AuthMode.None && <ListSubheader>
+					{authMode === AuthMode.Proxy ? "Pass-through configuration" : "Direct configuration"}
+				</ListSubheader>}
+				<Box sx={{flexGrow: 1}}/>
+				{authMode === AuthMode.Proxy && <React.Fragment>
+					<IconButton
+						size="small"
+						centerRipple={false}
+						onClick={() => setOpenHeaderModal(() => true)}>
+						<Plus/>
+					</IconButton>
+					<TextEntryModal
+						open={openHeaderModal}
+						setOpen={setOpenHeaderModal}
+						title="Add header"
+						description="Set an HTTP header that Prism will proxy to this Remote (e.g. Private-Token). Headers are case-insensitive."
+						disabled={disabled || loading}
+						invalidLabel="Value must be a valid HTTP header"
+						value={addProxyHeader}
+						setValue={setAddProxyHeader}
+						onConfirm={() => {
+							if (headers.find(h => h === addProxyHeader.value))
+								return;
+							setHeaders([...headers, addProxyHeader.value]);
+							setAddProxyHeader(() => initialHeader);
+						}}
 					/>
-				</ListItemIcon>
-				<ListItemText
-					primary="Strip restricted headers"
-					secondary="Prism will remove restricted headers when contacting this remote."
-				/>
-			</ListItem>
-			<Card
-				style={{padding: theme.spacing(2)}}
-				variant="outlined">
+				</React.Fragment>}
+			</Flexbox>
+			{authMode === AuthMode.Proxy && <List>
+				{headers.length === 0 && <InlineNotFound
+					title="No headers set"
+				/>}
+				{headers.map(h => <ListItem
+					key={h}
+					dense>
+					<ListItemText>
+						{h}
+					</ListItemText>
+					<ListItemSecondaryAction>
+						<GenericIconButton
+							size="small"
+							title="Remove"
+							icon={mdiDeleteOutline}
+							colour={theme.palette.text.secondary}
+							onClick={() => {
+								setHeaders(headers.filter(i => i !== h));
+							}}
+						/>
+					</ListItemSecondaryAction>
+				</ListItem>)}
+			</List>}
+			{authMode === AuthMode.Direct && <Box
+				sx={{ml: 2, mr: 2}}>
 				<ValidatedTextField
-					data={header}
-					setData={setHeader}
+					data={dHeader}
+					setData={setDHeader}
 					invalidLabel="Must be a valid HTTP header"
 					fieldProps={{
 						required: true,
 						label: "Header",
-						variant: "outlined",
+						variant: "filled",
 						id: "txt-header",
 						fullWidth: true,
-						disabled: loading || disabled
+						disabled: loading || disabled,
+						placeholder: "Authorization"
 					}}
 				/>
-				<Button
-					className={classes.button}
-					variant="contained"
-					color="primary"
-					onClick={onCreateHeader}
-					disabled={!DataIsValid(header) || loading || restrictedHeaders.includes(header.value) || DEFAULT_RESTRICTED_HEADERS.includes(header.value) || disabled}>
-					Create
-				</Button>
-			</Card>
-			<ListSubheader>Restricted headers ({headers.length})</ListSubheader>
-			<List>
-				{headers}
-			</List>
+				<ValidatedTextField
+					data={directValue}
+					setData={setDirectValue}
+					invalidLabel="Must be set"
+					fieldProps={{
+						sx: {mt: 1},
+						required: true,
+						label: "Token",
+						variant: "filled",
+						id: "txt-token",
+						fullWidth: true,
+						disabled: loading || disabled,
+						placeholder: "Basic admin:hunter2"
+					}}
+				/>
+			</Box>}
 		</div>
 	);
 }

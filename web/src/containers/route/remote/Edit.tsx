@@ -24,12 +24,12 @@ import {useParams} from "react-router";
 import {formatDistanceToNow} from "date-fns";
 import {Apps, CirclePlus, Edit} from "tabler-icons-react";
 import {DataIsValid} from "../../../utils/data";
-import getErrorMessage, {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
+import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
 import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
 import {getRemoteIcon} from "../../../utils/remote";
-import {Archetype, useGetRemoteLazyQuery} from "../../../generated/graphql";
+import {Archetype, AuthMode, useGetRemoteLazyQuery, usePatchRemoteMutation} from "../../../generated/graphql";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
@@ -88,17 +88,22 @@ const EditRemote: React.FC = (): JSX.Element => {
 	const {id} = useParams<IDParams>();
 
 	// global state
-	const [getRemote, {data, loading, error}] = useGetRemoteLazyQuery();
+	const [getRemote, getData] = useGetRemoteLazyQuery();
+	const [patchRemote, patchData] = usePatchRemoteMutation();
+	const {data} = getData;
+	const loading = getData.loading || patchData.loading;
 
 	// local state
 	const [url, setURL] = useState<ValidatedData>(initialURL);
 	const [name, setName] = useState<ValidatedData>(initialName);
 	const [success, setSuccess] = useState<boolean>(false);
 	const [enabled, setEnabled] = useState<boolean>(false);
-	const [stripRestricted, setStripRestricted] = useState<boolean>(false);
-	const [resHeaders, setResHeaders] = useState<string[]>([]);
 	const [allowList, setAllowList] = useState<string[]>([]);
 	const [blockList, setBlockList] = useState<string[]>([]);
+	const [resHeaders, setResHeaders] = useState<string[]>([]);
+	const [directHeader, setDirectHeader] = useState<string>("");
+	const [directToken, setDirectToken] = useState<string>("");
+	const [authMode, setAuthMode] = useState<AuthMode>(AuthMode.None);
 	const [readOnly, setReadOnly] = useState<boolean>(false);
 
 	const open = useMemo(() => {
@@ -139,9 +144,12 @@ const EditRemote: React.FC = (): JSX.Element => {
 		setName({...name, value: data?.getRemote.name});
 		setURL({...url, value: data?.getRemote.uri});
 		setEnabled(data?.getRemote.enabled);
-		// setResHeaders(data?.getRemote.security.authHeaders || []);
-		// setAllowList(data?.getRemote.security.allowed || []);
-		// setBlockList(data?.getRemote.security.blocked || []);
+		setAuthMode(data?.getRemote.security.authMode || AuthMode.None);
+		setAllowList(data?.getRemote.security.allowed || []);
+		setBlockList(data?.getRemote.security.blocked || []);
+		setResHeaders(data?.getRemote.security.authHeaders || []);
+		setDirectHeader(data?.getRemote.security.directHeader || "");
+		setDirectToken(data?.getRemote.security.directToken || "");
 		setReadOnly(data?.getRemote.archetype === Archetype.Go);
 	}, [data?.getRemote]);
 
@@ -152,30 +160,39 @@ const EditRemote: React.FC = (): JSX.Element => {
 			return true;
 		if (url.value !== data?.getRemote.uri)
 			return true;
+		if (allowList !== data?.getRemote.security.allowed)
+			return true;
+		if (blockList !== data?.getRemote.security.blocked)
+			return true;
+		if (resHeaders !== data?.getRemote.security.authHeaders)
+			return true;
+		if (authMode !== data?.getRemote.security.authMode)
+			return true;
+		if (directHeader !== data?.getRemote.security.directHeader)
+			return true;
+		if (directToken !== data?.getRemote.security.directToken)
+			return true;
 		return enabled !== data?.getRemote.enabled;
 	};
 
 	const handleUpdate = (): void => {
-		// if (remote == null) return;
-		// setSuccess(false);
-		// dispatch(updateRemote(id, {
-		// 	allowlistList: allowList,
-		// 	blocklistList: blockList,
-		// 	archetype: remote.archetype,
-		// 	name: name.value,
-		// 	uri: url.value,
-		// 	enabled: enabled,
-		// 	striprestricted: stripRestricted,
-		// 	restrictedheadersList: resHeaders,
-		// 	clientprofile: profile
-		// })).then((action) => {
-		// 	// only show the alert if there was a success
-		// 	if(action.error !== true) {
-		// 		setSuccess(true);
-		// 		// reload the remote
-		// 		dispatch(getRemote(id));
-		// 	}
-		// });
+		if (data == null)
+			return;
+		setSuccess(() => false);
+		patchRemote({variables: {
+			id: data.getRemote.id,
+			transportID: data.getRemote.transport.id,
+			allowed: allowList,
+			blocked: blockList,
+			authMode: authMode,
+			directHeader: directHeader,
+			directToken: directToken,
+			authHeaders: resHeaders
+		}}).then(r => {
+			if (!r.errors) {
+				setSuccess(() => true);
+			}
+		});
 	}
 
 	const handleOpen = (id: string): void => {
@@ -201,14 +218,18 @@ const EditRemote: React.FC = (): JSX.Element => {
 				/>
 			},
 			{
-				id: "restricted-headers",
-				primary: "Restricted headers",
-				secondary: "Restricted headers control the behaviour of cache partitioning and remote authentication.",
+				id: "authorization",
+				primary: "Authorisation",
+				secondary: "Control the behaviour of cache partitioning and remote authentication.",
 				children: <RestrictedHeaders
-					stripRestricted={stripRestricted}
-					setStripRestricted={setStripRestricted}
-					restrictedHeaders={resHeaders}
-					setRestrictedHeaders={setResHeaders}
+					headers={resHeaders}
+					setHeaders={setResHeaders}
+					directHeader={directHeader}
+					setDirectHeader={setDirectHeader}
+					directToken={directToken}
+					setDirectToken={setDirectToken}
+					authMode={authMode}
+					setAuthMode={setAuthMode}
 					loading={loading}
 					disabled={readOnly}
 				/>
@@ -237,17 +258,17 @@ const EditRemote: React.FC = (): JSX.Element => {
 
 	return (
 		<div>
-			{error != null && <Alert
+			{getData.error != null && <Alert
 				severity="error">
-					Failed to fetch Remote.
+				Failed to fetch Remote.
 				<br/>
 				<Code>
-					{getGraphErrorMessage(error)}
+					{getGraphErrorMessage(getData.error)}
 				</Code>
 			</Alert>}
 			{success && <Alert
 				severity="success">
-					Remote updated successfully
+				Remote updated successfully
 			</Alert>}
 			<ListItem>
 				<ListItemIcon>
@@ -333,12 +354,12 @@ const EditRemote: React.FC = (): JSX.Element => {
 				<List>
 					{getOptions()}
 				</List>
-				{error != null && <Alert
+				{patchData.error != null && <Alert
 					severity="error">
 						Failed to update Remote.
 					<br/>
 					<Code>
-						{getErrorMessage(error)}
+						{getGraphErrorMessage(patchData.error)}
 					</Code>
 				</Alert>}
 				<div

@@ -7,6 +7,8 @@ import (
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/tracing"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -27,6 +29,8 @@ func getAnyQuery[T string | int | ~uint](vals []T) string {
 }
 
 func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.PatchRefract) (*model.Refraction, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_refract_patchRefraction")
+	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("ID", id)
 	log.V(1).Info("patching refraction")
 	// fetch the original refraction
@@ -44,7 +48,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	}
 	// fetch the remotes
 	var remotes []*model.Remote
-	if err := r.db.WithContext(ctx).Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
+	if err := r.db.WithContext(ctx).Omit("Security.DirectToken").Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
 		log.Error(err, "failed to retrieve remotes")
 		sentry.CaptureException(err)
 		return nil, err
@@ -65,7 +69,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract) (*model.Refraction, error) {
 	log := logr.FromContextOrDiscard(ctx)
 	var remotes []*model.Remote
-	if err := r.db.WithContext(ctx).Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
+	if err := r.db.WithContext(ctx).Omit("Security.DirectToken").Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
 		log.Error(err, "failed to retrieve remotes")
 		sentry.CaptureException(err)
 		return nil, err
@@ -89,7 +93,7 @@ func (r *RefractRepo) GetRefractionByName(ctx context.Context, name string) (*mo
 	log := logr.FromContextOrDiscard(ctx).WithValues("Name", name)
 	log.V(1).Info("fetching refraction by name")
 	var result model.Refraction
-	if err := r.db.WithContext(ctx).Preload("Remotes").Preload("Remotes.Security").Preload("Remotes.Transport").Where("name = ?", name).First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Remotes").Preload("Remotes.Security").Omit("Remotes.Security.DirectToken").Preload("Remotes.Transport").Where("name = ?", name).First(&result).Error; err != nil {
 		log.Error(err, "failed to get refraction")
 		sentry.CaptureException(err)
 		return nil, err
@@ -101,7 +105,7 @@ func (r *RefractRepo) GetRefraction(ctx context.Context, id string) (*model.Refr
 	log := logr.FromContextOrDiscard(ctx).WithValues("ID", id)
 	log.V(1).Info("fetching refraction")
 	var result model.Refraction
-	if err := r.db.WithContext(ctx).Preload("Remotes").Where("id = ?", id).First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Remotes").Omit("Remotes.Security.DirectToken").Where("id = ?", id).First(&result).Error; err != nil {
 		log.Error(err, "failed to get refraction")
 		sentry.CaptureException(err)
 		return nil, err
@@ -132,7 +136,7 @@ func (r *RefractRepo) ListRefractions(ctx context.Context) ([]*model.Refraction,
 	log := logr.FromContextOrDiscard(ctx)
 	log.V(1).Info("listing refractions")
 	var result []*model.Refraction
-	if err := r.db.WithContext(ctx).Preload("Remotes").Find(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Remotes").Omit("Remotes.Security.DirectToken").Find(&result).Error; err != nil {
 		log.Error(err, "failed to list refractions")
 		sentry.CaptureException(err)
 		return nil, err
