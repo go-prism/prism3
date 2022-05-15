@@ -168,7 +168,7 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.Re
 func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download", trace.WithAttributes(attribute.String("path", path)))
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 
 	b.validateContext(ctx, rctx)

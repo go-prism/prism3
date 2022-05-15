@@ -88,11 +88,13 @@ func (g *GitLabPartition) Apply(ctx context.Context, rem RemoteLike, key, value 
 	span.SetAttributes(attribute.String("gitlab_api_url", dst))
 
 	// execute the request
-	resp, err := rem.Do(ctx, http.MethodGet, dst, &schemas.RequestContext{
-		AuthOpts: httpclient.AuthOpts{
-			Mode:   httpclient.AuthHeader,
-			Header: key,
-			Token:  value,
+	resp, err := rem.Do(ctx, http.MethodGet, dst, schemas.RequestOptions{
+		Context: &schemas.RequestContext{
+			AuthOpts: httpclient.AuthOpts{
+				Mode:   httpclient.AuthHeader,
+				Header: key,
+				Token:  value,
+			},
 		},
 	})
 	if err != nil {

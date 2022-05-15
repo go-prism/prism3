@@ -66,7 +66,17 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *schemas
 	target := fmt.Sprintf("%s/%s", r.root, path)
 	log = log.WithValues("Target", target)
 	log.Info("probing remote")
-	_, err := r.Do(ctx, http.MethodHead, target, rctx)
+	// we unfortunately need to send a GET request
+	// with a zero range. This is to fix issues
+	// where the remote redirects us to S3 and pre-signs
+	// the request as if it were a GET...
+	// todo create a feature flag for this (features.RemoteAvoidRangeHack)
+	h := http.Header{}
+	h.Set("Range", "bytes=0-0")
+	_, err := r.Do(ctx, http.MethodGet, target, schemas.RequestOptions{
+		Header:  h,
+		Context: rctx,
+	})
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +88,7 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *schemas
 func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_download")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 	target := path
 	if !strings.HasPrefix(path, "https://") {
@@ -86,32 +96,37 @@ func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *schem
 	}
 	log = log.WithValues("Target", target)
 	log.Info("downloading from remote")
-	resp, err := r.Do(ctx, http.MethodGet, target, rctx)
+	resp, err := r.Do(ctx, http.MethodGet, target, schemas.RequestOptions{Context: rctx})
 	if err != nil {
 		return nil, err
 	}
 	return resp.Body, nil
 }
 
-func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *schemas.RequestContext) (*http.Response, error) {
+func (r *EphemeralRemote) Do(ctx context.Context, method, target string, opt schemas.RequestOptions) (*http.Response, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_do")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
-	log.V(2).Info("using request context", "RequestContext", rctx)
+	log := logr.FromContextOrDiscard(ctx).WithValues("Method", method, "Url", target)
+	log.V(2).Info("using request context", "RequestContext", opt.Context)
 	req, err := http.NewRequestWithContext(ctx, method, target, nil)
 	if err != nil {
 		log.Error(err, "failed to prepare request")
 		return nil, problem.New(http.StatusBadRequest).Errorf("remote request cannot be created")
 	}
-	// apply authentication
-	if rctx != nil {
-		httpclient.ApplyAuth(ctx, req, rctx.AuthOpts)
+	if opt.Header != nil {
+		req.Header = opt.Header
 	}
+	// apply authentication
+	if opt.Context != nil {
+		httpclient.ApplyAuth(ctx, req, opt.Context.AuthOpts)
+	}
+	log.V(3).Info("request headers", "Headers", req.Header)
 
 	// start the clock
 	start := time.Now()
 	span.SetAttributes(attribute.String("time_start", start.String()))
 	// execute the request
+	log.V(1).Info("executing request")
 	resp, err := r.client.Do(req)
 	if err != nil {
 		span.RecordError(err)
@@ -131,6 +146,7 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *s
 	)
 	log = log.WithValues("Code", resp.StatusCode, "Duration", duration, "Method", method)
 	log.Info("remote request completed")
+	log.V(3).Info("response headers", "Headers", resp.Header)
 	if httputils.IsHTTPError(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
 			log.V(1).Info("received 401, dumping challenge header", "WWW-Authenticate", resp.Header.Get("WWW-Authenticate"))

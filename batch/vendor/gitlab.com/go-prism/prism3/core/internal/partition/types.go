@@ -11,7 +11,7 @@ type Partition interface {
 }
 
 type RemoteLike interface {
-	Do(ctx context.Context, method, target string, rctx *schemas.RequestContext) (*http.Response, error)
+	Do(ctx context.Context, method, target string, opt schemas.RequestOptions) (*http.Response, error)
 	String() string
 }
 

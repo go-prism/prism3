@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"github.com/djcass44/go-utils/utilities/sliceutils"
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/partition"
@@ -67,12 +68,44 @@ func (b *BackedRemote) Model() *model.Remote {
 func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.RequestContext) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_validateContext")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx)
+	log := logr.FromContextOrDiscard(ctx).WithValues("Remote", b.rm.Name)
 	if rctx == nil {
 		log.V(1).Info("skipping context validation as context is nil")
 		return
 	}
 	span.SetAttributes(attribute.Int("auth_mode", int(rctx.Mode)))
+	log.V(3).Info("pre-processed authentication context", "Raw", rctx)
+	log.V(1).Info("checking authentication context against Remote settings", "AuthMode", b.rm.Security.AuthMode)
+	// wipe the request context if the remote
+	// requests it
+	if b.rm.Security.AuthMode == model.AuthModeNone {
+		log.V(1).Info("removing authentication context as this remote forbids it")
+		rctx.Mode = httpclient.AuthNone
+		rctx.Header = ""
+		rctx.Token = ""
+		return
+	}
+	// check that the authentication header
+	// is in the remotes list of allowed
+	// headers.
+	if b.rm.Security.AuthMode == model.AuthModeProxy {
+		if !sliceutils.Includes(b.rm.Security.AuthHeaders, rctx.Header) {
+			log.V(1).Info("removing authentication context as provided header is not in the list of allowed headers", "Header", rctx.Header, "Allowed", b.rm.Security.AuthHeaders)
+			rctx.Mode = httpclient.AuthNone
+			rctx.Header = ""
+			rctx.Token = ""
+			return
+		}
+	}
+	// overwrite any incoming authentication information
+	// with the remotes credentials
+	if b.rm.Security.AuthMode == model.AuthModeDirect {
+		log.V(1).Info("overwriting authentication context as this remote will handle it", "Remote")
+		rctx.Mode = httpclient.AuthHeader
+		rctx.Header = b.rm.Security.DirectHeader
+		rctx.Token = b.rm.Security.DirectToken
+	}
+	log.V(3).Info("post-processed authentication context", "Raw", rctx)
 	if rctx.Mode == httpclient.AuthNone {
 		log.V(1).Info("skipping context validation as no authentication information has been provided by the client")
 		return
@@ -135,16 +168,10 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.Re
 func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_download", trace.WithAttributes(attribute.String("path", path)))
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 
 	b.validateContext(ctx, rctx)
-
-	// validate or set auth
-	if b.rm.Security.AuthMode == model.AuthModeNone {
-		log.V(1).Info("wiping request context")
-		rctx.Mode = httpclient.AuthNone
-	}
 
 	log.V(2).Info("using final request context", "RequestContext", rctx)
 	canCache := b.pol.CanCache(ctx, path)
@@ -190,7 +217,7 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.RequestContext) (string, string) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_backed_getPath")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 	uploadPath := strings.TrimPrefix(path, b.rm.URI)
 	if strings.HasPrefix(uploadPath, "https://") {

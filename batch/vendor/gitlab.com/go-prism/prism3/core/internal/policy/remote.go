@@ -44,7 +44,7 @@ func NewRegexEnforcer(ctx context.Context, r *model.Remote) *RegexEnforcer {
 		log.V(2).Info("compiling BLOCK regex", r.Security.Blocked[i])
 		block[i] = regexp.MustCompile(r.Security.Blocked[i])
 	}
-	log.V(1).Info("successfully compiled regex policies", "AllowedCount", "BlockedCount", len(allow), len(block))
+	log.V(1).Info("successfully compiled regex policies", "AllowedCount", len(allow), "BlockedCount", len(block))
 	return &RegexEnforcer{
 		archetype: r.Archetype,
 		allow:     allow,
