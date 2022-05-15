@@ -96,7 +96,7 @@ func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *schem
 func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *schemas.RequestContext) (*http.Response, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_do")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Method", method, "Url", target)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 	req, err := http.NewRequestWithContext(ctx, method, target, nil)
 	if err != nil {
@@ -107,11 +107,13 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *s
 	if rctx != nil {
 		httpclient.ApplyAuth(ctx, req, rctx.AuthOpts)
 	}
+	log.V(3).Info("request headers", "Headers", req.Header)
 
 	// start the clock
 	start := time.Now()
 	span.SetAttributes(attribute.String("time_start", start.String()))
 	// execute the request
+	log.V(1).Info("executing request")
 	resp, err := r.client.Do(req)
 	if err != nil {
 		span.RecordError(err)
@@ -131,6 +133,7 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, rctx *s
 	)
 	log = log.WithValues("Code", resp.StatusCode, "Duration", duration, "Method", method)
 	log.Info("remote request completed")
+	log.V(3).Info("response headers", "Headers", resp.Header)
 	if httputils.IsHTTPError(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
 			log.V(1).Info("received 401, dumping challenge header", "WWW-Authenticate", resp.Header.Get("WWW-Authenticate"))

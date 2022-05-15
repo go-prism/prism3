@@ -77,7 +77,7 @@ func (r *Resolver) getRefraction(v any) (any, error) {
 		return nil, errors.New("expected string")
 	}
 	log = log.WithValues("Name", name)
-	log.V(1).Info("fetching refraction from database", name)
+	log.V(1).Info("fetching refraction from database")
 	ctx := logr.NewContext(context.TODO(), log)
 	ref, err := r.repos.RefractRepo.GetRefractionByName(ctx, name)
 	if err != nil {

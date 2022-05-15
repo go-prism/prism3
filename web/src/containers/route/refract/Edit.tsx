@@ -20,7 +20,6 @@ import {
 } from "../../../generated/graphql";
 import Setup from "./options/Setup";
 import RemoteSelect from "./RemoteSelect";
-import RefractAuth from "./options/RefractAuth";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -146,13 +145,6 @@ const EditRefract: React.FC = (): JSX.Element => {
 				primary: "Getting setup",
 				secondary: "Application-specific setup information.",
 				children: data?.getRefraction && <Setup refract={data.getRefraction as Refraction}/>,
-				disabled: data?.getRefraction == null || loading
-			},
-			{
-				id: "authentication",
-				primary: "Authentication",
-				secondary: "Restrict and control access to protected resources.",
-				children: <RefractAuth/>,
 				disabled: data?.getRefraction == null || loading
 			}
 		];

@@ -35,7 +35,7 @@ func (r *Refraction) Remotes() []remote.Remote {
 func (r *Refraction) Exists(ctx context.Context, path string, rctx *schemas.RequestContext) (*Message, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "refraction_exists")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path")
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	log.V(2).Info("using request context", "RequestContext", rctx)
 	ch := make(chan Message, 1)
 	// create a goroutine for each remote
@@ -48,7 +48,9 @@ func (r *Refraction) Exists(ctx context.Context, path string, rctx *schemas.Requ
 	for i := range r.remotes {
 		rem := r.remotes[i]
 		go func() {
-			uri, _ := rem.Exists(reqCtx, path, rctx)
+			// make sure to clone the request context
+			// otherwise remotes will overwrite each other
+			uri, _ := rem.Exists(reqCtx, path, rctx.Clone())
 			ch <- Message{
 				URI:    uri,
 				Remote: rem,
@@ -82,7 +84,9 @@ func (r *Refraction) Download(ctx context.Context, path string, rctx *schemas.Re
 	if err != nil {
 		return nil, err
 	}
-	resp, err := msg.Remote.Download(ctx, msg.URI, rctx)
+	// make sure to clone the request context
+	// otherwise remotes will overwrite each other
+	resp, err := msg.Remote.Download(ctx, msg.URI, rctx.Clone())
 	if err != nil {
 		return nil, err
 	}

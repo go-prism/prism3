@@ -49,7 +49,8 @@ func TestBackedRemote_DownloadGitLab(t *testing.T) {
 	rem := NewBackedRemote(ctx, &model.Remote{
 		URI: fmt.Sprintf("%s/%s", ts.URL, "api/v4/packages/generic"),
 		Security: &model.RemoteSecurity{
-			AuthMode: model.AuthModeProxy,
+			AuthMode:    model.AuthModeProxy,
+			AuthHeaders: []string{"Job-Token", "Private-Token", "Deploy-Token"},
 		},
 		Archetype: model.ArchetypeGeneric,
 	}, store, func(ctx context.Context, path, remote string) error {
