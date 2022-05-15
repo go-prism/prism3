@@ -6,7 +6,7 @@ replace gitlab.com/go-prism/prism3/core => ../core
 
 require (
 	github.com/djcass44/go-utils/logging v0.1.0
-	github.com/djcass44/go-utils/otel v0.1.0
+	github.com/djcass44/go-utils/otel v0.1.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gorilla/mux v1.8.0
@@ -52,8 +52,8 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/djcass44/go-tracer v0.3.0 // indirect
 	github.com/djcass44/go-utils v0.2.1-0.20210516001550-3d288882b7f4 // indirect
-	github.com/djcass44/go-utils/flagging v0.1.0 // indirect
-	github.com/djcass44/go-utils/orm v0.0.0-20220509072308-a091e3d878db // indirect
+	github.com/djcass44/go-utils/flagging v0.1.1 // indirect
+	github.com/djcass44/go-utils/orm v0.1.0 // indirect
 	github.com/djcass44/go-utils/utilities v0.1.0 // indirect
 	github.com/docker/cli v20.10.11+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
@@ -144,12 +144,12 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.5.2-0.20220426165107-d835ace014b3 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122 // indirect
+	golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9 // indirect
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
+	golang.org/x/net v0.0.0-20220513224357-95641704303c // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect

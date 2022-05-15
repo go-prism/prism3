@@ -6,9 +6,9 @@ replace gitlab.com/go-prism/prism3/core => ../core
 
 require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
-	github.com/djcass44/go-utils/flagging v0.1.0
+	github.com/djcass44/go-utils/flagging v0.1.1
 	github.com/djcass44/go-utils/logging v0.1.0
-	github.com/djcass44/go-utils/otel v0.1.0
+	github.com/djcass44/go-utils/otel v0.1.1
 	github.com/go-logr/logr v1.2.3
 	github.com/goproxy/goproxy v0.10.2
 	github.com/gorilla/mux v1.8.0
@@ -66,10 +66,10 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.5.2-0.20220426165107-d835ace014b3 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122 // indirect
+	golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/net v0.0.0-20220513224357-95641704303c // indirect
+	golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3 // indirect

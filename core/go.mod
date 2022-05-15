@@ -10,10 +10,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/bluele/gcache v0.0.2
-	github.com/djcass44/go-utils/flagging v0.1.0
+	github.com/djcass44/go-utils/flagging v0.1.1
 	github.com/djcass44/go-utils/logging v0.1.0
-	github.com/djcass44/go-utils/orm v0.0.0-20220509072308-a091e3d878db
-	github.com/djcass44/go-utils/otel v0.1.0
+	github.com/djcass44/go-utils/orm v0.1.0
+	github.com/djcass44/go-utils/otel v0.1.1
 	github.com/djcass44/go-utils/utilities v0.1.0
 	github.com/euroteltr/rbac v1.0.9
 	github.com/getsentry/sentry-go v0.13.0
@@ -37,7 +37,7 @@ require (
 	go.opentelemetry.io/otel v1.7.0
 	go.opentelemetry.io/otel/trace v1.7.0
 	go.uber.org/zap v1.21.0
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+	golang.org/x/net v0.0.0-20220513224357-95641704303c
 	gorm.io/datatypes v1.0.6
 	gorm.io/driver/postgres v1.3.1
 	gorm.io/gorm v1.23.5
@@ -161,12 +161,12 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.5.2-0.20220426165107-d835ace014b3 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122 // indirect
+	golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9 // indirect
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+	golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect

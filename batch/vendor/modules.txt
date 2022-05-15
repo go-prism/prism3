@@ -175,16 +175,16 @@ github.com/djcass44/go-tracer/tracer
 ## explicit; go 1.15
 github.com/djcass44/go-utils/pkg/cryptoutils
 github.com/djcass44/go-utils/pkg/httputils
-# github.com/djcass44/go-utils/flagging v0.1.0
+# github.com/djcass44/go-utils/flagging v0.1.1
 ## explicit; go 1.18
 github.com/djcass44/go-utils/flagging
 # github.com/djcass44/go-utils/logging v0.1.0
 ## explicit; go 1.18
 github.com/djcass44/go-utils/logging
-# github.com/djcass44/go-utils/orm v0.0.0-20220509072308-a091e3d878db
+# github.com/djcass44/go-utils/orm v0.1.0
 ## explicit; go 1.18
 github.com/djcass44/go-utils/orm
-# github.com/djcass44/go-utils/otel v0.1.0
+# github.com/djcass44/go-utils/otel v0.1.1
 ## explicit; go 1.18
 github.com/djcass44/go-utils/otel
 # github.com/djcass44/go-utils/utilities v0.1.0
@@ -627,7 +627,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122
+# golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9
 ## explicit; go 1.17
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp
@@ -642,7 +642,7 @@ golang.org/x/crypto/sha3
 # golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 ## explicit; go 1.18
 golang.org/x/exp/constraints
-# golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+# golang.org/x/net v0.0.0-20220513224357-95641704303c
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -664,7 +664,7 @@ golang.org/x/oauth2/internal
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
+# golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs

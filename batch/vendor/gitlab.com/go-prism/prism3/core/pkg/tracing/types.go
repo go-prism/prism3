@@ -25,6 +25,7 @@ const (
 )
 
 type OtelOptions struct {
+	Enabled     bool    `split_words:"true"`
 	Environment string  `split_words:"true" envconfig:"GITLAB_ENVIRONMENT_NAME"`
 	SampleRate  float64 `split_words:"true" default:"0.05"`
 }
