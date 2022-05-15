@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// setup otel
-	err = otel.Build(context.TODO(), otel.Options{
+	err = otel.Build(ctx, otel.Options{
 		Enabled:       e.Otel.Enabled,
 		ServiceName:   tracing.ServiceNameGoProxy,
 		Environment:   e.Otel.Environment,
