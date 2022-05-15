@@ -29,7 +29,7 @@ func (p *RemoteProcessor) HandleIndexAllTask(ctx context.Context, t *asynq.Task)
 	if err != nil {
 		return err
 	}
-	remotes, err := p.repos.RemoteRepo.ListRemotes(ctx, "")
+	remotes, err := p.repos.RemoteRepo.ListRemotes(ctx, "", true)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (p *RemoteProcessor) HandleIndexTask(ctx context.Context, t *asynq.Task) er
 	if err != nil {
 		return err
 	}
-	rem, err := p.repos.RemoteRepo.GetRemote(ctx, payload.RemoteID)
+	rem, err := p.repos.RemoteRepo.GetRemote(ctx, payload.RemoteID, true)
 	if err != nil {
 		return err
 	}

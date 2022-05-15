@@ -34,7 +34,7 @@ func (p *HelmProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	if err != nil {
 		return err
 	}
-	r, err := p.repos.RemoteRepo.GetRemote(ctx, payload.RemoteID)
+	r, err := p.repos.RemoteRepo.GetRemote(ctx, payload.RemoteID, true)
 	if err != nil {
 		return err
 	}
