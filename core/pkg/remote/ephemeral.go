@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/djcass44/go-utils/flagging"
 	"github.com/djcass44/go-utils/utilities/httputils"
 	"github.com/go-logr/logr"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/lpar/problem"
+	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
@@ -66,23 +68,47 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *schemas
 	target := fmt.Sprintf("%s/%s", r.root, path)
 	log = log.WithValues("Target", target)
 	log.Info("probing remote")
-	// we unfortunately need to send a GET request
-	// with a zero range. This is to fix issues
-	// where the remote redirects us to S3 and pre-signs
-	// the request as if it were a GET...
-	// todo create a feature flag for this (features.RemoteAvoidRangeHack)
-	h := http.Header{}
-	h.Set("Range", "bytes=0-0")
-	_, err := r.Do(ctx, http.MethodGet, target, schemas.RequestOptions{
-		Header:  h,
+	_, err := r.getExecMethod(ctx, target, schemas.RequestOptions{
 		Context: rctx,
-	})
+	})()
 	if err != nil {
 		return "", err
 	}
 	// save to the cache
 	_ = r.cache.Set(cacheKey, target, ttlcache.DefaultTTL)
 	return target, nil
+}
+
+// getExecMethod determines whether the GET/HEAD workaround is applied
+// for a given request. This workaround is needed when the remote
+// uses SIGv4 signatures as a GET request is signed rather than a HEAD.
+//
+// See #32
+func (r *EphemeralRemote) getExecMethod(ctx context.Context, target string, opt schemas.RequestOptions) func() (*http.Response, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_getExecMethod")
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Target", target)
+	if flagging.IsEnabled(features.RemoteAvoidRangeHack) {
+		log.V(1).Info("using HEAD request - this may fail if the remote is backed by S3")
+		return func() (*http.Response, error) {
+			return r.Do(ctx, http.MethodHead, target, opt)
+		}
+	}
+	log.V(1).Info("using GET request")
+	return func() (*http.Response, error) {
+		h := http.Header{}
+		// use the provided headers if they've been set
+		if opt.Header != nil {
+			h = opt.Header
+		}
+		// we unfortunately need to send a GET request
+		// with a zero range. This is to fix issues
+		// where the remote redirects us to S3 and pre-signs
+		// the request as if it were a GET...
+		h.Set("Range", "bytes=0-0")
+		opt.Header = h
+		return r.Do(ctx, http.MethodGet, target, opt)
+	}
 }
 
 func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
