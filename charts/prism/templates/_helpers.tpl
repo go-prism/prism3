@@ -103,6 +103,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Web labels
+*/}}
+{{- define "prism.webLabels" -}}
+helm.sh/chart: {{ include "prism.chart" . }}
+{{ include "prism.webSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Selector labels
 */}}
 {{- define "prism.selectorLabels" -}}
@@ -132,6 +144,14 @@ Batch selector labels
 {{- define "prism.batchSelectorLabels" -}}
 {{ include "prism.selectorLabels" . }}
 app.kubernetes.io/component: batch
+{{- end }}
+
+{{/*
+Web selector labels
+*/}}
+{{- define "prism.webSelectorLabels" -}}
+{{ include "prism.selectorLabels" . }}
+app.kubernetes.io/component: web
 {{- end }}
 
 {{/*

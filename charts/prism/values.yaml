@@ -93,6 +93,15 @@ batch:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+web:
+  resources: {}
+  image:
+    registry: registry.dcas.dev
+    repository: prism/prism3/web
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
 autoscaling:
   enabled: false
   minReplicas: 1
