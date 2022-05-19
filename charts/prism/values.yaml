@@ -150,3 +150,7 @@ tracing:
 # https://artifacthub.io/packages/helm/bitnami/redis
 redis:
   enabled: false
+
+# https://artifacthub.io/packages/helm/bitnami/postgresql
+postgresql:
+  enabled: false
