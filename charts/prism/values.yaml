@@ -3,8 +3,10 @@
 # Declare variables to be passed into your templates.
 global:
   imagePullPolicy:
-  imageRegistry:
+  registry:
   logLevel:
+  redis:
+    password: ""
 
 
 replicaCount: 1
@@ -144,3 +146,7 @@ tracing:
   enabled: false
   jaegerHost: ""
   sampleRate: 0.05
+
+# https://artifacthub.io/packages/helm/bitnami/redis
+redis:
+  enabled: false

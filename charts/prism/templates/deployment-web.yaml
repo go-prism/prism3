@@ -36,7 +36,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           {{- with .Values.web.image }}
-          image: "{{ $.Values.global.imageRegistry | default .registry }}/{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
+          image: "{{ $.Values.global.registry | default .registry }}/{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
           imagePullPolicy: {{ $.Values.global.imagePullPolicy | default .pullPolicy }}
           {{- end }}
           ports:
