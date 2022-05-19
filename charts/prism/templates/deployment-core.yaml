@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prism.coreName" . }}
+  annotations:
+    kubectl.kubernetes.io/default-container: core
+  labels:
+    {{- include "prism.coreLabels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "prism.coreSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "prism.coreSelectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "prism.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: core
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- with .Values.core.image }}
+          image: "{{ $.Values.global.imageRegistry | default .registry }}/{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy | default .pullPolicy }}
+          {{- end }}
+          ports:
+            - name: web
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: HELM_CACHE_HOME
+              value: /tmp
+            - name: HELM_CONFIG_HOME
+              value: /tmp
+            - name: HELM_DATA_HOME
+              value: /tmp
+            - name: PRISM_AUTH_SUPER_USER
+              value: {{ .Values.initialSuperUser }}
+            - name: PRISM_LOG_LEVEL
+              value: {{ .Values.global.logLevel | default .Values.core.logLevel | quote }}
+            {{- with .Values.s3 }}
+            - name: PRISM_S3_BUCKET
+              value: {{ .bucket }}
+            - name: PRISM_S3_ENDPOINT
+              value: {{ .endpoint }}
+            - name: PRISM_S3_PATH_STYLE
+              value: {{ .forcepathstyle | quote }}
+            - name: PRISM_S3_REGION
+              value: {{ .region }}
+            {{- end }}
+            - name: PRISM_API_URL
+              value: {{ .Values.url }}
+            - name: PRISM_PUBLIC_URL
+              value: {{ .Values.url }}
+            {{- if .Values.goproxy.enabled }}
+            - name: PRISM_PLUGIN_GO_URL
+              value: "http://{{ include "prism.goproxyName" . }}:{{ .Values.service.port }}"
+            {{- end }}
+            {{- with .Values.tracing }}
+            - name: PRISM_OTEL_ENABLED
+              value: {{ .enabled | quote }}
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: {{ .jaegerHost }}
+            - name: PRISM_OTEL_SAMPLE_RATE
+              value: {{ .sampleRate | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "prism.coreName" . }}
+              prefix: PRISM_
+            - secretRef:
+                name: {{ include "prism.coreName" . }}
+              prefix: AWS_
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 2
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.core.resources | nindent 12 }}
+        - name: auth-proxy
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12}}
+          {{- with .Values.cap10.image }}
+          image: "{{ .registry }}/{{ .repository }}:{{ .tag | default "master" }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy | default .pullPolicy }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          env:
+            - name: PROXY_TARGET
+              value: "http://localhost:8080"
+            - name: PROXY_PROBE_PATH
+              value: /healthz
+            - name: PORT
+              value: "8081"
+            - name: OIDC_ISSUER
+              value: {{ .Values.oidc.issuer }}
+            - name: OIDC_REDIRECT_URL
+              value: {{ .Values.oidc.redirect_url }}
+            - name: BASE_URL
+              value: {{ .Values.url }}
+          envFrom:
+            - secretRef:
+                name: {{ include "prism.coreName" . }}
+              prefix: OIDC_
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 2
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.cap10.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

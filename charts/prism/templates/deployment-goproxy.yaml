@@ -1,0 +1,107 @@
+{{- if .Values.goproxy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prism.goproxyName" . }}
+  labels:
+    {{- include "prism.goproxyLabels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "prism.goproxySelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "prism.goproxySelectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "prism.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: goproxy
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- with .Values.goproxy.image }}
+          image: "{{ $.Values.global.imageRegistry | default .registry }}/{{ .repository }}:{{ .tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy | default .pullPolicy }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: PRISM_LOG_LEVEL
+              value: {{ .Values.global.logLevel | default .Values.goproxy.logLevel | quote }}
+            {{- with .Values.s3 }}
+            - name: PRISM_S3_BUCKET
+              value: {{ .bucket }}
+            - name: PRISM_S3_ENDPOINT
+              value: {{ .endpoint }}
+            - name: PRISM_S3_PATH_STYLE
+              value: {{ .forcepathstyle | quote }}
+            - name: PRISM_S3_REGION
+              value: {{ .region }}
+            {{- end }}
+            - name: PRISM_PUBLIC_URL
+              value: {{ .Values.url }}
+            {{- with .Values.tracing }}
+            - name: PRISM_OTEL_ENABLED
+              value: {{ .enabled | quote }}
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: {{ .jaegerHost }}
+            - name: PRISM_OTEL_SAMPLE_RATE
+              value: {{ .sampleRate | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "prism.coreName" . }}
+              prefix: AWS_
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 2
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.goproxy.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

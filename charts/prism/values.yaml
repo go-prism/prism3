@@ -1,0 +1,137 @@
+# Default values for prism.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  imagePullPolicy:
+  imageRegistry:
+  logLevel:
+
+
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  automountServiceAccountToken: true
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+  pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+core:
+  logLevel: 0
+  resources: {}
+  image:
+    registry: registry.dcas.dev
+    repository: prism/prism3/core
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+cap10:
+  resources: {}
+  image:
+    registry: registry.gitlab.com
+    repository: av1o/cap10
+    pullPolicy: IfNotPresent
+    tag: ""
+
+goproxy:
+  logLevel: 0
+  enabled: true
+  resources: {}
+  image:
+    registry: registry.dcas.dev
+    repository: prism/prism3/goproxy
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+batch:
+  logLevel: 0
+  resources: {}
+  image:
+    registry: registry.dcas.dev
+    repository: prism/prism3/batch
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+url: "" # https://prism.example.com
+initialSuperUser: "" # https://oidc-issuer.example.com/joe.bloggs
+
+db:
+  dsn:
+    primary: "" # user=prism password=hunter2 dbname=prism host=my-prism-database port=5432 sslmode=disable
+    replica: ""
+  redis:
+    addr: "" # my-redis:6379
+    password: ""
+
+s3:
+  accesskey: ""
+  secretkey: ""
+  region: "us-east-1"
+  endpoint: "https://s3.amazonaws.com"
+  forcepathstyle: false
+  bucket: ""
+
+oidc:
+  id: ""
+  secret: ""
+  issuer: ""
+  redirect_url: "" # https://prism.example.com/auth/callback
+
+tracing:
+  enabled: false
+  jaegerHost: ""
+  sampleRate: 0.05
