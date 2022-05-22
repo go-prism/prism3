@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ const Nav: React.FC<NavProps> = ({loading = false}: NavProps): JSX.Element => {
 							centerRipple={false}
 							size="small"
 							color="inherit"
-							to="/help">
+							to="/help/overview">
 							<Help color={theme.palette.text.secondary}/>
 						</IconButton>
 						<ButtonBase

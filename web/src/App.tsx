@@ -148,7 +148,7 @@ const App: React.FC = (): JSX.Element => {
 									component={UserSettings}
 								/>
 								<Route
-									path="/help"
+									path="/help/:path"
 									component={Help}
 								/>
 								<Route component={NotFound}/>
