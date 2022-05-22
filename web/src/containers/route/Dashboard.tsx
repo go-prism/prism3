@@ -15,7 +15,7 @@
  *
  */
 
-import React, {ReactNode, useEffect} from "react";
+import React, {ReactNode, useEffect, useMemo} from "react";
 import {
 	Alert,
 	Avatar,
@@ -127,6 +127,18 @@ const Dashboard: React.FC = (): JSX.Element => {
 		</ListItem>
 	}
 
+	const sysInfo = useMemo((): ReactNode[] => {
+		const rawItems: ReactNode[] | undefined[] = [
+			(data?.getOverview.storage || 0) > 0 && item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0)),
+			(data?.getOverview.uptime || 0) > 0&& item("Uptime", <Clock color={theme.palette.text.secondary}/>, formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0)),
+			(data?.getOverview.users || 0) > 0 && item("Users", <Users color={theme.palette.secondary.main}/>, data?.getOverview.users.toLocaleString() || 0),
+			(data?.getOverview.system_memory || 0) > 0 && item("Memory", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory || 0, false, 0), "Current memory allocation."),
+			(data?.getOverview.system_memory_os || 0) > 0 && item("Memory (OS)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_os || 0, false, 0), "Memory allocated by the OS."),
+			(data?.getOverview.system_memory_total || 0) > 0 && item("Memory (total)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_total || 0, false, 0), "Total allocated memory.")
+		];
+		return rawItems.filter(n => n != null && n !== false);
+	}, [data?.getOverview, theme.palette]);
+
 	return <StandardLayout>
 		<div className={classes.root}>
 			<div
@@ -191,17 +203,12 @@ const Dashboard: React.FC = (): JSX.Element => {
 						</ListItem>
 					</List>
 				</Widget>
-				<Widget title="System information">
+				{sysInfo.length > 0 && <Widget title="System information">
 					<List
 						sx={{p: 0.5}}>
-						{item("Storage", <CloudUpload color={theme.palette.primary.main}/>, formatBytes(data?.getOverview.storage || 0, false, 0))}
-						{item("Uptime", <Clock color={theme.palette.text.secondary}/>, formatDistanceStrict(Date.now(), data?.getOverview.uptime || 0))}
-						{item("Users", <Users color={theme.palette.secondary.main}/>, data?.getOverview.users.toLocaleString() || 0)}
-						{(data?.getOverview.system_memory || 0) > 0 && item("Memory", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory || 0, false, 0), "Current memory allocation.")}
-						{(data?.getOverview.system_memory_os || 0) > 0 && item("Memory (OS)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_os || 0, false, 0), "Memory allocated by the OS.")}
-						{(data?.getOverview.system_memory_total || 0) > 0 && item("Memory (total)", <Recharging color={theme.palette.text.secondary}/>, formatBytes(data?.getOverview.system_memory_total || 0, false, 0), "Total allocated memory.")}
+						{sysInfo}
 					</List>
-				</Widget>
+				</Widget>}
 			</Grid>
 		</div>
 	</StandardLayout>

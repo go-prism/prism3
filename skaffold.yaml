@@ -9,6 +9,7 @@ build:
     buildpacks:
       builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
       runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+      trustBuilder: true
       dependencies:
         paths:
         - cmd/core/
@@ -79,6 +80,7 @@ build:
     buildpacks:
       builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
       runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
+      trustBuilder: true
       dependencies:
         paths:
         - cmd/batch/

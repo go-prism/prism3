@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 import React, {ReactNode, useEffect, useState} from "react";
 import {
-	Alert,
 	Card,
 	FormControl,
 	IconButton,
@@ -39,12 +38,12 @@ import {Link} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
 import {Plus} from "tabler-icons-react";
 import {parseUsername} from "../../../utils/parse";
-import getErrorMessage from "../../../selectors/getErrorMessage";
 import Flexbox from "../../widgets/Flexbox";
 import InlineNotFound from "../../widgets/InlineNotFound";
 import {toTitleCase} from "../../../utils/format";
 import {getResourceIcon, getResourceName} from "../../../utils/remote";
 import {Role, useGetUsersQuery} from "../../../generated/graphql";
+import InlineError from "../../alert/InlineError";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	icon: {
@@ -152,9 +151,7 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 					<TableBody>
 						{!loading && error && <TableRow>
 							<TableCell colSpan={3}>
-								<Alert severity="error">
-									{getErrorMessage(error)}
-								</Alert>
+								<InlineError error={error}/>
 							</TableCell>
 						</TableRow>}
 						{loading && loadingItems()}

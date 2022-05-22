@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import SidebarLayout from "../../layout/SidebarLayout";
 import RefractHeader from "../../widgets/RefractHeader";
 import InlineNotFound from "../../widgets/InlineNotFound";
 import {Artifact, Refraction} from "../../../generated/graphql";
+import InlineError from "../../alert/InlineError";
 import ObjectInfo from "./ObjectInfo";
 import {BrowserProps} from "./Browser";
 
@@ -135,10 +136,7 @@ const BrowserTree: React.FC<BrowserProps> = ({data, loading, error}): JSX.Elemen
 		sidebar={<div
 			style={{height: "calc(100vh - 112px)", maxHeight: "calc(100vh - 112px)"}}>
 			{loading && <ListItemSkeleton icon/>}
-			{!loading && error != null && <Alert
-				severity="error">
-						Failed to load data.
-			</Alert>}
+			{!loading && <InlineError error={error}/>}
 			{!loading && error == null && flattenedData.length === 0 && <InlineNotFound/>}
 			{!loading && error == null && flattenedData.length > 0 && <AutoSizer>
 				{({height, width}) => (

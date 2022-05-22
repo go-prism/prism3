@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package graph
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
@@ -6,6 +23,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"runtime"
 	"runtime/debug"
 
@@ -16,7 +34,6 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
-	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -125,12 +142,18 @@ func (r *queryResolver) ListTransports(ctx context.Context) ([]*model.TransportS
 func (r *queryResolver) ListArtifacts(ctx context.Context, remote string) ([]*model.Artifact, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_listArtifacts")
 	defer span.End()
+	if _, ok := client.GetContextUser(ctx); !ok {
+		return nil, errs.ErrUnauthorised
+	}
 	return r.repos.ArtifactRepo.ListArtifacts(ctx, []string{remote})
 }
 
 func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract string) ([]*model.Artifact, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_listCombinedArtifacts")
 	defer span.End()
+	if _, ok := client.GetContextUser(ctx); !ok {
+		return nil, errs.ErrUnauthorised
+	}
 	// collect a list of remotes
 	ref, err := r.repos.RefractRepo.GetRefraction(ctx, refract)
 	if err != nil {
@@ -146,12 +169,8 @@ func (r *queryResolver) ListCombinedArtifacts(ctx context.Context, refract strin
 func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "graph_query_getOverview")
 	defer span.End()
+	_, ok := client.GetContextUser(ctx)
 	log := logr.FromContextOrDiscard(ctx)
-	store, err := r.storeSizeCache.Get("")
-	if err != nil {
-		log.Error(err, "failed to retrieved storage usage statistics")
-		return nil, err
-	}
 	remotes, _ := r.repos.RemoteRepo.Count(ctx)
 	refracts, _ := r.repos.RefractRepo.Count(ctx)
 	artifacts, _ := r.repos.ArtifactRepo.Count(ctx)
@@ -159,7 +178,19 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 	packagesPyPi, _ := r.repos.PyPackageRepo.Count(ctx)
 	packagesNPM, _ := r.repos.NPMPackageRepo.Count(ctx)
 	packagesHelm, _ := r.repos.HelmPackageRepo.Count(ctx)
-	users, _ := r.repos.UserRepo.Count(ctx)
+	// zero certain fields unless
+	// a user is logged in
+	var users, ut, storeSize int64
+	if ok {
+		users, _ = r.repos.UserRepo.Count(ctx)
+		ut = uptime.UnixMilli()
+		store, err := r.storeSizeCache.Get("")
+		if err != nil {
+			log.Error(err, "failed to retrieved storage usage statistics")
+			return nil, err
+		}
+		storeSize = store.(*storage.BucketSize).Bytes
+	}
 	// get debug build information
 	var buildInfo string
 	build, ok := debug.ReadBuildInfo()
@@ -178,9 +209,9 @@ func (r *queryResolver) GetOverview(ctx context.Context) (*model.Overview, error
 		Remotes:           remotes,
 		Refractions:       refracts,
 		Artifacts:         artifacts,
-		Storage:           store.(*storage.BucketSize).Bytes,
+		Storage:           storeSize,
 		Downloads:         downloads,
-		Uptime:            uptime.UnixMilli(),
+		Uptime:            ut,
 		Version:           buildInfo,
 		Users:             users,
 		PackagesPypi:      packagesPyPi,

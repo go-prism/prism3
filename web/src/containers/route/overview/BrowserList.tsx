@@ -1,10 +1,29 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 import React, {useState} from "react";
 import {DataGrid, GridColDef, GridColumnVisibilityModel} from "@mui/x-data-grid";
-import {Box, Drawer} from "@mui/material";
+import {Box, Drawer, Typography} from "@mui/material";
 import {format} from "date-fns";
 import {useTheme} from "@mui/material/styles";
+import {ApolloError} from "@apollo/client";
 import {getNodeColour, getNodeIcon} from "../../../utils/remote";
 import {Artifact, Refraction} from "../../../generated/graphql";
+import InlineError from "../../alert/InlineError";
 import {BrowserProps} from "./Browser";
 import ObjectInfo from "./ObjectInfo";
 
@@ -69,11 +88,18 @@ const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
 		}
 	];
 
+	const errorOverlay = ({error}: {error: ApolloError | undefined}) => <Box
+		sx={{display: "flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%"}}>
+		<InlineError error={error}/>
+	</Box>
+
 	return <Box
 		sx={{height: "calc(100vh - 112px)", maxHeight: "calc(100vh - 112px)"}}>
 		<DataGrid
 			columnVisibilityModel={hide}
 			onColumnVisibilityModelChange={model => setHide(() => model)}
+			components={{ErrorOverlay: errorOverlay}}
+			componentsProps={{errorOverlay: {error: error}}}
 			error={error}
 			autoPageSize
 			columns={columns}
@@ -86,10 +112,18 @@ const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
 			PaperProps={{sx: {maxWidth: 500, width: 500, p: 1}}}
 			open={selected != null}
 			onClose={() => setSelected(() => null)}>
-			{selected != null && data != null && <ObjectInfo
-				item={selected}
-				refraction={data.getRefraction as Refraction}
-			/>}
+			<Box>
+				{selected != null && data != null && <ObjectInfo
+					item={selected}
+					refraction={data.getRefraction as Refraction}
+				/>}
+				<Typography
+					sx={{m: 1}}
+					color="textSecondary"
+					variant="caption">
+					Click anywhere on the left to dismiss this drawer.
+				</Typography>
+			</Box>
 		</Drawer>
 	</Box>
 }
