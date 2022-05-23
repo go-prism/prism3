@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package main
 
 import (
@@ -19,6 +36,7 @@ import (
 	v1 "gitlab.com/go-prism/prism3/core/internal/api/v1"
 	"gitlab.com/go-prism/prism3/core/internal/graph"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
@@ -151,9 +169,11 @@ func main() {
 		Password: e.Redis.Password,
 	})
 
+	perms := permissions.NewManager(repos)
+
 	// configure graphql
 	h := v1.NewGateway(resolver.NewResolver(ctx, repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(ctx, repos, s3, batchClient, notifier)}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(ctx, repos, s3, batchClient, notifier, perms)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,
