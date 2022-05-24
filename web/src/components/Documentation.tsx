@@ -17,7 +17,7 @@
 
 import Markdown from "markdown-to-jsx";
 import React from "react";
-import {Theme, Typography, Link as MuiLink, TableRow, TableHead, TableCell, Table} from "@mui/material";
+import {Link as MuiLink, TableCell, TableRow, Theme, Typography} from "@mui/material";
 import {Link} from "react-router-dom";
 import {makeStyles} from "tss-react/mui";
 import {Code} from "jmp-coreui";
@@ -31,8 +31,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		fontSize: 30
 	},
 	headings: {
+		fontFamily: "Manrope",
 		color: theme.palette.text.primary,
-		opacity: 0.9
+		opacity: 0.85
 	}
 }));
 
@@ -54,7 +55,8 @@ const Documentation: React.FC<Props> = ({text}): JSX.Element => {
 				target="_blank"
 				rel="noreferrer noopener"
 				href={href}>
-				<Flexbox>
+				<Flexbox
+					inline>
 					{children}
 					<ExternalLink
 						style={{marginLeft: 4}}

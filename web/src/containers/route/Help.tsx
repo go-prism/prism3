@@ -43,7 +43,8 @@ const Help: React.FC = (): JSX.Element => {
 	}, [path]);
 
 	return (
-		<StandardLayout>
+		<StandardLayout
+			size="small">
 			<Box sx={{m: 2, mt: 4}}>
 				<Breadcrumbs>
 					<MuiLink
