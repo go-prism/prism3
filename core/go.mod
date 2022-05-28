@@ -39,6 +39,7 @@ require (
 	go.uber.org/zap v1.21.0
 	golang.org/x/net v0.0.0-20220513224357-95641704303c
 	google.golang.org/grpc v1.46.0
+	google.golang.org/protobuf v1.28.0
 	gorm.io/datatypes v1.0.6
 	gorm.io/driver/postgres v1.3.6
 	gorm.io/gorm v1.23.5
@@ -174,7 +175,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect

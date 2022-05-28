@@ -187,6 +187,8 @@ export type Query = {
   listRemotes: Array<Remote>;
   listTransports: Array<TransportSecurity>;
   listUsers: Array<StoredUser>;
+  userCan: Scalars['Boolean'];
+  userHas: Scalars['Boolean'];
 };
 
 
@@ -227,6 +229,17 @@ export type QueryListCombinedArtifactsArgs = {
 
 export type QueryListRemotesArgs = {
   arch: Scalars['String'];
+};
+
+
+export type QueryUserCanArgs = {
+  action: Verb;
+  resource: Scalars['String'];
+};
+
+
+export type QueryUserHasArgs = {
+  role: Role;
 };
 
 export type Refraction = {
@@ -272,7 +285,7 @@ export type RemoteSecurity = {
 };
 
 export enum Role {
-  Power = 'POWER',
+  Audit = 'AUDIT',
   Super = 'SUPER'
 }
 
@@ -373,6 +386,21 @@ export type ListUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ListUsersQuery = { __typename?: 'Query', listUsers: Array<{ __typename?: 'StoredUser', id: string, sub: string, claims: any }> };
+
+export type UserCanQueryVariables = Exact<{
+  resource: Scalars['String'];
+  action: Verb;
+}>;
+
+
+export type UserCanQuery = { __typename?: 'Query', userCan: boolean };
+
+export type UserHasQueryVariables = Exact<{
+  role: Role;
+}>;
+
+
+export type UserHasQuery = { __typename?: 'Query', userHas: boolean };
 
 export type SetPreferenceMutationVariables = Exact<{
   key: Scalars['String'];
@@ -784,6 +812,73 @@ export function useListUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<
 export type ListUsersQueryHookResult = ReturnType<typeof useListUsersQuery>;
 export type ListUsersLazyQueryHookResult = ReturnType<typeof useListUsersLazyQuery>;
 export type ListUsersQueryResult = Apollo.QueryResult<ListUsersQuery, ListUsersQueryVariables>;
+export const UserCanDocument = gql`
+    query userCan($resource: String!, $action: Verb!) {
+  userCan(resource: $resource, action: $action)
+}
+    `;
+
+/**
+ * __useUserCanQuery__
+ *
+ * To run a query within a React component, call `useUserCanQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUserCanQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUserCanQuery({
+ *   variables: {
+ *      resource: // value for 'resource'
+ *      action: // value for 'action'
+ *   },
+ * });
+ */
+export function useUserCanQuery(baseOptions: Apollo.QueryHookOptions<UserCanQuery, UserCanQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<UserCanQuery, UserCanQueryVariables>(UserCanDocument, options);
+      }
+export function useUserCanLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UserCanQuery, UserCanQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<UserCanQuery, UserCanQueryVariables>(UserCanDocument, options);
+        }
+export type UserCanQueryHookResult = ReturnType<typeof useUserCanQuery>;
+export type UserCanLazyQueryHookResult = ReturnType<typeof useUserCanLazyQuery>;
+export type UserCanQueryResult = Apollo.QueryResult<UserCanQuery, UserCanQueryVariables>;
+export const UserHasDocument = gql`
+    query userHas($role: Role!) {
+  userHas(role: $role)
+}
+    `;
+
+/**
+ * __useUserHasQuery__
+ *
+ * To run a query within a React component, call `useUserHasQuery` and pass it any options that fit your needs.
+ * When your component renders, `useUserHasQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUserHasQuery({
+ *   variables: {
+ *      role: // value for 'role'
+ *   },
+ * });
+ */
+export function useUserHasQuery(baseOptions: Apollo.QueryHookOptions<UserHasQuery, UserHasQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<UserHasQuery, UserHasQueryVariables>(UserHasDocument, options);
+      }
+export function useUserHasLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UserHasQuery, UserHasQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<UserHasQuery, UserHasQueryVariables>(UserHasDocument, options);
+        }
+export type UserHasQueryHookResult = ReturnType<typeof useUserHasQuery>;
+export type UserHasLazyQueryHookResult = ReturnType<typeof useUserHasLazyQuery>;
+export type UserHasQueryResult = Apollo.QueryResult<UserHasQuery, UserHasQueryVariables>;
 export const SetPreferenceDocument = gql`
     mutation setPreference($key: String!, $value: String!) {
   setPreference(key: $key, value: $value)

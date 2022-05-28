@@ -20,7 +20,7 @@ enum Archetype {
 
 enum Role {
     SUPER
-    POWER
+    AUDIT
 }
 
 enum AuthMode {
@@ -156,6 +156,9 @@ type Query {
     listUsers: [StoredUser!]!
 
     getCurrentUser: StoredUser!
+
+    userCan(resource: String!, action: Verb!): Boolean!
+    userHas(role: Role!): Boolean!
 }
 
 type Subscription {

@@ -46,6 +46,7 @@ import Flexbox from "../../widgets/Flexbox";
 import {getResourceIcon} from "../../../utils/remote";
 import {Role, StoredUser, useCreateRoleBindingMutation, useListUsersQuery, Verb} from "../../../generated/graphql";
 import {getClaimValue, parseUsername} from "../../../utils/parse";
+import {RESOURCE_REFRACT, RESOURCE_REMOTE, RESOURCE_TRANSPORT} from "../../../config/constants";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -74,21 +75,11 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	}
 }));
 
-const initialUser: ValidatedData = {
-	value: "",
-	error: "",
-	regex: new RegExp(/^.{3,}$/)
-};
-
 const initialID: ValidatedData = {
 	value: "",
 	error: "",
 	regex: new RegExp(/^.{3,}$/)
 };
-
-const RESOURCE_REFRACT = "refraction";
-const RESOURCE_REMOTE = "remote";
-const RESOURCE_TRANSPORT = "transport";
 
 const ROLE_GLOBAL = "Global";
 const ROLE_SCOPED = "Scoped";

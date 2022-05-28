@@ -254,17 +254,17 @@ type Role string
 
 const (
 	RoleSuper Role = "SUPER"
-	RolePower Role = "POWER"
+	RoleAudit Role = "AUDIT"
 )
 
 var AllRole = []Role{
 	RoleSuper,
-	RolePower,
+	RoleAudit,
 }
 
 func (e Role) IsValid() bool {
 	switch e {
-	case RoleSuper, RolePower:
+	case RoleSuper, RoleAudit:
 		return true
 	}
 	return false

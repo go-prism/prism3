@@ -23,8 +23,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -37,11 +35,13 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
@@ -343,6 +343,21 @@ func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.StoredUser, 
 		}, nil
 	}
 	return u, nil
+}
+
+func (r *queryResolver) UserCan(ctx context.Context, resource string, action model.Verb) (bool, error) {
+	res, id, _ := strings.Cut(resource, "::")
+	if err := r.authz.CanI(ctx, repo.Resource(res), id, rbac.Verb(rbac.Verb_value[action.String()])); err != nil {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r *queryResolver) UserHas(ctx context.Context, role model.Role) (bool, error) {
+	if err := r.authz.AmI(ctx, role); err != nil {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (r *subscriptionResolver) GetCurrentUser(ctx context.Context) (<-chan *model.StoredUser, error) {

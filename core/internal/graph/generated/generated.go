@@ -99,6 +99,8 @@ type ComplexityRoot struct {
 		ListRemotes           func(childComplexity int, arch string) int
 		ListTransports        func(childComplexity int) int
 		ListUsers             func(childComplexity int) int
+		UserCan               func(childComplexity int, resource string, action model.Verb) int
+		UserHas               func(childComplexity int, role model.Role) int
 	}
 
 	Refraction struct {
@@ -200,6 +202,8 @@ type QueryResolver interface {
 	GetUsers(ctx context.Context, resource string) ([]*model.RoleBinding, error)
 	ListUsers(ctx context.Context) ([]*model.StoredUser, error)
 	GetCurrentUser(ctx context.Context) (*model.StoredUser, error)
+	UserCan(ctx context.Context, resource string, action model.Verb) (bool, error)
+	UserHas(ctx context.Context, role model.Role) (bool, error)
 }
 type SubscriptionResolver interface {
 	GetCurrentUser(ctx context.Context) (<-chan *model.StoredUser, error)
@@ -605,6 +609,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ListUsers(childComplexity), true
+
+	case "Query.userCan":
+		if e.complexity.Query.UserCan == nil {
+			break
+		}
+
+		args, err := ec.field_Query_userCan_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserCan(childComplexity, args["resource"].(string), args["action"].(model.Verb)), true
+
+	case "Query.userHas":
+		if e.complexity.Query.UserHas == nil {
+			break
+		}
+
+		args, err := ec.field_Query_userHas_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserHas(childComplexity, args["role"].(model.Role)), true
 
 	case "Refraction.archetype":
 		if e.complexity.Refraction.Archetype == nil {
@@ -1031,7 +1059,7 @@ enum Archetype {
 
 enum Role {
     SUPER
-    POWER
+    AUDIT
 }
 
 enum AuthMode {
@@ -1167,6 +1195,9 @@ type Query {
     listUsers: [StoredUser!]!
 
     getCurrentUser: StoredUser!
+
+    userCan(resource: String!, action: Verb!): Boolean!
+    userHas(role: Role!): Boolean!
 }
 
 type Subscription {
@@ -1536,6 +1567,45 @@ func (ec *executionContext) field_Query_listRemotes_args(ctx context.Context, ra
 		}
 	}
 	args["arch"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_userCan_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["resource"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resource"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["resource"] = arg0
+	var arg1 model.Verb
+	if tmp, ok := rawArgs["action"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("action"))
+		arg1, err = ec.unmarshalNVerb2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐVerb(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["action"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_userHas_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Role
+	if tmp, ok := rawArgs["role"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+		arg0, err = ec.unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["role"] = arg0
 	return args, nil
 }
 
@@ -3199,6 +3269,90 @@ func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field gra
 	res := resTmp.(*model.StoredUser)
 	fc.Result = res
 	return ec.marshalNStoredUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_userCan(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_userCan_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().UserCan(rctx, args["resource"].(string), args["action"].(model.Verb))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_userHas(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_userHas_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().UserHas(rctx, args["role"].(model.Role))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7094,6 +7248,52 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "userCan":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_userCan(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "userHas":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_userHas(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -8513,6 +8713,16 @@ func (ec *executionContext) marshalNRemoteSecurity2ᚖgitlabᚗcomᚋgoᚑprism�
 		return graphql.Null
 	}
 	return ec._RemoteSecurity(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
+	var res model.Role
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNRoleBinding2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx context.Context, sel ast.SelectionSet, v model.RoleBinding) graphql.Marshaler {

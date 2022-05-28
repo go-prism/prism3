@@ -28,13 +28,10 @@ export const REMOTE_ARCHETYPES: {name: string, value: Archetype, stable: boolean
 	{name: "PyPI", value: Archetype.Pip, stable: true}
 ];
 
-export const DEFAULT_RESTRICTED_HEADERS = [
-	"Authorization",
-	"Private-Token",
-	"Deploy-Token",
-	"Job-Token"
-];
-
 export const PREF_DARK_THEME = "dark-theme";
 export const PREF_FMT_DATE_ABS = "fmt-date-abs";
 export const PREF_VIEW_ARTIFACT_LIST = "view-artifact-list";
+
+export const RESOURCE_REFRACT = "refraction";
+export const RESOURCE_REMOTE = "remote";
+export const RESOURCE_TRANSPORT = "transport";

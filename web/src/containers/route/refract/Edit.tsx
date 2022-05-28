@@ -16,7 +16,7 @@
  */
 
 import React, {useEffect, useMemo, useState} from "react";
-import {Alert, Button, Chip, FormGroup, FormLabel, List, Skeleton, Theme} from "@mui/material";
+import {Alert, Button, FormGroup, FormLabel, List, Theme} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
@@ -25,7 +25,6 @@ import {useParams} from "react-router";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
-import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
 import RefractHeader from "../../widgets/RefractHeader";
 import {
@@ -33,9 +32,12 @@ import {
 	Refraction,
 	Remote,
 	useGetRefractionLazyQuery,
-	usePatchRefractMutation
+	usePatchRefractMutation,
+	Verb
 } from "../../../generated/graphql";
 import ResourceRoleViewer from "../acl/ResourceRoleViewer";
+import useCanRBAC from "../../../hooks/useRBAC";
+import {RESOURCE_REFRACT} from "../../../config/constants";
 import Setup from "./options/Setup";
 import RemoteSelect from "./RemoteSelect";
 
@@ -83,9 +85,9 @@ const EditRefract: React.FC = (): JSX.Element => {
 	const {id} = useParams<IDParams>();
 
 	// global state
+	const canPatch = useCanRBAC({type: RESOURCE_REFRACT, id, verb: Verb.Update});
 	const [patchRefraction, {error: patchErr}] = usePatchRefractMutation();
 	const [getRefraction, {data, loading}] = useGetRefractionLazyQuery();
-	let refractInfo: object | null = null;
 
 
 	// local state
@@ -127,28 +129,6 @@ const EditRefract: React.FC = (): JSX.Element => {
 		});
 	}
 
-	const chips = useMemo(() => {
-		if (refractInfo == null)
-			return [];
-		const chipData: MetadataChip[] = [
-			// {
-			// 	label: refractInfo.files,
-			// 	icon: mdiFileDocumentMultipleOutline
-			// },
-			// {
-			// 	label: formatBytes(refractInfo.size),
-			// 	icon: mdiDatabaseOutline
-			// }
-		];
-		return chipData.map(c => <Chip
-			className={classes.chip}
-			key={c.icon.name}
-			label={c.label}
-			icon={<c.icon color={theme.palette.text.secondary}/>}
-			size="small"
-		/>);
-	}, [refractInfo]);
-
 	const handleOpen = (id: string): void => {
 		history.push({
 			...history.location,
@@ -163,16 +143,18 @@ const EditRefract: React.FC = (): JSX.Element => {
 				primary: "Getting setup",
 				secondary: "Application-specific setup information.",
 				children: data?.getRefraction && <Setup refract={data.getRefraction as Refraction}/>,
-				disabled: data?.getRefraction == null || loading
+				disabled: data?.getRefraction == null || loading,
+				hidden: false
 			},
 			{
 				id: "rbac",
 				primary: "Permissions",
 				secondary: "",
-				children: data?.getRefraction == null ? "" : <ResourceRoleViewer type="refraction" id={data.getRefraction.name}/>
+				children: data?.getRefraction == null ? "" : <ResourceRoleViewer type={RESOURCE_REFRACT} id={data.getRefraction.name}/>,
+				hidden: !canPatch
 			}
 		];
-		return items.map(d => <ExpandableListItem
+		return items.filter(d => !d.hidden).map(d => <ExpandableListItem
 			key={d.id}
 			primary={d.primary}
 			secondary={d.secondary}
@@ -195,13 +177,6 @@ const EditRefract: React.FC = (): JSX.Element => {
 			/>
 			<FormGroup
 				className={classes.form}>
-				<div>
-					{loading ? <Skeleton
-						animation="wave"
-						width="35%"
-						height={32}
-					/> : chips}
-				</div>
 				<FormLabel
 					className={classes.formItem}
 					component="legend">

@@ -46,8 +46,10 @@ import ExpandableListItem from "../../list/ExpandableListItem";
 import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
 import {getRemoteIcon} from "../../../utils/remote";
-import {Archetype, AuthMode, useGetRemoteLazyQuery, usePatchRemoteMutation} from "../../../generated/graphql";
+import {Archetype, AuthMode, useGetRemoteLazyQuery, usePatchRemoteMutation, Verb} from "../../../generated/graphql";
 import ResourceRoleViewer from "../acl/ResourceRoleViewer";
+import useCanRBAC from "../../../hooks/useRBAC";
+import {RESOURCE_REMOTE} from "../../../config/constants";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
@@ -110,6 +112,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 	const [patchRemote, patchData] = usePatchRemoteMutation();
 	const {data} = getData;
 	const loading = getData.loading || patchData.loading;
+	const canPatch = useCanRBAC({type: RESOURCE_REMOTE, id, verb: Verb.Update});
 
 	// local state
 	const [url, setURL] = useState<ValidatedData>(initialURL);
@@ -233,7 +236,8 @@ const EditRemote: React.FC = (): JSX.Element => {
 					setBlockRules={setBlockList}
 					loading={loading}
 					disabled={readOnly}
-				/>
+				/>,
+				hidden: !canPatch
 			},
 			{
 				id: "authorization",
@@ -250,7 +254,8 @@ const EditRemote: React.FC = (): JSX.Element => {
 					setAuthMode={setAuthMode}
 					loading={loading}
 					disabled={readOnly}
-				/>
+				/>,
+				hidden: !canPatch
 			},
 			{
 				id: "transport",
@@ -259,16 +264,18 @@ const EditRemote: React.FC = (): JSX.Element => {
 				children: data?.getRemote == null ? "" : <TransportOpts
 					disabled={readOnly}
 					onSelect={() => {}}
-				/>
+				/>,
+				hidden: !canPatch
 			},
 			{
 				id: "rbac",
 				primary: "Permissions",
 				secondary: "",
-				children: data?.getRemote == null ? "" : <ResourceRoleViewer type="remote" id={data.getRemote.name}/>
+				children: data?.getRemote == null ? "" : <ResourceRoleViewer type={RESOURCE_REMOTE} id={data.getRemote.name}/>,
+				hidden: !canPatch
 			}
 		];
-		return items.map(d => <ExpandableListItem
+		return items.filter(d => !d.hidden).map(d => <ExpandableListItem
 			key={d.id}
 			primary={d.primary}
 			secondary={d.secondary}
@@ -340,7 +347,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 						label: "Remote name",
 						variant: "filled",
 						id: "txt-name",
-						disabled: loading || readOnly
+						disabled: loading || readOnly || !canPatch
 					}}
 				/>
 				<ValidatedTextField
@@ -353,7 +360,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 						label: "Remote URL",
 						variant: "filled",
 						id: "txt-url",
-						disabled: loading || readOnly
+						disabled: loading || readOnly || !canPatch
 					}}
 				/>
 				<FormControlLabel
@@ -361,7 +368,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 					control={<Switch
 						color="primary"
 						checked={enabled}
-						disabled={readOnly}
+						disabled
 						onChange={(_, checked) => setEnabled(checked)}
 					/>}
 					label="Enabled"

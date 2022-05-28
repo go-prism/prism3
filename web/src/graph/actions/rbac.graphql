@@ -42,6 +42,12 @@ query listUsers {
         claims
     }
 }
+query userCan($resource: String!, $action: Verb!) {
+    userCan(resource: $resource, action: $action)
+}
+query userHas($role: Role!) {
+    userHas(role: $role)
+}
 mutation setPreference($key: String!, $value: String!) {
     setPreference(key: $key, value: $value)
 }

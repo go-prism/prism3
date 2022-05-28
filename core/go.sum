@@ -1301,8 +1301,6 @@ gitlab.com/autokubeops/serverless v0.4.1 h1:N64aFIjlCdR5ka/O+Svq6iHD74bweTW3CyCC
 gitlab.com/autokubeops/serverless v0.4.1/go.mod h1:3SFWb2ro3N8dEXsMJqRAhGFYsk8BNqvlLhiwdgANKdI=
 gitlab.com/av1o/cap10 v0.4.0 h1:F456hSYsgIPwvnl51ZyofFXkkIA0XLpeDdRXizemUQQ=
 gitlab.com/av1o/cap10 v0.4.0/go.mod h1:Br6dJT6nmawFdP8x27x/bglpmR6WnzHm4Jlz/MTU9fU=
-gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.0 h1:SYwlgGoMwpy5pRDzju5K8PwL3hSxD7IFKGbjQVXxzVw=
-gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.0/go.mod h1:zlsVZ1MiCf+0cH759QNx9e3z2biTk8TkPha8FpZdttc=
 gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.1 h1:M/QB9YA5ozfTzvkXVlnSyfWwr84zfrWHEshDp0XeA28=
 gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.1/go.mod h1:zlsVZ1MiCf+0cH759QNx9e3z2biTk8TkPha8FpZdttc=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
