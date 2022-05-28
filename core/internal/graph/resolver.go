@@ -54,7 +54,7 @@ type Resolver struct {
 	storeSizeCache gcache.Cache
 }
 
-func NewResolver(ctx context.Context, repos *repo.Repos, store storage.Reader, client *asynq.Client, notifier *notify.Notifier, authz *permissions.Manager) *Resolver {
+func NewResolver(repos *repo.Repos, store storage.Reader, client *asynq.Client, notifier *notify.Notifier, authz *permissions.Manager) *Resolver {
 	r := &Resolver{
 		repos:    repos,
 		store:    store,
@@ -62,7 +62,6 @@ func NewResolver(ctx context.Context, repos *repo.Repos, store storage.Reader, c
 		notifier: notifier,
 		client:   client,
 	}
-	_ = r.authz.Load(ctx)
 	r.storeSizeCache = gcache.New(10).ARC().LoaderFunc(r.getStoreSize).Expiration(time.Minute * 5).Build()
 	return r
 }

@@ -1,11 +1,28 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package permissions
 
 import (
 	"context"
 	"fmt"
-	"github.com/euroteltr/rbac"
 	"github.com/go-logr/logr"
 	"gitlab.com/av1o/cap10/pkg/client"
+	"gitlab.com/go-prism/go-rbac-proxy/pkg/rbac"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
@@ -13,51 +30,20 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-func NewManager(repos *repo.Repos) *Manager {
-	return &Manager{
-		r:     rbac.New(rbac.NewConsoleLogger()),
-		repos: repos,
-	}
-}
-
-func (m *Manager) Load(ctx context.Context) error {
-	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "rbac_load")
-	defer span.End()
+func NewManager(ctx context.Context, r rbac.AuthorityClient, superuser string) (*Manager, error) {
 	log := logr.FromContextOrDiscard(ctx)
-	// register roles
-	super := MustRegisterRole(m.r, model.RoleSuper, "Super user")
-	//_ = MustRegisterRole(m.r, model.RolePower, "Power user")
-	names, err := m.repos.RefractRepo.ListNames(ctx)
-	if err != nil {
-		return err
+	log.V(1).Info("creating initial superuser", "Username", superuser)
+	if _, err := r.AddGlobalRole(ctx, &rbac.AddGlobalRoleRequest{Subject: NormalUser(superuser), Role: string(model.RoleSuper)}); err != nil {
+		log.Error(err, "failed to create initial superuser")
+		return nil, err
 	}
-	for _, n := range names {
-		_ = MustRegisterPermission(m.r, m.resourceName(n.Resource, n.Name), n.Name)
-	}
-	log.V(1).Info("generated permissions", "Count", len(names))
-
-	bindings, err := m.repos.RBACRepo.List(ctx)
-	if err != nil {
-		return err
-	}
-	for _, b := range bindings {
-		log.V(2).Info("registering Role", "RoleBinding", b)
-		role := MustRegisterRole(m.r, NormalUser(b.Subject), "User role")
-		if b.Role == model.RoleSuper {
-			_ = role.AddParent(super)
-		} else if b.Role == model.RolePower {
-			perm := m.r.GetPermission(b.Resource)
-			if perm == nil {
-				log.Info("failed to locate permission", "Permission", b.Resource)
-				continue
-			}
-			_ = m.r.Permit(role.ID, perm, rbac.CRUD)
-		}
-	}
-	return nil
+	log.V(1).Info("successfully created initial superuser")
+	return &Manager{
+		RBAC: r,
+	}, nil
 }
 
-func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID string, verb rbac.Action) error {
+func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID string, verb rbac.Verb) error {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "rbac_canI")
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Resource", resource, "ID", resourceID, "Verb", verb)
@@ -67,9 +53,19 @@ func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID s
 		return errs.ErrUnauthorised
 	}
 	username := NormalUser(user.AsUsername())
-	log.V(1).Info("normalised user", "User", username)
-	log.V(1).Info("checking user access", "User", username)
-	ok = m.r.IsGrantInheritedStr(username, m.resourceName(resource, resourceID), verb)
+	log = log.WithValues("User", username)
+	log.V(1).Info("checking user access")
+	resp, err := m.RBAC.Can(ctx, &rbac.AccessRequest{
+		Subject:  username,
+		Resource: m.resourceName(resource, resourceID),
+		Action:   verb,
+	})
+	if err != nil {
+		log.Error(err, "failed to check user access with the rbac sidecar")
+		return errs.ErrForbidden
+	}
+	log.V(1).Info("successfully completed RBAC check", "Member", resp.GetOk())
+	ok = resp.GetOk()
 	if !ok {
 		log.Info("blocking user access due to missing RBAC rule")
 		return errs.ErrForbidden
@@ -89,12 +85,15 @@ func (m *Manager) AmI(ctx context.Context, role model.Role) error {
 	username := NormalUser(user.AsUsername())
 	log.V(1).Info("normalised user", "User", username)
 	log.V(1).Info("checking user access to role", "User", username)
-	userRole := m.r.GetRole(username)
-	if userRole == nil {
-		log.Info("failed to locate any role for user")
+	resp, err := m.RBAC.Can(ctx, &rbac.AccessRequest{
+		Subject:  username,
+		Resource: string(role),
+	})
+	if err != nil {
+		log.Error(err, "failed to check role membership with the rbac sidecar")
 		return errs.ErrForbidden
 	}
-	ok = userRole.HasAncestor(string(role))
+	ok = resp.GetOk()
 	if !ok {
 		log.Info("unable to find role in any ancestor")
 		return errs.ErrForbidden
@@ -104,20 +103,4 @@ func (m *Manager) AmI(ctx context.Context, role model.Role) error {
 
 func (*Manager) resourceName(r repo.Resource, id string) string {
 	return fmt.Sprintf("%s::%s", r, id)
-}
-
-func MustRegisterRole[T ~string](r *rbac.RBAC, roleID, description T) *rbac.Role {
-	role, err := r.RegisterRole(string(roleID), string(description))
-	if err != nil {
-		return r.GetRole(string(roleID))
-	}
-	return role
-}
-
-func MustRegisterPermission[T ~string](r *rbac.RBAC, permID, description T) *rbac.Permission {
-	perm, err := r.RegisterPermission(string(permID), string(description), rbac.CRUD)
-	if err != nil {
-		return r.GetPermission(string(permID))
-	}
-	return perm
 }

@@ -23,17 +23,22 @@ package graph
 import (
 	"context"
 	"fmt"
-	"gitlab.com/go-prism/prism3/core/pkg/storage"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"runtime"
 	"runtime/debug"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"gitlab.com/av1o/cap10/pkg/client"
+	"gitlab.com/go-prism/go-rbac-proxy/pkg/rbac"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
+	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tasks"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -56,14 +61,14 @@ func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemo
 }
 
 func (r *mutationResolver) PatchRemote(ctx context.Context, id string, input model.PatchRemote) (*model.Remote, error) {
-	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+	if err := r.authz.CanI(ctx, repo.ResourceRemote, id, rbac.Verb_UPDATE); err != nil {
 		return nil, err
 	}
 	return r.repos.RemoteRepo.PatchRemote(ctx, id, &input)
 }
 
 func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, error) {
-	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+	if err := r.authz.CanI(ctx, repo.ResourceRemote, id, rbac.Verb_DELETE); err != nil {
 		return false, err
 	}
 	panic(fmt.Errorf("not implemented"))
@@ -77,32 +82,59 @@ func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.New
 }
 
 func (r *mutationResolver) PatchRefraction(ctx context.Context, id string, input model.PatchRefract) (*model.Refraction, error) {
-	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+	if err := r.authz.CanI(ctx, repo.ResourceRefraction, id, rbac.Verb_UPDATE); err != nil {
 		return nil, err
 	}
 	return r.repos.RefractRepo.PatchRefraction(ctx, id, &input)
 }
 
 func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (bool, error) {
-	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+	if err := r.authz.CanI(ctx, repo.ResourceRefraction, id, rbac.Verb_DELETE); err != nil {
 		return false, err
 	}
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error) {
-	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
-		return nil, err
+	log := logr.FromContextOrDiscard(ctx)
+	subject := permissions.NormalUser(input.Subject)
+	// if no resource is declared,
+	// create a global role
+	if input.Resource == "" {
+		if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+			return nil, err
+		}
+		_, err := r.authz.RBAC.AddGlobalRole(ctx, &rbac.AddGlobalRoleRequest{
+			Subject: subject,
+			Role:    input.Resource,
+		})
+		if err != nil {
+			log.Error(err, "failed to create global role binding")
+			return nil, err
+		}
+	} else {
+		// allow owners of a resource
+		// to create role bindings for it
+		res, id, _ := strings.Cut(input.Resource, "::")
+		if err := r.authz.CanI(ctx, repo.Resource(res), id, rbac.Verb_SUDO); err != nil {
+			return nil, err
+		}
+		// create a standard role
+		_, err := r.authz.RBAC.AddRole(ctx, &rbac.AddRoleRequest{
+			Subject:  subject,
+			Resource: input.Resource,
+			Action:   rbac.Verb_SUDO,
+		})
+		if err != nil {
+			log.Error(err, "failed to create global role binding")
+			return nil, err
+		}
 	}
-	rb, err := r.repos.RBACRepo.Create(ctx, &input)
-	if err != nil {
-		return nil, err
-	}
-	// reload in the background
-	go func() {
-		_ = r.authz.Load(context.TODO())
-	}()
-	return rb, nil
+	return &model.RoleBinding{
+		Subject:  subject,
+		Resource: input.Resource,
+		Verb:     input.Verb,
+	}, nil
 }
 
 func (r *mutationResolver) CreateTransportProfile(ctx context.Context, input model.NewTransportProfile) (*model.TransportSecurity, error) {
@@ -237,17 +269,63 @@ func (r *queryResolver) GetRemoteOverview(ctx context.Context, id string) (*mode
 }
 
 func (r *queryResolver) GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error) {
+	log := logr.FromContextOrDiscard(ctx)
 	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
 		return nil, err
 	}
-	return r.repos.RBACRepo.ListForSubject(ctx, user)
+	var bindings *rbac.ListResponse
+	var err error
+	if user == "" {
+		log.V(1).Info("listing role bindings")
+		bindings, err = r.authz.RBAC.List(ctx, &emptypb.Empty{})
+	} else {
+		log.V(1).Info("listing role bindings by subject", "Subject", user)
+		bindings, err = r.authz.RBAC.ListBySub(ctx, &rbac.ListBySubRequest{Subject: user})
+	}
+	if err != nil {
+		log.Error(err, "failed to list role bindings")
+		return nil, err
+	}
+	items := make([]*model.RoleBinding, len(bindings.Results))
+	for i, b := range bindings.Results {
+		items[i] = &model.RoleBinding{
+			Subject:  b.GetSubject(),
+			Resource: b.GetResource(),
+			Verb:     model.Verb(b.GetAction().String()),
+		}
+	}
+	return items, nil
 }
 
-func (r *queryResolver) GetUsers(ctx context.Context, role model.Role) ([]*model.RoleBinding, error) {
+func (r *queryResolver) GetUsers(ctx context.Context, resource string) ([]*model.RoleBinding, error) {
+	res, id, _ := strings.Cut(resource, "::")
+	log := logr.FromContextOrDiscard(ctx)
+	// allow owners of resources to view
+	// roles for this resource
+	if err := r.authz.CanI(ctx, repo.Resource(res), id, rbac.Verb_SUDO); err != nil {
+		return nil, err
+	}
+	bindings, err := r.authz.RBAC.ListByRole(ctx, &rbac.ListByRoleRequest{Role: resource})
+	if err != nil {
+		log.Error(err, "failed to list role bindings by subject")
+		return nil, err
+	}
+	items := make([]*model.RoleBinding, len(bindings.Results))
+	for i, b := range bindings.Results {
+		items[i] = &model.RoleBinding{
+			Subject:  b.GetSubject(),
+			Resource: b.GetResource(),
+			Verb:     model.Verb(b.GetAction().String()),
+		}
+	}
+	return items, nil
+}
+
+func (r *queryResolver) ListUsers(ctx context.Context) ([]*model.StoredUser, error) {
 	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
 		return nil, err
 	}
-	return r.repos.RBACRepo.ListForRole(ctx, role)
+	return r.repos.UserRepo.List(ctx)
 }
 
 func (r *queryResolver) GetCurrentUser(ctx context.Context) (*model.StoredUser, error) {

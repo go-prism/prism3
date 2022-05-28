@@ -92,12 +92,13 @@ type ComplexityRoot struct {
 		GetRemote             func(childComplexity int, id string) int
 		GetRemoteOverview     func(childComplexity int, id string) int
 		GetRoleBindings       func(childComplexity int, user string) int
-		GetUsers              func(childComplexity int, role model.Role) int
+		GetUsers              func(childComplexity int, resource string) int
 		ListArtifacts         func(childComplexity int, remote string) int
 		ListCombinedArtifacts func(childComplexity int, refract string) int
 		ListRefractions       func(childComplexity int) int
 		ListRemotes           func(childComplexity int, arch string) int
 		ListTransports        func(childComplexity int) int
+		ListUsers             func(childComplexity int) int
 	}
 
 	Refraction struct {
@@ -139,10 +140,9 @@ type ComplexityRoot struct {
 	}
 
 	RoleBinding struct {
-		ID       func(childComplexity int) int
 		Resource func(childComplexity int) int
-		Role     func(childComplexity int) int
 		Subject  func(childComplexity int) int
+		Verb     func(childComplexity int) int
 	}
 
 	StoredUser struct {
@@ -197,7 +197,8 @@ type QueryResolver interface {
 	GetOverview(ctx context.Context) (*model.Overview, error)
 	GetRemoteOverview(ctx context.Context, id string) (*model.RemoteOverview, error)
 	GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error)
-	GetUsers(ctx context.Context, role model.Role) ([]*model.RoleBinding, error)
+	GetUsers(ctx context.Context, resource string) ([]*model.RoleBinding, error)
+	ListUsers(ctx context.Context) ([]*model.StoredUser, error)
 	GetCurrentUser(ctx context.Context) (*model.StoredUser, error)
 }
 type SubscriptionResolver interface {
@@ -546,7 +547,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetUsers(childComplexity, args["role"].(model.Role)), true
+		return e.complexity.Query.GetUsers(childComplexity, args["resource"].(string)), true
 
 	case "Query.listArtifacts":
 		if e.complexity.Query.ListArtifacts == nil {
@@ -597,6 +598,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.ListTransports(childComplexity), true
+
+	case "Query.listUsers":
+		if e.complexity.Query.ListUsers == nil {
+			break
+		}
+
+		return e.complexity.Query.ListUsers(childComplexity), true
 
 	case "Refraction.archetype":
 		if e.complexity.Refraction.Archetype == nil {
@@ -780,13 +788,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RemoteSecurity.ID(childComplexity), true
 
-	case "RoleBinding.id":
-		if e.complexity.RoleBinding.ID == nil {
-			break
-		}
-
-		return e.complexity.RoleBinding.ID(childComplexity), true
-
 	case "RoleBinding.resource":
 		if e.complexity.RoleBinding.Resource == nil {
 			break
@@ -794,19 +795,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RoleBinding.Resource(childComplexity), true
 
-	case "RoleBinding.role":
-		if e.complexity.RoleBinding.Role == nil {
-			break
-		}
-
-		return e.complexity.RoleBinding.Role(childComplexity), true
-
 	case "RoleBinding.subject":
 		if e.complexity.RoleBinding.Subject == nil {
 			break
 		}
 
 		return e.complexity.RoleBinding.Subject(childComplexity), true
+
+	case "RoleBinding.verb":
+		if e.complexity.RoleBinding.Verb == nil {
+			break
+		}
+
+		return e.complexity.RoleBinding.Verb(childComplexity), true
 
 	case "StoredUser.claims":
 		if e.complexity.StoredUser.Claims == nil {
@@ -1039,11 +1040,18 @@ enum AuthMode {
     PROXY
 }
 
+enum Verb {
+    CREATE
+    READ
+    UPDATE
+    DELETE
+    SUDO
+}
+
 type RoleBinding {
-    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     subject: String!
-    role: Role!
     resource: String!
+    verb: Verb!
 }
 
 type User {
@@ -1154,7 +1162,9 @@ type Query {
     getRemoteOverview(id: ID!): RemoteOverview!
 
     getRoleBindings(user: String!): [RoleBinding!]!
-    getUsers(role: Role!): [RoleBinding!]!
+    getUsers(resource: String!): [RoleBinding!]!
+
+    listUsers: [StoredUser!]!
 
     getCurrentUser: StoredUser!
 }
@@ -1194,8 +1204,8 @@ input PatchRemote {
 
 input NewRoleBinding {
     subject: String!
-    role: Role!
     resource: String!
+    verb: Verb!
 }
 
 input NewTransportProfile {
@@ -1472,15 +1482,15 @@ func (ec *executionContext) field_Query_getRoleBindings_args(ctx context.Context
 func (ec *executionContext) field_Query_getUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.Role
-	if tmp, ok := rawArgs["role"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-		arg0, err = ec.unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["resource"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resource"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["role"] = arg0
+	args["resource"] = arg0
 	return args, nil
 }
 
@@ -3104,7 +3114,7 @@ func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUsers(rctx, args["role"].(model.Role))
+		return ec.resolvers.Query().GetUsers(rctx, args["resource"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3119,6 +3129,41 @@ func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.C
 	res := resTmp.([]*model.RoleBinding)
 	fc.Result = res
 	return ec.marshalNRoleBinding2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBindingᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_listUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListUsers(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.StoredUser)
+	fc.Result = res
+	return ec.marshalNStoredUser2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4137,41 +4182,6 @@ func (ec *executionContext) _RemoteSecurity_authMode(ctx context.Context, field 
 	return ec.marshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _RoleBinding_id(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RoleBinding",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _RoleBinding_subject(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4207,41 +4217,6 @@ func (ec *executionContext) _RoleBinding_subject(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _RoleBinding_role(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "RoleBinding",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Role, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(model.Role)
-	fc.Result = res
-	return ec.marshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _RoleBinding_resource(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4275,6 +4250,41 @@ func (ec *executionContext) _RoleBinding_resource(ctx context.Context, field gra
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _RoleBinding_verb(ctx context.Context, field graphql.CollectedField, obj *model.RoleBinding) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "RoleBinding",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Verb, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Verb)
+	fc.Result = res
+	return ec.marshalNVerb2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐVerb(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _StoredUser_id(ctx context.Context, field graphql.CollectedField, obj *model.StoredUser) (ret graphql.Marshaler) {
@@ -6179,19 +6189,19 @@ func (ec *executionContext) unmarshalInputNewRoleBinding(ctx context.Context, ob
 			if err != nil {
 				return it, err
 			}
-		case "role":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			it.Role, err = ec.unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "resource":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resource"))
 			it.Resource, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "verb":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("verb"))
+			it.Verb, err = ec.unmarshalNVerb2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐVerb(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7038,6 +7048,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "listUsers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_listUsers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "getCurrentUser":
 			field := field
 
@@ -7440,16 +7473,6 @@ func (ec *executionContext) _RoleBinding(ctx context.Context, sel ast.SelectionS
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("RoleBinding")
-		case "id":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._RoleBinding_id(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "subject":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._RoleBinding_subject(ctx, field, obj)
@@ -7460,9 +7483,9 @@ func (ec *executionContext) _RoleBinding(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "role":
+		case "resource":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._RoleBinding_role(ctx, field, obj)
+				return ec._RoleBinding_resource(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -7470,9 +7493,9 @@ func (ec *executionContext) _RoleBinding(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "resource":
+		case "verb":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._RoleBinding_resource(ctx, field, obj)
+				return ec._RoleBinding_verb(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -8492,16 +8515,6 @@ func (ec *executionContext) marshalNRemoteSecurity2ᚖgitlabᚗcomᚋgoᚑprism�
 	return ec._RemoteSecurity(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
-	var res model.Role
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRole2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
-	return v
-}
-
 func (ec *executionContext) marshalNRoleBinding2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBinding(ctx context.Context, sel ast.SelectionSet, v model.RoleBinding) graphql.Marshaler {
 	return ec._RoleBinding(ctx, sel, &v)
 }
@@ -8562,6 +8575,50 @@ func (ec *executionContext) marshalNRoleBinding2ᚖgitlabᚗcomᚋgoᚑprismᚋp
 
 func (ec *executionContext) marshalNStoredUser2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx context.Context, sel ast.SelectionSet, v model.StoredUser) graphql.Marshaler {
 	return ec._StoredUser(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStoredUser2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.StoredUser) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNStoredUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNStoredUser2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐStoredUser(ctx context.Context, sel ast.SelectionSet, v *model.StoredUser) graphql.Marshaler {
@@ -8709,6 +8766,16 @@ func (ec *executionContext) marshalNTransportSecurity2ᚖgitlabᚗcomᚋgoᚑpri
 		return graphql.Null
 	}
 	return ec._TransportSecurity(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNVerb2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐVerb(ctx context.Context, v interface{}) (model.Verb, error) {
+	var res model.Verb
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNVerb2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐVerb(ctx context.Context, sel ast.SelectionSet, v model.Verb) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

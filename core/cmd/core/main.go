@@ -33,6 +33,7 @@ import (
 	"gitlab.com/autokubeops/serverless"
 	"gitlab.com/av1o/cap10/pkg/client"
 	"gitlab.com/av1o/cap10/pkg/verify"
+	"gitlab.com/go-prism/go-rbac-proxy/pkg/rbac"
 	v1 "gitlab.com/go-prism/prism3/core/internal/api/v1"
 	"gitlab.com/go-prism/prism3/core/internal/graph"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
@@ -49,6 +50,8 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	stdlog "log"
 	"net/http"
 	"net/url"
@@ -79,7 +82,8 @@ type environment struct {
 	Sentry errtack.Options
 
 	Plugin struct {
-		GoURL string `split_words:"true"`
+		GoURL   string `split_words:"true"`
+		RbacURL string `split_words:"true" required:"true"`
 	}
 	Redis struct {
 		Addr     string `split_words:"true" required:"true"`
@@ -133,7 +137,7 @@ func main() {
 		os.Exit(1)
 		return
 	}
-	if err := database.Init(e.Auth.SuperUser); err != nil {
+	if err := database.Init(); err != nil {
 		log.Error(err, "failed to setup initialise database")
 		os.Exit(1)
 		return
@@ -169,11 +173,25 @@ func main() {
 		Password: e.Redis.Password,
 	})
 
-	perms := permissions.NewManager(repos)
+	log.V(1).Info("establishing connection to RBAC", "Url", e.Plugin.RbacURL)
+	conn, err := grpc.Dial(e.Plugin.RbacURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Error(err, "failed to dial RBAC")
+		os.Exit(1)
+		return
+	}
+	rbacClient := rbac.NewAuthorityClient(conn)
+
+	perms, err := permissions.NewManager(ctx, rbacClient, e.Auth.SuperUser)
+	if err != nil {
+		log.Error(err, "failed to setup permissions manager")
+		os.Exit(1)
+		return
+	}
 
 	// configure graphql
 	h := v1.NewGateway(resolver.NewResolver(ctx, repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
-	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(ctx, repos, s3, batchClient, notifier, perms)}))
+	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3, batchClient, notifier, perms)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,

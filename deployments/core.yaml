@@ -13,6 +13,7 @@ env:
   PRISM_LOG_LEVEL: "10"
   PRISM_PUBLIC_URL: https://prism3.devel
   PRISM_PLUGIN_GO_URL: http://goproxy3-auto-deploy:8080
+  PRISM_PLUGIN_RBAC_URL: localhost:8082
   PRISM_REDIS_ADDR: redis-master:6379
   PRISM_REDIS_PASSWORD: password
   PRISM_OTEL_SAMPLE_RATE: "1"
@@ -72,11 +73,54 @@ volumes:
     mountPath: /tmp
     config:
       emptyDir: {}
+  - name: rbac
+    mountPath: /var/run/config/rbac
+    config:
+      configMap:
+        name: prism-rbac
 resources:
   requests:
     cpu: 100m
     memory: 200Mi
 sidecars:
+  - name: rbac
+    image: dev.local/go-rbac-proxy:latest
+    imagePullPolicy: Never
+    env:
+      - name: PORT
+        value: "8082"
+      - name: APP_LOG_LEVEL
+        value: "10"
+      - name: APP_CONFIG_PATH
+        value: /var/run/config/rbac/config.yaml
+    volumeMounts:
+      - name: rbac
+        mountPath: /var/run/config/rbac
+        readOnly: true
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8082
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8082
+    securityContext:
+      runAsNonRoot: true
+      runAsGroup: 1001
+      runAsUser: 1001
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      privileged: false
+      capabilities:
+        drop:
+          - ALL
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        memory: 200Mi
   - name: captain
     image: harbor.dcas.dev/registry.gitlab.com/av1o/cap10:master
     imagePullPolicy: Always

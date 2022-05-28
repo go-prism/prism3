@@ -1,5 +1,5 @@
-import * as Apollo from "@apollo/client";
-import {gql} from "@apollo/client";
+import * as Apollo from '@apollo/client';
+import {gql} from '@apollo/client';
 
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -124,8 +124,8 @@ export type NewRemote = {
 
 export type NewRoleBinding = {
   resource: Scalars['String'];
-  role: Role;
   subject: Scalars['String'];
+  verb: Verb;
 };
 
 export type NewTransportProfile = {
@@ -186,6 +186,7 @@ export type Query = {
   listRefractions: Array<Refraction>;
   listRemotes: Array<Remote>;
   listTransports: Array<TransportSecurity>;
+  listUsers: Array<StoredUser>;
 };
 
 
@@ -210,7 +211,7 @@ export type QueryGetRoleBindingsArgs = {
 
 
 export type QueryGetUsersArgs = {
-  role: Role;
+  resource: Scalars['String'];
 };
 
 
@@ -277,10 +278,9 @@ export enum Role {
 
 export type RoleBinding = {
   __typename?: 'RoleBinding';
-  id: Scalars['ID'];
   resource: Scalars['String'];
-  role: Role;
   subject: Scalars['String'];
+  verb: Verb;
 };
 
 export type StoredUser = {
@@ -316,6 +316,14 @@ export type User = {
   sub: Scalars['String'];
 };
 
+export enum Verb {
+  Create = 'CREATE',
+  Delete = 'DELETE',
+  Read = 'READ',
+  Sudo = 'SUDO',
+  Update = 'UPDATE'
+}
+
 export type GetOverviewQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -330,12 +338,12 @@ export type OverviewQuery = { __typename?: 'Query', getRefraction: { __typename?
 
 export type CreateRoleBindingMutationVariables = Exact<{
   subject: Scalars['String'];
-  role: Role;
   resource: Scalars['String'];
+  verb: Verb;
 }>;
 
 
-export type CreateRoleBindingMutation = { __typename?: 'Mutation', createRoleBinding: { __typename?: 'RoleBinding', id: string } };
+export type CreateRoleBindingMutation = { __typename?: 'Mutation', createRoleBinding: { __typename: 'RoleBinding' } };
 
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -347,12 +355,24 @@ export type WatchCurrentUserSubscriptionVariables = Exact<{ [key: string]: never
 
 export type WatchCurrentUserSubscription = { __typename?: 'Subscription', getCurrentUser: { __typename?: 'StoredUser', id: string, sub: string, iss: string, claims: any, preferences: any } };
 
-export type GetUsersQueryVariables = Exact<{
-  role: Role;
+export type GetRoleBindingsQueryVariables = Exact<{
+  user: Scalars['String'];
 }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', getUsers: Array<{ __typename?: 'RoleBinding', id: string, role: Role, subject: string, resource: string }> };
+export type GetRoleBindingsQuery = { __typename?: 'Query', getRoleBindings: Array<{ __typename?: 'RoleBinding', subject: string, resource: string, verb: Verb }> };
+
+export type GetUsersQueryVariables = Exact<{
+  resource: Scalars['String'];
+}>;
+
+
+export type GetUsersQuery = { __typename?: 'Query', getUsers: Array<{ __typename?: 'RoleBinding', subject: string, resource: string, verb: Verb }> };
+
+export type ListUsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ListUsersQuery = { __typename?: 'Query', listUsers: Array<{ __typename?: 'StoredUser', id: string, sub: string, claims: any }> };
 
 export type SetPreferenceMutationVariables = Exact<{
   key: Scalars['String'];
@@ -549,9 +569,9 @@ export type OverviewQueryHookResult = ReturnType<typeof useOverviewQuery>;
 export type OverviewLazyQueryHookResult = ReturnType<typeof useOverviewLazyQuery>;
 export type OverviewQueryResult = Apollo.QueryResult<OverviewQuery, OverviewQueryVariables>;
 export const CreateRoleBindingDocument = gql`
-    mutation createRoleBinding($subject: String!, $role: Role!, $resource: String!) {
-  createRoleBinding(input: {subject: $subject, role: $role, resource: $resource}) {
-    id
+    mutation createRoleBinding($subject: String!, $resource: String!, $verb: Verb!) {
+  createRoleBinding(input: {subject: $subject, resource: $resource, verb: $verb}) {
+    __typename
   }
 }
     `;
@@ -571,8 +591,8 @@ export type CreateRoleBindingMutationFn = Apollo.MutationFunction<CreateRoleBind
  * const [createRoleBindingMutation, { data, loading, error }] = useCreateRoleBindingMutation({
  *   variables: {
  *      subject: // value for 'subject'
- *      role: // value for 'role'
  *      resource: // value for 'resource'
+ *      verb: // value for 'verb'
  *   },
  * });
  */
@@ -654,13 +674,49 @@ export function useWatchCurrentUserSubscription(baseOptions?: Apollo.Subscriptio
       }
 export type WatchCurrentUserSubscriptionHookResult = ReturnType<typeof useWatchCurrentUserSubscription>;
 export type WatchCurrentUserSubscriptionResult = Apollo.SubscriptionResult<WatchCurrentUserSubscription>;
-export const GetUsersDocument = gql`
-    query getUsers($role: Role!) {
-  getUsers(role: $role) {
-    id
-    role
+export const GetRoleBindingsDocument = gql`
+    query getRoleBindings($user: String!) {
+  getRoleBindings(user: $user) {
     subject
     resource
+    verb
+  }
+}
+    `;
+
+/**
+ * __useGetRoleBindingsQuery__
+ *
+ * To run a query within a React component, call `useGetRoleBindingsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetRoleBindingsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetRoleBindingsQuery({
+ *   variables: {
+ *      user: // value for 'user'
+ *   },
+ * });
+ */
+export function useGetRoleBindingsQuery(baseOptions: Apollo.QueryHookOptions<GetRoleBindingsQuery, GetRoleBindingsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetRoleBindingsQuery, GetRoleBindingsQueryVariables>(GetRoleBindingsDocument, options);
+      }
+export function useGetRoleBindingsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetRoleBindingsQuery, GetRoleBindingsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetRoleBindingsQuery, GetRoleBindingsQueryVariables>(GetRoleBindingsDocument, options);
+        }
+export type GetRoleBindingsQueryHookResult = ReturnType<typeof useGetRoleBindingsQuery>;
+export type GetRoleBindingsLazyQueryHookResult = ReturnType<typeof useGetRoleBindingsLazyQuery>;
+export type GetRoleBindingsQueryResult = Apollo.QueryResult<GetRoleBindingsQuery, GetRoleBindingsQueryVariables>;
+export const GetUsersDocument = gql`
+    query getUsers($resource: String!) {
+  getUsers(resource: $resource) {
+    subject
+    resource
+    verb
   }
 }
     `;
@@ -677,7 +733,7 @@ export const GetUsersDocument = gql`
  * @example
  * const { data, loading, error } = useGetUsersQuery({
  *   variables: {
- *      role: // value for 'role'
+ *      resource: // value for 'resource'
  *   },
  * });
  */
@@ -692,6 +748,42 @@ export function useGetUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
 export type GetUsersQueryHookResult = ReturnType<typeof useGetUsersQuery>;
 export type GetUsersLazyQueryHookResult = ReturnType<typeof useGetUsersLazyQuery>;
 export type GetUsersQueryResult = Apollo.QueryResult<GetUsersQuery, GetUsersQueryVariables>;
+export const ListUsersDocument = gql`
+    query listUsers {
+  listUsers {
+    id
+    sub
+    claims
+  }
+}
+    `;
+
+/**
+ * __useListUsersQuery__
+ *
+ * To run a query within a React component, call `useListUsersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListUsersQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useListUsersQuery(baseOptions?: Apollo.QueryHookOptions<ListUsersQuery, ListUsersQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListUsersQuery, ListUsersQueryVariables>(ListUsersDocument, options);
+      }
+export function useListUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListUsersQuery, ListUsersQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListUsersQuery, ListUsersQueryVariables>(ListUsersDocument, options);
+        }
+export type ListUsersQueryHookResult = ReturnType<typeof useListUsersQuery>;
+export type ListUsersLazyQueryHookResult = ReturnType<typeof useListUsersLazyQuery>;
+export type ListUsersQueryResult = Apollo.QueryResult<ListUsersQuery, ListUsersQueryVariables>;
 export const SetPreferenceDocument = gql`
     mutation setPreference($key: String!, $value: String!) {
   setPreference(key: $key, value: $value)

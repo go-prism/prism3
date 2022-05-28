@@ -29,11 +29,18 @@ enum AuthMode {
     PROXY
 }
 
+enum Verb {
+    CREATE
+    READ
+    UPDATE
+    DELETE
+    SUDO
+}
+
 type RoleBinding {
-    id: ID! @goTag(key: "gorm", value: "primaryKey;type:uuid;not null;default:gen_random_uuid()")
     subject: String!
-    role: Role!
     resource: String!
+    verb: Verb!
 }
 
 type User {
@@ -144,7 +151,9 @@ type Query {
     getRemoteOverview(id: ID!): RemoteOverview!
 
     getRoleBindings(user: String!): [RoleBinding!]!
-    getUsers(role: Role!): [RoleBinding!]!
+    getUsers(resource: String!): [RoleBinding!]!
+
+    listUsers: [StoredUser!]!
 
     getCurrentUser: StoredUser!
 }
@@ -184,8 +193,8 @@ input PatchRemote {
 
 input NewRoleBinding {
     subject: String!
-    role: Role!
     resource: String!
+    verb: Verb!
 }
 
 input NewTransportProfile {

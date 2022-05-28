@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -52,5 +52,8 @@ export const formatBytes = (bytes: number, si: boolean = false, dp: number = 1):
  * @param s
  */
 export const toTitleCase = (s: string): string => {
+	if (!s) {
+		return s;
+	}
 	return s.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLocaleLowerCase());
 }

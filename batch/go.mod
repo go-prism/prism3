@@ -3,6 +3,8 @@ module gitlab.com/go-prism/prism3/batch
 go 1.18
 
 replace gitlab.com/go-prism/prism3/core => ../core
+replace gitlab.com/go-prism/go-rbac-proxy v0.2.0 => gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.0
+replace gitlab.com/go-prism/go-rbac-proxy v0.2.1 => gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.1
 
 require (
 	github.com/djcass44/go-utils/logging v0.1.0

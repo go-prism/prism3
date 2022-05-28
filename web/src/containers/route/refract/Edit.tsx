@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 import React, {useEffect, useMemo, useState} from "react";
 import {Alert, Button, Chip, FormGroup, FormLabel, List, Skeleton, Theme} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
@@ -18,6 +35,7 @@ import {
 	useGetRefractionLazyQuery,
 	usePatchRefractMutation
 } from "../../../generated/graphql";
+import ResourceRoleViewer from "../acl/ResourceRoleViewer";
 import Setup from "./options/Setup";
 import RemoteSelect from "./RemoteSelect";
 
@@ -146,6 +164,12 @@ const EditRefract: React.FC = (): JSX.Element => {
 				secondary: "Application-specific setup information.",
 				children: data?.getRefraction && <Setup refract={data.getRefraction as Refraction}/>,
 				disabled: data?.getRefraction == null || loading
+			},
+			{
+				id: "rbac",
+				primary: "Permissions",
+				secondary: "",
+				children: data?.getRefraction == null ? "" : <ResourceRoleViewer type="refraction" id={data.getRefraction.name}/>
 			}
 		];
 		return items.map(d => <ExpandableListItem

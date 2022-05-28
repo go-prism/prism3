@@ -15,14 +15,10 @@
  *
  */
 
-import React, {ReactNode, useEffect, useState} from "react";
+import React, {ReactNode, useEffect} from "react";
 import {
 	Card,
-	FormControl,
 	IconButton,
-	InputLabel,
-	MenuItem,
-	Select,
 	Skeleton,
 	Table,
 	TableBody,
@@ -40,9 +36,8 @@ import {Plus} from "tabler-icons-react";
 import {parseUsername} from "../../../utils/parse";
 import Flexbox from "../../widgets/Flexbox";
 import InlineNotFound from "../../widgets/InlineNotFound";
-import {toTitleCase} from "../../../utils/format";
 import {getResourceIcon, getResourceName} from "../../../utils/remote";
-import {Role, useGetUsersQuery} from "../../../generated/graphql";
+import {RoleBinding, useGetRoleBindingsQuery} from "../../../generated/graphql";
 import InlineError from "../../alert/InlineError";
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -58,18 +53,12 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 	const theme = useTheme();
 
 	// state
-	const [role, setRole] = useState<Role>(Role.Super);
-	const {data, loading, error, refetch} = useGetUsersQuery({variables: {role}});
-
-	const roles = data?.getUsers || [];
+	const {data, loading, error} = useGetRoleBindingsQuery({variables: {user: ""}});
+	const roles: RoleBinding[] = data?.getRoleBindings || [];
 
 	useEffect(() => {
 		window.document.title = "Access control";
 	}, []);
-
-	useEffect(() => {
-		void refetch({role: role});
-	}, [role]);
 
 	const loadingItems = (): ReactNode[] => {
 		const items = [];
@@ -122,30 +111,13 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 					/>
 				</IconButton>
 			</Flexbox>
-			<div>
-				<FormControl
-					sx={{m: 2}}>
-					<InputLabel>Role</InputLabel>
-					<Select
-						sx={{minWidth: 200}}
-						variant="outlined"
-						value={role}
-						label="Role">
-						{Object.values(Role).map(r => <MenuItem
-							key={r}
-							value={r}
-							onClick={() => setRole(() => r as Role)}>
-							{toTitleCase(r)}
-						</MenuItem>)}
-					</Select>
-				</FormControl>
-			</div>
 			<TableContainer>
 				<Table>
 					<TableHead>
 						<TableRow>
 							<TableCell>Subject</TableCell>
 							<TableCell>Resource</TableCell>
+							<TableCell>Verbs</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -161,12 +133,15 @@ const AccessControlSettings: React.FC = (): JSX.Element => {
 							</TableCell>
 						</TableRow>}
 						{!loading && roles.map(r => <TableRow
-							key={r.id}>
+							key={JSON.stringify(r)}>
 							<TableCell>{parseUsername(r.subject)}</TableCell>
-							<TableCell>{r.resource ? <Flexbox>
+							<TableCell>{r.resource.includes("::") ? <Flexbox>
 								{getResourceIcon(theme, r.resource)}
 								{getResourceName(r.resource)}
-							</Flexbox> : "All resources"}</TableCell>
+							</Flexbox> : `${r.resource} (all resources)`}</TableCell>
+							<TableCell>
+								{r.verb}
+							</TableCell>
 						</TableRow>)}
 					</TableBody>
 				</Table>

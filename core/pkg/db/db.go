@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package db
 
 import (
@@ -65,7 +82,7 @@ func (db *Database) DB() *gorm.DB {
 	return db.db
 }
 
-func (db *Database) Init(superuser string) error {
+func (db *Database) Init() error {
 	log := db.log
 	log.Info("running database migrations")
 	err := db.db.AutoMigrate(
@@ -74,7 +91,6 @@ func (db *Database) Init(superuser string) error {
 		&model.RemoteSecurity{},
 		&model.TransportSecurity{},
 		&model.Artifact{},
-		&model.RoleBinding{},
 		&model.StoredUser{},
 		&schemas.NPMPackage{},
 		&schemas.PyPackage{},
@@ -85,33 +101,19 @@ func (db *Database) Init(superuser string) error {
 		sentry.CaptureException(err)
 		return err
 	}
-	if err := db.defaults(superuser); err != nil {
+	if err := db.defaults(); err != nil {
 		sentry.CaptureException(err)
 		return err
 	}
 	return nil
 }
 
-func (db *Database) defaults(superuser string) error {
+func (db *Database) defaults() error {
 	log := db.log
 	// create the default transport profile
 	log.V(1).Info("creating default transport profile", "ID", TransportProfileDefault, "Name", "default")
 	if err := db.db.Save(&model.TransportSecurity{ID: TransportProfileDefault, Name: "default"}).Error; err != nil {
 		log.Error(err, "failed to create default transport profile")
-		return err
-	}
-	// create the default role-binding
-	if superuser == "" {
-		log.Info("initial superuser has not been set")
-	}
-	log.V(1).Info("creating default rolebinding", "ID", SuperUserDefault, "Name", superuser)
-	err := db.db.Save(&model.RoleBinding{
-		ID:      SuperUserDefault,
-		Subject: superuser,
-		Role:    model.RoleSuper,
-	}).Error
-	if err != nil {
-		log.Error(err, "failed to create default superuser rolebinding")
 		return err
 	}
 	// create Go remote
@@ -131,7 +133,7 @@ func (db *Database) defaults(superuser string) error {
 	}
 	// create Go refraction
 	log.V(1).Info("creating default Go refraction", "ID", GoRefraction, "Name", "go")
-	err = db.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.Refraction{
+	err := db.db.Clauses(clause.OnConflict{DoNothing: true}).Create(&model.Refraction{
 		ID:        GoRefraction,
 		Name:      "go",
 		Archetype: model.ArchetypeGo,

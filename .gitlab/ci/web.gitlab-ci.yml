@@ -1,5 +1,4 @@
 variables:
-  AUTO_DEVOPS_NODE_REGISTRY: gitlab.dcas.dev/api/v4/packages/npm/
   AUTO_CNB_RUN_IMAGE: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
   BUILD_KANIKO_DISABLED: "true"
   PROJECT_PATH: "web"
@@ -9,8 +8,6 @@ variables:
   BP_NODE_VERSION: "~16"
   BP_KEEP_FILES: ".env"
   BP_STATIC_ENV: ".env"
-  BP_NPM_REGISTRY: gitlab.dcas.dev/api/v4/packages/npm
-  BP_NPM_TOKEN: "$CI_JOB_TOKEN"
   REPLICAS: 2
   CODE_INTELLIGENCE_DISABLED: "true"
 

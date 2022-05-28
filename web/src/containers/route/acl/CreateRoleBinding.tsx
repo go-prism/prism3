@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 import React, {useEffect, useState} from "react";
 import {
 	Alert,
+	Autocomplete,
+	Box,
 	Button,
 	FormControl,
 	FormControlLabel,
@@ -29,6 +31,7 @@ import {
 	Radio,
 	RadioGroup,
 	Select,
+	TextField,
 	Theme,
 	Typography,
 } from "@mui/material";
@@ -37,12 +40,12 @@ import {Link, useHistory} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import StandardLayout from "../../layout/StandardLayout";
-import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import {toTitleCase} from "../../../utils/format";
 import Flexbox from "../../widgets/Flexbox";
 import {getResourceIcon} from "../../../utils/remote";
-import {Role, useCreateRoleBindingMutation} from "../../../generated/graphql";
+import {Role, StoredUser, useCreateRoleBindingMutation, useListUsersQuery, Verb} from "../../../generated/graphql";
+import {getClaimValue, parseUsername} from "../../../utils/parse";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -84,8 +87,14 @@ const initialID: ValidatedData = {
 };
 
 const RESOURCE_REFRACT = "refraction";
+const RESOURCE_REMOTE = "remote";
+const RESOURCE_TRANSPORT = "transport";
 
-const RESOURCES = [RESOURCE_REFRACT];
+const ROLE_GLOBAL = "Global";
+const ROLE_SCOPED = "Scoped";
+
+const RESOURCES = [RESOURCE_REFRACT, RESOURCE_REMOTE, RESOURCE_TRANSPORT];
+const ROLES = [ROLE_GLOBAL, ROLE_SCOPED];
 
 const CreateRoleBinding: React.FC = (): JSX.Element => {
 	// hooks
@@ -95,19 +104,20 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 
 	// global state
 	const [createRoleBinding, {loading, error}] = useCreateRoleBindingMutation();
+	const listUsers = useListUsersQuery();
 
 	// local state
-	const [user, setUser] = useState<ValidatedData>(initialUser);
+	const [user, setUser] = useState<string>("");
 	const [id, setID] = useState<ValidatedData>(initialID);
-	const [role, setRole] = useState<Role>(Role.Power);
+	const [role, setRole] = useState<string>(ROLE_SCOPED);
 	const [resource, setResource] = useState<string>("");
 
 	const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-		setRole((e.target as HTMLInputElement).value as Role);
+		setRole((e.target as HTMLInputElement).value);
 	}
 
 	useEffect(() => {
-		if (role !== Role.Super)
+		if (role !== ROLE_GLOBAL)
 			return;
 		setResource(() => "");
 		setID(i => ({...i, value: ""}));
@@ -115,9 +125,9 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 
 	const handleCreate = (): void => {
 		createRoleBinding({variables: {
-			role: role!,
-			resource: `${resource}::${id.value}`,
-			subject: user.value
+			subject: user,
+			resource: role === ROLE_SCOPED ? `${resource}::${id.value}` : resource,
+			verb: Verb.Sudo
 		}}).then(r => {
 			if (!r.errors) {
 				history.push("/settings/sys/acl");
@@ -127,7 +137,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 
 	return (
 		<StandardLayout>
-			<div>
+			<Box sx={{mt: 2}}>
 				<Typography
 					className={classes.title}
 					color="textPrimary"
@@ -136,19 +146,61 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 				</Typography>
 				<FormGroup
 					className={classes.form}>
-					<ValidatedTextField
-						data={user}
-						setData={setUser}
-						invalidLabel="Must be at least 3 characters."
-						fieldProps={{
-							className: classes.formItem,
-							required: true,
-							label: "Username",
-							variant: "filled",
-							id: "txt-user"
-						}}
+					<FormLabel
+						className={classes.formItem}
+						component="legend">
+						Role type
+					</FormLabel>
+					<RadioGroup
+						className={classes.formItem}
+						aria-label="role"
+						name="role"
+						value={role}
+						onChange={handleRoleChange}>
+						{Object.values(ROLES).map(r => <FormControlLabel
+							key={r}
+							control={<Radio color="primary"/>}
+							label={<div>
+								<Typography
+									sx={{fontSize: 14}}>
+									{toTitleCase(r)}
+								</Typography>
+								<Typography
+									sx={{fontSize: 14}}
+									color="text.secondary">
+									{r === ROLE_GLOBAL ? "Applies to all resources." : "Applyies to a specific resource."}
+								</Typography>
+							</div>}
+							value={r}
+						/>)}
+					</RadioGroup>
+					<Autocomplete
+						className={classes.formItem}
+						disablePortal
+						options={listUsers.data?.listUsers || []}
+						renderInput={params => <TextField {...params} label="User"/>}
+						getOptionLabel={option => getClaimValue(option as StoredUser, "name") || getClaimValue(option as StoredUser, "nickname") || parseUsername(option.sub)}
+						onChange={(e, value) => setUser(() => value?.id || "")}
 					/>
-					<Grid container>
+					{role === ROLE_GLOBAL && <FormControl
+						sx={{m: 1, pr: 1}}
+						fullWidth>
+						<InputLabel>Role</InputLabel>
+						<Select
+							sx={{minWidth: 200}}
+							variant="outlined"
+							value={resource}
+							label="Role"
+							required>
+							{Object.values(Role).map(r => <MenuItem
+								key={r}
+								value={r}
+								onClick={() => setResource(() => r)}>
+								{toTitleCase(r)}
+							</MenuItem>)}
+						</Select>
+					</FormControl>}
+					{role === ROLE_SCOPED && <Grid container>
 						<Grid item xs={6}>
 							<FormControl
 								sx={{m: 1, pr: 1}}
@@ -159,8 +211,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 									variant="outlined"
 									value={resource}
 									label="Resource"
-									required={role === Role.Power}
-									disabled={role !== Role.Power}>
+									required>
 									{RESOURCES.map(r => <MenuItem
 										key={r}
 										value={r}
@@ -183,45 +234,16 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 								invalidLabel="Must be at least 3 characters."
 								fieldProps={{
 									className: classes.formItem,
-									required: role === Role.Power,
+									required: true,
 									label: `${toTitleCase(resource || "Resource")} name`,
 									placeholder: "maven-central",
 									variant: "filled",
 									id: "txt-resource",
-									disabled: role !== Role.Power,
 									fullWidth: true
 								}}
 							/>
 						</Grid>
-					</Grid>
-					<FormLabel
-						className={classes.formItem}
-						component="legend">
-						Role
-					</FormLabel>
-					<RadioGroup
-						className={classes.formItem}
-						aria-label="role"
-						name="role"
-						value={role}
-						onChange={handleRoleChange}>
-						{Object.values(Role).map(r => <FormControlLabel
-							key={r}
-							control={<Radio color="primary"/>}
-							label={<div>
-								<Typography
-									sx={{fontSize: 14}}>
-									{toTitleCase(r)}
-								</Typography>
-								<Typography
-									sx={{fontSize: 14}}
-									color="text.secondary">
-									{r === Role.Super ? "Grant full permissions to all resources." : "Grant full permissions to a specific resource."}
-								</Typography>
-							</div>}
-							value={r}
-						/>)}
-					</RadioGroup>
+					</Grid>}
 					{error != null && <Alert
 						severity="error">
 						Failed to create RoleBinding.
@@ -243,14 +265,14 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
-							disabled={!DataIsValid(user) || loading || role == null}
+							disabled={user === "" || loading || role == null}
 							onClick={handleCreate}
 							variant="contained">
 							Create
 						</Button>
 					</div>
 				</FormGroup>
-			</div>
+			</Box>
 		</StandardLayout>
 	);
 }

@@ -1,6 +1,6 @@
-mutation createRoleBinding($subject: String!, $role: Role!, $resource: String!) {
-    createRoleBinding(input: {subject: $subject, role: $role, resource: $resource}) {
-        id
+mutation createRoleBinding($subject: String!, $resource: String!, $verb: Verb!) {
+    createRoleBinding(input: {subject: $subject, resource: $resource, verb: $verb}) {
+        __typename
     }
 }
 query getCurrentUser {
@@ -21,12 +21,25 @@ subscription watchCurrentUser {
         preferences
     }
 }
-query getUsers($role: Role!) {
-    getUsers(role: $role) {
-        id
-        role
+query getRoleBindings($user: String!) {
+    getRoleBindings(user: $user) {
         subject
         resource
+        verb
+    }
+}
+query getUsers($resource: String!) {
+    getUsers(resource: $resource) {
+        subject
+        resource
+        verb
+    }
+}
+query listUsers {
+    listUsers {
+        id
+        sub
+        claims
     }
 }
 mutation setPreference($key: String!, $value: String!) {
