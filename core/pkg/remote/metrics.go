@@ -26,20 +26,20 @@ import (
 var (
 	meter               = global.MeterProvider().Meter("prism")
 	metricDoDuration, _ = meter.SyncInt64().Counter(
-		"remote.ephemeral.do.duration.total",
+		"prism.core.remote.ephemeral.do.duration.total",
 		instrument.WithUnit(unit.Milliseconds),
 	)
 	metricDoCancel, _ = meter.SyncInt64().Counter(
-		"remote.ephemeral.do.cancelled.total",
+		"prism.core.remote.ephemeral.do.cancelled.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricDoOk, _ = meter.SyncInt64().Counter(
-		"remote.ephemeral.do.success.total",
+		"prism.core.remote.ephemeral.do.success.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 
 	metricBackedAuth, _ = meter.SyncInt64().Counter(
-		"remote.backed.auth.total",
+		"prism.core.remote.backed.auth.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 )

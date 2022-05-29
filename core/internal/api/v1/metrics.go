@@ -26,11 +26,11 @@ import (
 var (
 	meter          = global.MeterProvider().Meter("prism")
 	metricCount, _ = meter.SyncInt64().Counter(
-		"gateway.total",
+		"prism.core.gateway.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricCountResolved, _ = meter.SyncInt64().Counter(
-		"gateway.resolved.total",
+		"prism.core.gateway.resolved.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 )

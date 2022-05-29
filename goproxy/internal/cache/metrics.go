@@ -26,11 +26,11 @@ import (
 var (
 	meter             = global.MeterProvider().Meter("prism")
 	metricGetCount, _ = meter.SyncInt64().Counter(
-		"goproxy.cache.get.total",
+		"prism.goproxy.cache.get.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricPutCount, _ = meter.SyncInt64().Counter(
-		"goproxy.cache.put.total",
+		"prism.goproxy.cache.put.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 )

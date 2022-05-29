@@ -64,4 +64,4 @@ networkPolicy:
                 app.kubernetes.io/name: prometheus
             namespaceSelector:
               matchLabels:
-                meta.kubernetes.io/name: openshift-monitoring
+                kubernetes.io/metadata.name: openshift-monitoring

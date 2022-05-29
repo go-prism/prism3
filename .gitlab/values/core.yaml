@@ -6,6 +6,7 @@ env:
   HELM_CONFIG_HOME: /tmp
   HELM_DATA_HOME: /tmp
   GOGC: 50
+  PRISM_PLUGIN_RBAC_URL: localhost:8082
 security:
   podContext:
     fsGroup: 1001
@@ -75,6 +76,8 @@ sidecars:
         value: "/healthz"
       - name: PORT
         value: "8081"
+      - name: ENABLE_METRICS
+        value: "false"
     envFrom:
       - secretRef:
           name: prod-core-99-secret
@@ -107,7 +110,7 @@ sidecars:
       limits:
         memory: 200Mi
   - name: rbac
-    image: registry.dcas.dev/prism/go-rbac-proxy:main
+    image: registry.dcas.dev/prism/go-rbac-proxy:master
     imagePullPolicy: Always
     env:
       - name: PORT
@@ -163,4 +166,4 @@ networkPolicy:
                 app.kubernetes.io/name: prometheus
             namespaceSelector:
               matchLabels:
-                meta.kubernetes.io/name: openshift-monitoring
+                kubernetes.io/metadata.name: openshift-monitoring

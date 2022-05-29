@@ -26,11 +26,11 @@ import (
 var (
 	meter        = global.MeterProvider().Meter("prism")
 	metricCan, _ = meter.SyncInt64().Counter(
-		"rbac.can.total",
+		"prism.core.rbac.can.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricHas, _ = meter.SyncInt64().Counter(
-		"rbac.has.total",
+		"prism.core.rbac.has.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 )
