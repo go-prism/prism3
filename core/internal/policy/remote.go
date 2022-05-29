@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package policy
 
 import (
@@ -53,32 +70,38 @@ func NewRegexEnforcer(ctx context.Context, r *model.Remote) *RegexEnforcer {
 }
 
 func (r *RegexEnforcer) CanReceive(ctx context.Context, path string) bool {
-	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canReceive", trace.WithAttributes(
+	attributes := []attribute.KeyValue{
 		attribute.String("archetype", string(r.archetype)),
 		attribute.String("path", path),
-	))
+	}
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canReceive", trace.WithAttributes(attributes...))
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	if r.anyMatch(path, r.block) {
 		log.V(1).Info("blocked by blocklist")
+		metricReceive.Add(ctx, 1, append(attributes, attribute.Bool("allowed", false))...)
 		return false
 	}
 	if len(r.allow) > 0 && !r.anyMatch(path, r.allow) {
 		log.V(1).Info("blocked by allowlist")
+		metricReceive.Add(ctx, 1, append(attributes, attribute.Bool("allowed", false))...)
 		return false
 	}
+	metricReceive.Add(ctx, 1, append(attributes, attribute.Bool("allowed", true))...)
 	return true
 }
 
 func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
-	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canCache", trace.WithAttributes(
+	attributes := []attribute.KeyValue{
 		attribute.String("archetype", string(r.archetype)),
 		attribute.String("path", path),
-	))
+	}
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canCache", trace.WithAttributes(attributes...))
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path, "Archetype", r.archetype)
 	if r.archetype == "" {
 		log.V(1).Info("cannot cache data without an archetype")
+		metricCache.Add(ctx, 1, append(attributes, attribute.Bool("allowed", false))...)
 		return false
 	}
 	canCache := true
@@ -106,6 +129,7 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 	}
 	span.SetAttributes(attribute.Bool("can_cache", canCache))
 	log.V(1).Info("successfully checked cache policy", "Cache", canCache)
+	metricCache.Add(ctx, 1, append(attributes, attribute.Bool("allowed", canCache))...)
 	return canCache
 }
 

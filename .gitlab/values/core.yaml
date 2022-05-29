@@ -55,6 +55,11 @@ volumes:
     mountPath: /tmp
     config:
       emptyDir: {}
+  - name: rbac
+    mountPath: /var/run/config/rbac
+    config:
+      secret:
+        secretName: ext-prism-rbac
 resources:
   requests:
     cpu: 200m
@@ -101,6 +106,44 @@ sidecars:
         memory: 100Mi
       limits:
         memory: 200Mi
+  - name: rbac
+    image: registry.dcas.dev/prism/go-rbac-proxy:main
+    imagePullPolicy: Always
+    env:
+      - name: PORT
+        value: "8082"
+      - name: APP_LOG_LEVEL
+        value: "1"
+      - name: APP_CONFIG_PATH
+        value: /var/run/config/rbac/config.yaml
+    volumeMounts:
+      - name: rbac
+        mountPath: /var/run/config/rbac
+        readOnly: true
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8082
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8082
+    securityContext:
+      runAsNonRoot: true
+      runAsGroup: 1001
+      runAsUser: 1001
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      privileged: false
+      capabilities:
+        drop:
+          - ALL
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        memory: 200Mi
 networkPolicy:
   enabled: true
   spec:
@@ -117,7 +160,7 @@ networkPolicy:
                 kubernetes.io/metadata.name: ingress-nginx
           - podSelector:
               matchLabels:
-                app: prometheus
+                app.kubernetes.io/name: prometheus
             namespaceSelector:
               matchLabels:
                 meta.kubernetes.io/name: openshift-monitoring

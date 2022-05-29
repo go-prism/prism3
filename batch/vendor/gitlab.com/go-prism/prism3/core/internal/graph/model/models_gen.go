@@ -36,8 +36,8 @@ type NewRemote struct {
 
 type NewRoleBinding struct {
 	Subject  string `json:"subject"`
-	Role     Role   `json:"role"`
 	Resource string `json:"resource"`
+	Verb     Verb   `json:"verb"`
 }
 
 type NewTransportProfile struct {
@@ -122,10 +122,9 @@ type RemoteSecurity struct {
 }
 
 type RoleBinding struct {
-	ID       string `json:"id" gorm:"primaryKey;type:uuid;not null;default:gen_random_uuid()"`
 	Subject  string `json:"subject"`
-	Role     Role   `json:"role"`
 	Resource string `json:"resource"`
+	Verb     Verb   `json:"verb"`
 }
 
 type StoredUser struct {
@@ -255,17 +254,17 @@ type Role string
 
 const (
 	RoleSuper Role = "SUPER"
-	RolePower Role = "POWER"
+	RoleAudit Role = "AUDIT"
 )
 
 var AllRole = []Role{
 	RoleSuper,
-	RolePower,
+	RoleAudit,
 }
 
 func (e Role) IsValid() bool {
 	switch e {
-	case RoleSuper, RolePower:
+	case RoleSuper, RoleAudit:
 		return true
 	}
 	return false
@@ -289,5 +288,52 @@ func (e *Role) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Verb string
+
+const (
+	VerbCreate Verb = "CREATE"
+	VerbRead   Verb = "READ"
+	VerbUpdate Verb = "UPDATE"
+	VerbDelete Verb = "DELETE"
+	VerbSudo   Verb = "SUDO"
+)
+
+var AllVerb = []Verb{
+	VerbCreate,
+	VerbRead,
+	VerbUpdate,
+	VerbDelete,
+	VerbSudo,
+}
+
+func (e Verb) IsValid() bool {
+	switch e {
+	case VerbCreate, VerbRead, VerbUpdate, VerbDelete, VerbSudo:
+		return true
+	}
+	return false
+}
+
+func (e Verb) String() string {
+	return string(e)
+}
+
+func (e *Verb) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Verb(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Verb", str)
+	}
+	return nil
+}
+
+func (e Verb) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

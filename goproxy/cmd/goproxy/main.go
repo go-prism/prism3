@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package main
 
 import (
@@ -5,6 +22,7 @@ import (
 	"github.com/djcass44/go-utils/flagging"
 	"github.com/djcass44/go-utils/logging"
 	"github.com/djcass44/go-utils/otel"
+	"github.com/djcass44/go-utils/otel/metrics"
 	"github.com/goproxy/goproxy"
 	"github.com/gorilla/mux"
 	"github.com/kelseyhightower/envconfig"
@@ -75,6 +93,13 @@ func main() {
 		return
 	}
 
+	prom, err := metrics.New(ctx, nil, true)
+	if err != nil {
+		log.Error(err, "failed to setup metrics")
+		os.Exit(1)
+		return
+	}
+
 	// configure routing
 	router := mux.NewRouter()
 	router.Use(otelmux.Middleware(tracing.ServiceNameGoProxy))
@@ -82,6 +107,7 @@ func main() {
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
+	router.HandleFunc("/metrics", prom.ServeHTTP)
 	router.PathPrefix("/").Handler(&goproxy.Goproxy{
 		Cacher:        cache.NewCacher(s3),
 		ProxiedSUMDBs: nil,

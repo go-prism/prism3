@@ -58,8 +58,6 @@ networkPolicy:
         app.kubernetes.io/name: goproxy
         app.kubernetes.io/part-of: prism
     ingress:
-      - ports:
-          - port: 8081
       - from:
           - podSelector:
               matchLabels:
@@ -67,7 +65,7 @@ networkPolicy:
                 app.kubernetes.io/part-of: prism
           - podSelector:
               matchLabels:
-                app: prometheus
+                app.kubernetes.io/name: prometheus
             namespaceSelector:
               matchLabels:
                 meta.kubernetes.io/name: openshift-monitoring

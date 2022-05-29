@@ -20,7 +20,7 @@ github.com/Unleash/unleash-client-go/v3/internal/api
 github.com/Unleash/unleash-client-go/v3/internal/constraints
 github.com/Unleash/unleash-client-go/v3/internal/strategies
 github.com/Unleash/unleash-client-go/v3/strategy
-# github.com/aws/aws-sdk-go-v2 v1.16.2
+# github.com/aws/aws-sdk-go-v2 v1.16.4
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2
 github.com/aws/aws-sdk-go-v2/aws
@@ -65,16 +65,16 @@ github.com/aws/aws-sdk-go-v2/feature/ec2/imds/internal/config
 # github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.0
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/feature/s3/manager
-# github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.9
+# github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.11
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/internal/configsources
-# github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.3
+# github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.5
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2
 # github.com/aws/aws-sdk-go-v2/internal/ini v1.3.7
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/internal/ini
-# github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.3
+# github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.5
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/service/dynamodb
 github.com/aws/aws-sdk-go-v2/service/dynamodb/internal/customizations
@@ -86,7 +86,7 @@ github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding
 # github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.0
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/service/internal/checksum
-# github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.3
+# github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.7.5
 ## explicit; go 1.15
 github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery
 # github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.0
@@ -175,19 +175,19 @@ github.com/djcass44/go-tracer/tracer
 ## explicit; go 1.15
 github.com/djcass44/go-utils/pkg/cryptoutils
 github.com/djcass44/go-utils/pkg/httputils
-# github.com/djcass44/go-utils/flagging v0.1.1
+# github.com/djcass44/go-utils/flagging v0.1.2
 ## explicit; go 1.18
 github.com/djcass44/go-utils/flagging
 # github.com/djcass44/go-utils/logging v0.1.0
 ## explicit; go 1.18
 github.com/djcass44/go-utils/logging
-# github.com/djcass44/go-utils/orm v0.1.0
+# github.com/djcass44/go-utils/orm v0.1.1
 ## explicit; go 1.18
 github.com/djcass44/go-utils/orm
-# github.com/djcass44/go-utils/otel v0.1.1
+# github.com/djcass44/go-utils/otel v0.1.2
 ## explicit; go 1.18
 github.com/djcass44/go-utils/otel
-# github.com/djcass44/go-utils/utilities v0.1.0
+# github.com/djcass44/go-utils/utilities v0.1.1
 ## explicit; go 1.18
 github.com/djcass44/go-utils/utilities/httputils
 github.com/djcass44/go-utils/utilities/sliceutils
@@ -283,8 +283,8 @@ github.com/go-openapi/jsonreference
 # github.com/go-openapi/swag v0.19.14
 ## explicit; go 1.11
 github.com/go-openapi/swag
-# github.com/go-redis/redis/v8 v8.11.4
-## explicit; go 1.13
+# github.com/go-redis/redis/v8 v8.11.5
+## explicit; go 1.17
 github.com/go-redis/redis/v8
 github.com/go-redis/redis/v8/internal
 github.com/go-redis/redis/v8/internal/hashtag
@@ -366,7 +366,7 @@ github.com/inconshreveable/mousetrap
 # github.com/jackc/chunkreader/v2 v2.0.1
 ## explicit; go 1.12
 github.com/jackc/chunkreader/v2
-# github.com/jackc/pgconn v1.11.0
+# github.com/jackc/pgconn v1.12.1
 ## explicit; go 1.12
 github.com/jackc/pgconn
 github.com/jackc/pgconn/internal/ctxwatch
@@ -377,16 +377,16 @@ github.com/jackc/pgio
 # github.com/jackc/pgpassfile v1.0.0
 ## explicit; go 1.12
 github.com/jackc/pgpassfile
-# github.com/jackc/pgproto3/v2 v2.2.0
+# github.com/jackc/pgproto3/v2 v2.3.0
 ## explicit; go 1.12
 github.com/jackc/pgproto3/v2
 # github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
-# github.com/jackc/pgtype v1.10.0
+# github.com/jackc/pgtype v1.11.0
 ## explicit; go 1.13
 github.com/jackc/pgtype
-# github.com/jackc/pgx/v4 v4.15.0
+# github.com/jackc/pgx/v4 v4.16.1
 ## explicit; go 1.13
 github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
@@ -426,7 +426,7 @@ github.com/kostyay/gorm-opentelemetry
 # github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 ## explicit
 github.com/levigross/grequests
-# github.com/lib/pq v1.10.4
+# github.com/lib/pq v1.10.6
 ## explicit; go 1.13
 github.com/lib/pq
 github.com/lib/pq/oid
@@ -523,7 +523,7 @@ github.com/twmb/murmur3
 # github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca
 ## explicit
 github.com/xlab/treeprint
-# gitlab.com/autokubeops/serverless v0.4.1
+# gitlab.com/autokubeops/serverless v0.4.2
 ## explicit; go 1.17
 gitlab.com/autokubeops/serverless
 # gitlab.com/av1o/cap10 v0.4.0
@@ -554,7 +554,7 @@ go.opentelemetry.io/contrib
 # go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws v0.32.0
 ## explicit; go 1.16
 go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws
-# go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.28.1-0.20220210160856-10051614d2b8
+# go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.32.0
 ## explicit; go 1.16
 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
 # go.opentelemetry.io/otel v1.7.0
@@ -570,7 +570,6 @@ go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/internal
 go.opentelemetry.io/otel/semconv/v1.10.0
 go.opentelemetry.io/otel/semconv/v1.4.0
-go.opentelemetry.io/otel/semconv/v1.7.0
 # go.opentelemetry.io/otel/exporters/jaeger v1.7.0
 ## explicit; go 1.16
 go.opentelemetry.io/otel/exporters/jaeger
@@ -578,16 +577,16 @@ go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/agent
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/jaeger
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/zipkincore
 go.opentelemetry.io/otel/exporters/jaeger/internal/third_party/thrift/lib/go/thrift
-# go.opentelemetry.io/otel/internal/metric v0.27.0
-## explicit; go 1.16
-go.opentelemetry.io/otel/internal/metric/global
-go.opentelemetry.io/otel/internal/metric/registry
-# go.opentelemetry.io/otel/metric v0.27.0
+# go.opentelemetry.io/otel/metric v0.30.0
 ## explicit; go 1.16
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/metric/global
-go.opentelemetry.io/otel/metric/number
-go.opentelemetry.io/otel/metric/sdkapi
+go.opentelemetry.io/otel/metric/instrument
+go.opentelemetry.io/otel/metric/instrument/asyncfloat64
+go.opentelemetry.io/otel/metric/instrument/asyncint64
+go.opentelemetry.io/otel/metric/instrument/syncfloat64
+go.opentelemetry.io/otel/metric/instrument/syncint64
+go.opentelemetry.io/otel/metric/internal/global
 go.opentelemetry.io/otel/metric/unit
 # go.opentelemetry.io/otel/sdk v1.7.0
 ## explicit; go 1.16
@@ -627,7 +626,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20220513210258-46612604a0f9
+# golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 ## explicit; go 1.17
 golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp
@@ -642,7 +641,7 @@ golang.org/x/crypto/sha3
 # golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 ## explicit; go 1.18
 golang.org/x/exp/constraints
-# golang.org/x/net v0.0.0-20220513224357-95641704303c
+# golang.org/x/net v0.0.0-20220526153639-5463443f8c37
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
@@ -664,7 +663,7 @@ golang.org/x/oauth2/internal
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a
+# golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -708,10 +707,10 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
+# google.golang.org/genproto v0.0.0-20220527130721-00d5c0f3be58
 ## explicit; go 1.15
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.46.0
+# google.golang.org/grpc v1.46.2
 ## explicit; go 1.14
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -801,7 +800,7 @@ gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
-# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+# gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
 # gorm.io/datatypes v1.0.6
@@ -810,7 +809,7 @@ gorm.io/datatypes
 # gorm.io/driver/mysql v1.3.2
 ## explicit; go 1.14
 gorm.io/driver/mysql
-# gorm.io/driver/postgres v1.3.1
+# gorm.io/driver/postgres v1.3.6
 ## explicit; go 1.14
 gorm.io/driver/postgres
 # gorm.io/gorm v1.23.5
@@ -1084,3 +1083,5 @@ sigs.k8s.io/structured-merge-diff/v4/value
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 # gitlab.com/go-prism/prism3/core => ../core
+# gitlab.com/go-prism/go-rbac-proxy v0.2.0 => gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.0
+# gitlab.com/go-prism/go-rbac-proxy v0.2.1 => gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.1

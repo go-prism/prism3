@@ -32,10 +32,6 @@ service:
   internalPort: 8080
 ingress:
   enabled: false
-prometheus:
-  metrics: true
-  serviceMonitor:
-    enabled: true
 livenessProbe:
   path: "/healthz"
 readinessProbe:
@@ -65,7 +61,7 @@ networkPolicy:
                 kubernetes.io/metadata.name: ingress-nginx
           - podSelector:
               matchLabels:
-                app: prometheus
+                app.kubernetes.io/name: prometheus
             namespaceSelector:
               matchLabels:
                 meta.kubernetes.io/name: openshift-monitoring

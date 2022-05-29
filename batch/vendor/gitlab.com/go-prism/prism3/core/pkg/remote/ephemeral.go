@@ -1,19 +1,39 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package remote
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/djcass44/go-utils/flagging"
 	"github.com/djcass44/go-utils/utilities/httputils"
 	"github.com/go-logr/logr"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/lpar/problem"
+	"gitlab.com/go-prism/prism3/core/internal/features"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"io"
 	"net/http"
 	"strings"
@@ -66,23 +86,47 @@ func (r *EphemeralRemote) Exists(ctx context.Context, path string, rctx *schemas
 	target := fmt.Sprintf("%s/%s", r.root, path)
 	log = log.WithValues("Target", target)
 	log.Info("probing remote")
-	// we unfortunately need to send a GET request
-	// with a zero range. This is to fix issues
-	// where the remote redirects us to S3 and pre-signs
-	// the request as if it were a GET...
-	// todo create a feature flag for this (features.RemoteAvoidRangeHack)
-	h := http.Header{}
-	h.Set("Range", "bytes=0-0")
-	_, err := r.Do(ctx, http.MethodGet, target, schemas.RequestOptions{
-		Header:  h,
+	_, err := r.getExecMethod(ctx, target, schemas.RequestOptions{
 		Context: rctx,
-	})
+	})()
 	if err != nil {
 		return "", err
 	}
 	// save to the cache
 	_ = r.cache.Set(cacheKey, target, ttlcache.DefaultTTL)
 	return target, nil
+}
+
+// getExecMethod determines whether the GET/HEAD workaround is applied
+// for a given request. This workaround is needed when the remote
+// uses SIGv4 signatures as a GET request is signed rather than a HEAD.
+//
+// See #32
+func (r *EphemeralRemote) getExecMethod(ctx context.Context, target string, opt schemas.RequestOptions) func() (*http.Response, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "remote_ephemeral_getExecMethod")
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("Target", target)
+	if flagging.IsEnabled(features.RemoteAvoidRangeHack) {
+		log.V(1).Info("using HEAD request - this may fail if the remote is backed by S3")
+		return func() (*http.Response, error) {
+			return r.Do(ctx, http.MethodHead, target, opt)
+		}
+	}
+	log.V(1).Info("using GET request")
+	return func() (*http.Response, error) {
+		h := http.Header{}
+		// use the provided headers if they've been set
+		if opt.Header != nil {
+			h = opt.Header
+		}
+		// we unfortunately need to send a GET request
+		// with a zero range. This is to fix issues
+		// where the remote redirects us to S3 and pre-signs
+		// the request as if it were a GET...
+		h.Set("Range", "bytes=0-0")
+		opt.Header = h
+		return r.Do(ctx, http.MethodGet, target, opt)
+	}
 }
 
 func (r *EphemeralRemote) Download(ctx context.Context, path string, rctx *schemas.RequestContext) (io.Reader, error) {
@@ -128,25 +172,30 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, opt sch
 	// execute the request
 	log.V(1).Info("executing request")
 	resp, err := r.client.Do(req)
+	// collect some metrics first
+	duration := time.Since(start)
+	metricDoDuration.Add(ctx, duration.Milliseconds())
+	span.SetAttributes(
+		attribute.String("time_end", time.Now().String()),
+		attribute.String("time_elapsed", duration.String()),
+	)
+	// handle the error
 	if err != nil {
 		span.RecordError(err)
 		// swallow the context-cancelled error
 		// since it will happen a lot
 		if errors.Is(err, context.Canceled) {
+			metricDoCancel.Add(ctx, 1)
 			log.V(1).Error(err, "cancelling request")
 			return nil, err
 		}
 		log.Error(err, "failed to execute request")
 		return nil, err
 	}
-	duration := time.Since(start)
-	span.SetAttributes(
-		attribute.String("time_end", time.Now().String()),
-		attribute.String("time_elapsed", duration.String()),
-	)
 	log = log.WithValues("Code", resp.StatusCode, "Duration", duration, "Method", method)
 	log.Info("remote request completed")
 	log.V(3).Info("response headers", "Headers", resp.Header)
+	metricDoOk.Add(ctx, 1, semconv.HTTPAttributesFromHTTPStatusCode(resp.StatusCode)...)
 	if httputils.IsHTTPError(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
 			log.V(1).Info("received 401, dumping challenge header", "WWW-Authenticate", resp.Header.Get("WWW-Authenticate"))

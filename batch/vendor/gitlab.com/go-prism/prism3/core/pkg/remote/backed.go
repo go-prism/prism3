@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package remote
 
 import (
@@ -79,6 +96,7 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 	// wipe the request context if the remote
 	// requests it
 	if b.rm.Security.AuthMode == model.AuthModeNone {
+		metricBackedAuth.Add(ctx, 1, attribute.String(attributeAuthKey, string(model.AuthModeNone)))
 		log.V(1).Info("removing authentication context as this remote forbids it")
 		rctx.Mode = httpclient.AuthNone
 		rctx.Header = ""
@@ -90,16 +108,19 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 	// headers.
 	if b.rm.Security.AuthMode == model.AuthModeProxy {
 		if !sliceutils.Includes(b.rm.Security.AuthHeaders, rctx.Header) {
+			metricBackedAuth.Add(ctx, 1, attribute.String(attributeAuthKey, string(model.AuthModeNone)))
 			log.V(1).Info("removing authentication context as provided header is not in the list of allowed headers", "Header", rctx.Header, "Allowed", b.rm.Security.AuthHeaders)
 			rctx.Mode = httpclient.AuthNone
 			rctx.Header = ""
 			rctx.Token = ""
 			return
 		}
+		metricBackedAuth.Add(ctx, 1, attribute.String(attributeAuthKey, string(model.AuthModeProxy)))
 	}
 	// overwrite any incoming authentication information
 	// with the remotes credentials
 	if b.rm.Security.AuthMode == model.AuthModeDirect {
+		metricBackedAuth.Add(ctx, 1, attribute.String(attributeAuthKey, string(model.AuthModeDirect)))
 		log.V(1).Info("overwriting authentication context as this remote will handle it", "Remote")
 		rctx.Mode = httpclient.AuthHeader
 		rctx.Header = b.rm.Security.DirectHeader

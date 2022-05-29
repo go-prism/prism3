@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package storage
 
 import (
@@ -74,8 +91,10 @@ func (s *S3) Get(ctx context.Context, path string) (io.Reader, error) {
 		Bucket: s.bucket,
 		Key:    aws.String(path),
 	})
+	metricGetSize.Add(ctx, n, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 	log.V(1).Info("completed download", "Bytes", n)
 	if err != nil {
+		metricGetErrCount.Add(ctx, 1, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 		log.Error(err, "failed to successfully download object")
 		return nil, err
 	}
@@ -95,9 +114,11 @@ func (s *S3) Put(ctx context.Context, path string, r io.Reader) error {
 		Body:   r,
 	})
 	if err != nil {
+		metricPutErrCount.Add(ctx, 1, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 		log.Error(err, "failed to successfully upload object")
 		return err
 	}
+	metricPutCount.Add(ctx, 1, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 	log.V(1).Info("successfully uploaded file", "Location", result.Location, "UploadID", result.UploadID)
 	return nil
 }
@@ -112,9 +133,11 @@ func (s *S3) Head(ctx context.Context, path string) (bool, error) {
 		Key:    aws.String(path),
 	})
 	if err != nil {
+		metricHeadErrCount.Add(ctx, 1, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 		log.Error(err, "failed to HEAD s3 object")
 		return false, err
 	}
+	metricHeadCount.Add(ctx, 1, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 	log.V(1).Info("successfully located file in s3", "ContentLength", result.ContentLength)
 	return true, nil
 }

@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package repo
 
 import (
@@ -42,6 +59,20 @@ func (r *UserRepo) CreateCtx(ctx context.Context) (*model.StoredUser, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (r *UserRepo) List(ctx context.Context) ([]*model.StoredUser, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_user_list")
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("listing users")
+	var results []*model.StoredUser
+	if err := r.db.WithContext(ctx).Find(&results).Error; err != nil {
+		log.Error(err, "failed to list users")
+		sentry.CaptureException(err)
+		return nil, err
+	}
+	return results, nil
 }
 
 func (r *UserRepo) SetPreference(ctx context.Context, key, value string) error {

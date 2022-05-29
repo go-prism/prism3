@@ -28,6 +28,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 func NewManager(ctx context.Context, r rbac.AuthorityClient, superuser string) (*Manager, error) {
@@ -50,6 +51,7 @@ func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID s
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
 		log.V(1).Info("skipping CanI check due to missing user")
+		metricCan.Add(ctx, 1, attribute.Bool("forbidden", true))
 		return errs.ErrUnauthorised
 	}
 	username := NormalUser(user.AsUsername())
@@ -62,14 +64,17 @@ func (m *Manager) CanI(ctx context.Context, resource repo.Resource, resourceID s
 	})
 	if err != nil {
 		log.Error(err, "failed to check user access with the rbac sidecar")
+		metricCan.Add(ctx, 1, attribute.Bool("forbidden", true))
 		return errs.ErrForbidden
 	}
 	log.V(1).Info("successfully completed RBAC check", "Member", resp.GetOk())
 	ok = resp.GetOk()
 	if !ok {
 		log.Info("blocking user access due to missing RBAC rule")
+		metricCan.Add(ctx, 1, attribute.Bool("forbidden", true))
 		return errs.ErrForbidden
 	}
+	metricCan.Add(ctx, 1, attribute.Bool("forbidden", false))
 	return nil
 }
 
@@ -80,6 +85,7 @@ func (m *Manager) AmI(ctx context.Context, role model.Role) error {
 	user, ok := client.GetContextUser(ctx)
 	if !ok {
 		log.V(1).Info("skipping AmI check due to missing user")
+		metricHas.Add(ctx, 1, attribute.Bool("forbidden", true))
 		return errs.ErrUnauthorised
 	}
 	username := NormalUser(user.AsUsername())
@@ -91,13 +97,16 @@ func (m *Manager) AmI(ctx context.Context, role model.Role) error {
 	})
 	if err != nil {
 		log.Error(err, "failed to check role membership with the rbac sidecar")
+		metricHas.Add(ctx, 1, attribute.Bool("forbidden", true))
 		return errs.ErrForbidden
 	}
 	ok = resp.GetOk()
 	if !ok {
 		log.Info("unable to find role in any ancestor")
+		metricHas.Add(ctx, 1, attribute.Bool("forbidden", true))
 		return errs.ErrForbidden
 	}
+	metricHas.Add(ctx, 1, attribute.Bool("forbidden", false))
 	return nil
 }
 

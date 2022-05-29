@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package v1
 
 import (
@@ -60,21 +77,30 @@ func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 		log.V(1).Info("handling NPM scoped request", "Scope", scope)
 		pkg = fmt.Sprintf("@%s/%s", scope, pkg)
 	}
-	span.SetAttributes(
+	attributes := []attribute.KeyValue{
 		attribute.String("bucket", bucket),
 		attribute.String("package", pkg),
 		attribute.String("scope", scope),
 		attribute.String("version", version),
-	)
+		attribute.String("type", "npm"),
+	}
+	span.SetAttributes(attributes...)
 	req := g.npmPool.Get().(*resolver.NPMRequest)
 	req.New(bucket, pkg, version)
 	defer g.npmPool.Put(req)
+
+	// collect metrics
+	metricCount.Add(ctx, 1, attributes...)
+
 	// serve
 	reader, err := g.resolver.ResolveNPM(ctx, req, &schemas.RequestContext{})
 	if err != nil {
 		_ = problem.MustWrite(w, err)
 		return
 	}
+
+	metricCountResolved.Add(ctx, 1, attributes...)
+
 	// copy the response back
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = io.Copy(w, reader)

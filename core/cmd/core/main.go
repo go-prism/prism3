@@ -25,6 +25,7 @@ import (
 	"github.com/djcass44/go-utils/flagging"
 	"github.com/djcass44/go-utils/logging"
 	"github.com/djcass44/go-utils/otel"
+	"github.com/djcass44/go-utils/otel/metrics"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -130,6 +131,13 @@ func main() {
 		return
 	}
 
+	prom, err := metrics.New(ctx, nil, true)
+	if err != nil {
+		log.Error(err, "failed to setup metrics")
+		os.Exit(1)
+		return
+	}
+
 	// configure database
 	database, err := db.NewDatabase(ctx, e.DB.DSN, e.DB.DSNReplica)
 	if err != nil {
@@ -212,6 +220,7 @@ func main() {
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})
+	router.HandleFunc("/metrics", prom.ServeHTTP)
 	router.Handle("/api/graphql", playground.Handler("GraphQL Playground", "/api/query"))
 	router.Handle("/api/query", c.WithOptionalUser(srv))
 	// generic

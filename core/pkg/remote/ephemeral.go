@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package remote
 
 import (
@@ -16,6 +33,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"io"
 	"net/http"
 	"strings"
@@ -154,25 +172,30 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, opt sch
 	// execute the request
 	log.V(1).Info("executing request")
 	resp, err := r.client.Do(req)
+	// collect some metrics first
+	duration := time.Since(start)
+	metricDoDuration.Add(ctx, duration.Milliseconds())
+	span.SetAttributes(
+		attribute.String("time_end", time.Now().String()),
+		attribute.String("time_elapsed", duration.String()),
+	)
+	// handle the error
 	if err != nil {
 		span.RecordError(err)
 		// swallow the context-cancelled error
 		// since it will happen a lot
 		if errors.Is(err, context.Canceled) {
+			metricDoCancel.Add(ctx, 1)
 			log.V(1).Error(err, "cancelling request")
 			return nil, err
 		}
 		log.Error(err, "failed to execute request")
 		return nil, err
 	}
-	duration := time.Since(start)
-	span.SetAttributes(
-		attribute.String("time_end", time.Now().String()),
-		attribute.String("time_elapsed", duration.String()),
-	)
 	log = log.WithValues("Code", resp.StatusCode, "Duration", duration, "Method", method)
 	log.Info("remote request completed")
 	log.V(3).Info("response headers", "Headers", resp.Header)
+	metricDoOk.Add(ctx, 1, semconv.HTTPAttributesFromHTTPStatusCode(resp.StatusCode)...)
 	if httputils.IsHTTPError(resp.StatusCode) {
 		if resp.StatusCode == http.StatusUnauthorized {
 			log.V(1).Info("received 401, dumping challenge header", "WWW-Authenticate", resp.Header.Get("WWW-Authenticate"))
