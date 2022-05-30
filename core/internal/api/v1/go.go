@@ -38,7 +38,7 @@ func (g *Gateway) ServeGo(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	metricCount.Add(ctx, 1, attribute.String("type", "go"))
+	metricCount.Add(ctx, 1, attribute.String("type", "go"), attribute.String("bucket", "go"))
 	name := strings.TrimPrefix(r.URL.Path, "/api/go")
 	r.URL.Path = name
 	g.goProxy.ModifyResponse = func(response *http.Response) error {
@@ -51,7 +51,7 @@ func (g *Gateway) ServeGo(w http.ResponseWriter, r *http.Request) {
 		}
 		log.V(1).Info("extracted Go metadata", "Name", n, "Version", v)
 		go func() {
-			metricCountResolved.Add(ctx, 1, attribute.String("type", "go"))
+			metricCountResolved.Add(ctx, 1, attribute.String("type", "go"), attribute.String("bucket", "go"))
 			_ = g.artifactRepo.CreateArtifact(context.TODO(), strings.TrimPrefix(name, "/"), db.GoRemote)
 		}()
 		return nil
