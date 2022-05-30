@@ -207,11 +207,12 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, opt sch
 }
 
 func captureRequestMetrics(ctx context.Context, duration time.Duration, r *http.Response) {
-	attributes := []attribute.KeyValue{
-		semconv.HTTPStatusCodeKey.Int(r.StatusCode),
-	}
-	if r.Request != nil {
-		attributes = append(attributes, semconv.HTTPClientAttributesFromHTTPRequest(r.Request)...)
+	var attributes []attribute.KeyValue
+	if r != nil {
+		attributes = append(attributes, semconv.HTTPStatusCodeKey.Int(r.StatusCode))
+		if r.Request != nil {
+			attributes = append(attributes, semconv.HTTPClientAttributesFromHTTPRequest(r.Request)...)
+		}
 	}
 	metricDoDuration.Record(ctx, duration.Milliseconds(), attributes...)
 }
