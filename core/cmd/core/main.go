@@ -215,9 +215,8 @@ func main() {
 
 	// configure routing
 	router := mux.NewRouter()
-	router.Use(logging.NewMiddleware(log).ServeHTTP)
+	router.Use(logging.NewMiddleware(log).ServeHTTP, metrics.Middleware(), otelmux.Middleware(tracing.ServiceNameCore))
 	router.Use(sentryhttp.New(sentryhttp.Options{Repanic: true}).Handle)
-	router.Use(otelmux.Middleware(tracing.ServiceNameCore))
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
 	})

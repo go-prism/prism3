@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/djcass44/go-utils/flagging v0.1.2
 	github.com/djcass44/go-utils/logging v0.1.0
-	github.com/djcass44/go-utils/otel v0.1.2
+	github.com/djcass44/go-utils/otel v0.1.4
 	github.com/go-logr/logr v1.2.3
 	github.com/goproxy/goproxy v0.10.2
 	github.com/gorilla/mux v1.8.0
@@ -22,6 +22,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.32.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.32.0
 	go.opentelemetry.io/otel v1.7.0
+	go.opentelemetry.io/otel/metric v0.30.0
 	go.opentelemetry.io/otel/trace v1.7.0
 	go.uber.org/zap v1.21.0
 )
@@ -72,7 +73,6 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws v0.32.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.7.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.30.0 // indirect
-	go.opentelemetry.io/otel/metric v0.30.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.7.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.30.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect

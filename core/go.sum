@@ -442,6 +442,10 @@ github.com/djcass44/go-utils/orm v0.1.1 h1:Vtuj25HNYeUt165fi5t/iqjcgi2UfOwvp8pAC
 github.com/djcass44/go-utils/orm v0.1.1/go.mod h1:E0Sc1ghQzA+DBWR8sCeFCETNVBdynRcpucA4Oh4aLEQ=
 github.com/djcass44/go-utils/otel v0.1.2 h1:JtgYzhD6tISjeT1tGT+mwyQV1TRyVGNDVjotEZe59jc=
 github.com/djcass44/go-utils/otel v0.1.2/go.mod h1:f7jP5Lo4J4R7pXVokk+8lk0ZQwv0OKGk1a7Ta+DFBhM=
+github.com/djcass44/go-utils/otel v0.1.3 h1:SZX1HqdRCVGK6W/0AXuBYe2Bvxm/avS5sqxBGRBqJWg=
+github.com/djcass44/go-utils/otel v0.1.3/go.mod h1:XpwEfF6P5lcdL+QlOtw1y7xnn+r9b2MGDnV9EaoSZI0=
+github.com/djcass44/go-utils/otel v0.1.4 h1:6kM4DlucC7IYJqxbae8KX1WLx8pFWlcg1yBaK/hUn6Q=
+github.com/djcass44/go-utils/otel v0.1.4/go.mod h1:XpwEfF6P5lcdL+QlOtw1y7xnn+r9b2MGDnV9EaoSZI0=
 github.com/djcass44/go-utils/utilities v0.1.1 h1:l1cZFmk0Ngz5L4zn6wIJcAi44Ny/M85sgWT5azFP0wY=
 github.com/djcass44/go-utils/utilities v0.1.1/go.mod h1:y6kOPPSb7171F8eyo5tyzOuhj5hUIVfyE/Yp94Tty6M=
 github.com/dnaeon/go-vcr v1.0.1/go.mod h1:aBB1+wY4s93YsC3HHjMBMrwTj2R9FHDzUr9KyGc8n1E=

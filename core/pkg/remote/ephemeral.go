@@ -174,7 +174,7 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, opt sch
 	resp, err := r.client.Do(req)
 	// collect some metrics first
 	duration := time.Since(start)
-	metricDoDuration.Add(ctx, duration.Milliseconds())
+	captureRequestMetrics(ctx, duration, resp)
 	span.SetAttributes(
 		attribute.String("time_end", time.Now().String()),
 		attribute.String("time_elapsed", duration.String()),
@@ -204,4 +204,14 @@ func (r *EphemeralRemote) Do(ctx context.Context, method, target string, opt sch
 		return nil, problem.New(resp.StatusCode).Errorf("failed to retrieve object from remote")
 	}
 	return resp, nil
+}
+
+func captureRequestMetrics(ctx context.Context, duration time.Duration, r *http.Response) {
+	attributes := []attribute.KeyValue{
+		semconv.HTTPStatusCodeKey.Int(r.StatusCode),
+	}
+	if r.Request != nil {
+		attributes = append(attributes, semconv.HTTPClientAttributesFromHTTPRequest(r.Request)...)
+	}
+	metricDoDuration.Record(ctx, duration.Milliseconds(), attributes...)
 }

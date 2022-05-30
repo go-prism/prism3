@@ -147,7 +147,7 @@ github.com/djcass44/go-utils/flagging
 # github.com/djcass44/go-utils/logging v0.1.0
 ## explicit; go 1.18
 github.com/djcass44/go-utils/logging
-# github.com/djcass44/go-utils/otel v0.1.2
+# github.com/djcass44/go-utils/otel v0.1.4
 ## explicit; go 1.18
 github.com/djcass44/go-utils/otel
 github.com/djcass44/go-utils/otel/metrics

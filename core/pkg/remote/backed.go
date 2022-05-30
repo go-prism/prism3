@@ -142,7 +142,7 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 		if ok {
 			log.V(1).Info("completed context validation")
 			rctx.PartitionID = val
-			span.SetAttributes(attribute.String("auth_partition_id", val))
+			span.SetAttributes(attribute.String(attributeAuthPartitionID, val))
 			return
 		}
 	}
@@ -170,9 +170,13 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.Re
 		log.V(1).Info("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheHit))
 			log.V(1).Info("located existing file in cache")
 			return path, nil
 		}
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheMiss))
+	} else {
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheBypass))
 	}
 	// HEAD the remote
 	uri, err := b.eph.Exists(ctx, path, rctx)
@@ -208,12 +212,14 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 		log.V(1).Info("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheHit))
 			log.V(1).Info("located existing file in cache")
-			if canCache {
-				_ = b.onCreate(ctx, normalPath, b.rm.ID)
-			}
+			_ = b.onCreate(ctx, normalPath, b.rm.ID)
 			return b.store.Get(ctx, uploadPath)
 		}
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheMiss))
+	} else {
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheBypass))
 	}
 
 	r, err := b.eph.Download(ctx, path, rctx)
@@ -254,14 +260,14 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.R
 	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
 		// use the partition ID if present
 		partId := rctx.PartitionID
-		span.SetAttributes(attribute.String("auth_partition_id", partId))
+		span.SetAttributes(attribute.String(attributeAuthPartitionID, partId))
 		if partId == "" {
 			log.V(2).Info("explicit partition ID is not set, falling back to authorisation token")
 			partId = rctx.Token
 		}
 		partId = hash(partId)
 		log.V(1).Info("creating partition", "PartitionHash", partId, "PartitionID", rctx.PartitionID)
-		span.SetAttributes(attribute.String("auth_partition_hash", partId))
+		span.SetAttributes(attribute.String(attributeAuthPartitionHash, partId))
 		uploadPath = filepath.Join(uploadPath, partId)
 	}
 	log.V(1).Info("normalised path", "UploadPath", uploadPath)

@@ -26,27 +26,27 @@ import (
 var (
 	meter            = global.MeterProvider().Meter("prism")
 	metricGetSize, _ = meter.SyncInt64().Counter(
-		"storage.s3.get.total",
+		"prism.core.storage.s3.get.total",
 		instrument.WithUnit(unit.Bytes),
 	)
 	metricGetErrCount, _ = meter.SyncInt64().Counter(
-		"storage.s3.get.error.total",
+		"prism.core.storage.s3.get.error.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricPutCount, _ = meter.SyncInt64().Counter(
-		"storage.s3.put.total",
+		"prism.core.storage.s3.put.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricPutErrCount, _ = meter.SyncInt64().Counter(
-		"storage.s3.put.error.total",
+		"prism.core.storage.s3.put.error.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricHeadCount, _ = meter.SyncInt64().Counter(
-		"storage.s3.head.total",
+		"prism.core.storage.s3.head.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 	metricHeadErrCount, _ = meter.SyncInt64().Counter(
-		"storage.s3.head.error.total",
+		"prism.core.storage.s3.head.error.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
 )

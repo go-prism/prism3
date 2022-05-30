@@ -13,7 +13,7 @@ require (
 	github.com/djcass44/go-utils/flagging v0.1.2
 	github.com/djcass44/go-utils/logging v0.1.0
 	github.com/djcass44/go-utils/orm v0.1.1
-	github.com/djcass44/go-utils/otel v0.1.2
+	github.com/djcass44/go-utils/otel v0.1.4
 	github.com/djcass44/go-utils/utilities v0.1.1
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/ghodss/yaml v1.0.0

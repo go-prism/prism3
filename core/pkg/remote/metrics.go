@@ -25,9 +25,10 @@ import (
 
 var (
 	meter               = global.MeterProvider().Meter("prism")
-	metricDoDuration, _ = meter.SyncInt64().Counter(
-		"prism.core.remote.ephemeral.do.duration.total",
+	metricDoDuration, _ = meter.SyncInt64().Histogram(
+		"http.client.duration",
 		instrument.WithUnit(unit.Milliseconds),
+		instrument.WithDescription("Measures the duration of the outbound HTTP request."),
 	)
 	metricDoCancel, _ = meter.SyncInt64().Counter(
 		"prism.core.remote.ephemeral.do.cancelled.total",
@@ -37,13 +38,25 @@ var (
 		"prism.core.remote.ephemeral.do.success.total",
 		instrument.WithUnit(unit.Dimensionless),
 	)
-
 	metricBackedAuth, _ = meter.SyncInt64().Counter(
 		"prism.core.remote.backed.auth.total",
 		instrument.WithUnit(unit.Dimensionless),
+		instrument.WithDescription("Authentication modes used by a backed remote."),
+	)
+	metricBackedCache, _ = meter.SyncInt64().Counter(
+		"prism.core.remote.backed.cache.total",
+		instrument.WithUnit(unit.Dimensionless),
+		instrument.WithDescription("Total requests that hit the cache and their status."),
 	)
 )
 
 const (
-	attributeAuthKey = "prism.auth.mode"
+	attributeAuthKey           = "prism.auth.mode"
+	attributeAuthPartitionID   = "prism.auth.partition.id"
+	attributeAuthPartitionHash = "prism.auth.partition.hash"
+	attributeCacheKey          = "cache"
+
+	cacheHit    = "hit"
+	cacheMiss   = "miss"
+	cacheBypass = "bypass"
 )

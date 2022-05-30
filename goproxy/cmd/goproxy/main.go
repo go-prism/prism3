@@ -102,7 +102,7 @@ func main() {
 
 	// configure routing
 	router := mux.NewRouter()
-	router.Use(otelmux.Middleware(tracing.ServiceNameGoProxy))
+	router.Use(metrics.Middleware(), otelmux.Middleware(tracing.ServiceNameGoProxy))
 	router.Use(logging.NewMiddleware(log).ServeHTTP)
 	router.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK"))
