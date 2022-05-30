@@ -17,6 +17,7 @@ env:
   PRISM_REDIS_ADDR: redis-master:6379
   PRISM_REDIS_PASSWORD: password
   PRISM_OTEL_SAMPLE_RATE: "1"
+  PRISM_OTEL_ENABLED: "true"
   AWS_ACCESS_KEY_ID: username
   AWS_SECRET_ACCESS_KEY: password
   HELM_CACHE_HOME: /tmp
@@ -93,6 +94,12 @@ sidecars:
         value: "10"
       - name: APP_CONFIG_PATH
         value: /var/run/config/rbac/config.yaml
+      - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+        value: http://tempo.grafana.svc.cluster.local:14268/api/traces
+      - name: APP_OTEL_SAMPLE_RATE
+        value: "1"
+      - name: APP_OTEL_ENABLED
+        value: "true"
     volumeMounts:
       - name: rbac
         mountPath: /var/run/config/rbac
