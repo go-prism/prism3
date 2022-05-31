@@ -1,9 +1,27 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package refract
 
 import (
 	"context"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/quota"
 	"gitlab.com/go-prism/prism3/core/pkg/remote"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
@@ -17,10 +35,10 @@ type BackedRefraction struct {
 	rf  *Refraction
 }
 
-func NewBackedRefraction(ctx context.Context, mod *model.Refraction, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRefraction {
+func NewBackedRefraction(ctx context.Context, mod *model.Refraction, store storage.Reader, netObserver quota.Observer, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRefraction {
 	remotes := make([]remote.Remote, len(mod.Remotes))
 	for i := range mod.Remotes {
-		remotes[i] = remote.NewBackedRemote(ctx, mod.Remotes[i], store, onCreate, getPyPi, getHelm)
+		remotes[i] = remote.NewBackedRemote(ctx, mod.Remotes[i], store, netObserver, onCreate, getPyPi, getHelm)
 	}
 	return &BackedRefraction{
 		mod: mod,

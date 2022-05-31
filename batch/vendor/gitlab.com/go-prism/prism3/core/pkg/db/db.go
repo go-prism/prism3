@@ -92,6 +92,7 @@ func (db *Database) Init() error {
 		&model.TransportSecurity{},
 		&model.Artifact{},
 		&model.StoredUser{},
+		&model.BandwidthUsage{},
 		&schemas.NPMPackage{},
 		&schemas.PyPackage{},
 		&schemas.HelmPackage{},

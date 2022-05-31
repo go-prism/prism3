@@ -15,22 +15,10 @@
  *
  */
 
-package policy
+package quota
 
-import (
-	"go.opentelemetry.io/otel/metric/global"
-	"go.opentelemetry.io/otel/metric/instrument"
-	"go.opentelemetry.io/otel/metric/unit"
-)
+import "gitlab.com/go-prism/prism3/core/internal/graph/model"
 
-var (
-	meter            = global.MeterProvider().Meter("prism")
-	metricReceive, _ = meter.SyncInt64().Counter(
-		"prism.core.policy.receive.total",
-		instrument.WithUnit(unit.Dimensionless),
-	)
-	metricCache, _ = meter.SyncInt64().Counter(
-		"prism.core.policy.cache.total",
-		instrument.WithUnit(unit.Dimensionless),
-	)
-)
+type NoopObserver struct{}
+
+func (*NoopObserver) Observe(string, int64, model.BandwidthType) {}

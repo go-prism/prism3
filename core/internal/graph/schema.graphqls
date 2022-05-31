@@ -37,6 +37,12 @@ enum Verb {
     SUDO
 }
 
+enum BandwidthType {
+    NETWORK_A
+    NETWORK_B
+    STORAGE
+}
+
 type RoleBinding {
     subject: String!
     resource: String!
@@ -87,6 +93,15 @@ type Remote {
     security: RemoteSecurity!
     transportID: ID!
     transport: TransportSecurity!
+}
+
+type BandwidthUsage {
+    id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+    date: String! @goTag(key: "gorm", value: "index:idx_date")
+    resource: String! @goTag(key: "gorm", value: "index:idx_date")
+    usage: Int!
+    limit: Int!
+    type: BandwidthType!
 }
 
 type RemoteSecurity {
@@ -152,6 +167,8 @@ type Query {
 
     getRoleBindings(user: String!): [RoleBinding!]!
     getUsers(resource: String!): [RoleBinding!]!
+
+    getBandwidthUsage(resource: String!, date: String!): [BandwidthUsage!]!
 
     listUsers: [StoredUser!]!
 

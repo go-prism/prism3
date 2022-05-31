@@ -64,6 +64,10 @@ type UserRepo struct {
 	db *gorm.DB
 }
 
+type BandwidthRepo struct {
+	db *gorm.DB
+}
+
 type Repos struct {
 	RemoteRepo      *RemoteRepo
 	RefractRepo     *RefractRepo
@@ -73,4 +77,5 @@ type Repos struct {
 	PyPackageRepo   *PyPackageRepo
 	HelmPackageRepo *HelmPackageRepo
 	UserRepo        *UserRepo
+	BandwidthRepo   *BandwidthRepo
 }

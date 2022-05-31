@@ -51,7 +51,7 @@ func (c *Cacher) Get(ctx context.Context, name string) (io.ReadCloser, error) {
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path", name)
 	log.Info("checking for cached file")
-	r, err := c.store.Get(ctx, filepath.Join(RemoteName, name))
+	r, _, err := c.store.Get(ctx, filepath.Join(RemoteName, name))
 	if err != nil {
 		log.V(2).Error(err, "received error from object storage")
 		var e *types.NoSuchKey

@@ -20,6 +20,15 @@ type Artifact struct {
 	Slices    datatypes.JSONArray `json:"slices"`
 }
 
+type BandwidthUsage struct {
+	ID       string        `json:"id" gorm:"primaryKey;not null"`
+	Date     string        `json:"date" gorm:"index:idx_date"`
+	Resource string        `json:"resource" gorm:"index:idx_date"`
+	Usage    int64         `json:"usage"`
+	Limit    int64         `json:"limit"`
+	Type     BandwidthType `json:"type"`
+}
+
 type NewRefract struct {
 	Name      string    `json:"name"`
 	Archetype Archetype `json:"archetype"`
@@ -247,6 +256,49 @@ func (e *AuthMode) UnmarshalGQL(v interface{}) error {
 }
 
 func (e AuthMode) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BandwidthType string
+
+const (
+	BandwidthTypeNetworkA BandwidthType = "NETWORK_A"
+	BandwidthTypeNetworkB BandwidthType = "NETWORK_B"
+	BandwidthTypeStorage  BandwidthType = "STORAGE"
+)
+
+var AllBandwidthType = []BandwidthType{
+	BandwidthTypeNetworkA,
+	BandwidthTypeNetworkB,
+	BandwidthTypeStorage,
+}
+
+func (e BandwidthType) IsValid() bool {
+	switch e {
+	case BandwidthTypeNetworkA, BandwidthTypeNetworkB, BandwidthTypeStorage:
+		return true
+	}
+	return false
+}
+
+func (e BandwidthType) String() string {
+	return string(e)
+}
+
+func (e *BandwidthType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BandwidthType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BandwidthType", str)
+	}
+	return nil
+}
+
+func (e BandwidthType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

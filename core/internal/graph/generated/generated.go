@@ -56,6 +56,15 @@ type ComplexityRoot struct {
 		UpdatedAt func(childComplexity int) int
 	}
 
+	BandwidthUsage struct {
+		Date     func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Limit    func(childComplexity int) int
+		Resource func(childComplexity int) int
+		Type     func(childComplexity int) int
+		Usage    func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateRefraction       func(childComplexity int, input model.NewRefract) int
 		CreateRemote           func(childComplexity int, input model.NewRemote) int
@@ -86,6 +95,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		GetBandwidthUsage     func(childComplexity int, resource string, date string) int
 		GetCurrentUser        func(childComplexity int) int
 		GetOverview           func(childComplexity int) int
 		GetRefraction         func(childComplexity int, id string) int
@@ -200,6 +210,7 @@ type QueryResolver interface {
 	GetRemoteOverview(ctx context.Context, id string) (*model.RemoteOverview, error)
 	GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error)
 	GetUsers(ctx context.Context, resource string) ([]*model.RoleBinding, error)
+	GetBandwidthUsage(ctx context.Context, resource string, date string) ([]*model.BandwidthUsage, error)
 	ListUsers(ctx context.Context) ([]*model.StoredUser, error)
 	GetCurrentUser(ctx context.Context) (*model.StoredUser, error)
 	UserCan(ctx context.Context, resource string, action model.Verb) (bool, error)
@@ -272,6 +283,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Artifact.UpdatedAt(childComplexity), true
+
+	case "BandwidthUsage.date":
+		if e.complexity.BandwidthUsage.Date == nil {
+			break
+		}
+
+		return e.complexity.BandwidthUsage.Date(childComplexity), true
+
+	case "BandwidthUsage.id":
+		if e.complexity.BandwidthUsage.ID == nil {
+			break
+		}
+
+		return e.complexity.BandwidthUsage.ID(childComplexity), true
+
+	case "BandwidthUsage.limit":
+		if e.complexity.BandwidthUsage.Limit == nil {
+			break
+		}
+
+		return e.complexity.BandwidthUsage.Limit(childComplexity), true
+
+	case "BandwidthUsage.resource":
+		if e.complexity.BandwidthUsage.Resource == nil {
+			break
+		}
+
+		return e.complexity.BandwidthUsage.Resource(childComplexity), true
+
+	case "BandwidthUsage.type":
+		if e.complexity.BandwidthUsage.Type == nil {
+			break
+		}
+
+		return e.complexity.BandwidthUsage.Type(childComplexity), true
+
+	case "BandwidthUsage.usage":
+		if e.complexity.BandwidthUsage.Usage == nil {
+			break
+		}
+
+		return e.complexity.BandwidthUsage.Usage(childComplexity), true
 
 	case "Mutation.createRefraction":
 		if e.complexity.Mutation.CreateRefraction == nil {
@@ -478,6 +531,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Overview.Version(childComplexity), true
+
+	case "Query.getBandwidthUsage":
+		if e.complexity.Query.GetBandwidthUsage == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getBandwidthUsage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetBandwidthUsage(childComplexity, args["resource"].(string), args["date"].(string)), true
 
 	case "Query.getCurrentUser":
 		if e.complexity.Query.GetCurrentUser == nil {
@@ -1076,6 +1141,12 @@ enum Verb {
     SUDO
 }
 
+enum BandwidthType {
+    NETWORK_A
+    NETWORK_B
+    STORAGE
+}
+
 type RoleBinding {
     subject: String!
     resource: String!
@@ -1126,6 +1197,15 @@ type Remote {
     security: RemoteSecurity!
     transportID: ID!
     transport: TransportSecurity!
+}
+
+type BandwidthUsage {
+    id: ID! @goTag(key: "gorm", value: "primaryKey;not null")
+    date: String! @goTag(key: "gorm", value: "index:idx_date")
+    resource: String! @goTag(key: "gorm", value: "index:idx_date")
+    usage: Int!
+    limit: Int!
+    type: BandwidthType!
 }
 
 type RemoteSecurity {
@@ -1191,6 +1271,8 @@ type Query {
 
     getRoleBindings(user: String!): [RoleBinding!]!
     getUsers(resource: String!): [RoleBinding!]!
+
+    getBandwidthUsage(resource: String!, date: String!): [BandwidthUsage!]!
 
     listUsers: [StoredUser!]!
 
@@ -1447,6 +1529,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getBandwidthUsage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["resource"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resource"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["resource"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["date"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["date"] = arg1
 	return args, nil
 }
 
@@ -1890,6 +1996,216 @@ func (ec *executionContext) _Artifact_slices(ctx context.Context, field graphql.
 	res := resTmp.(datatypes.JSONArray)
 	fc.Result = res
 	return ec.marshalNStrings2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋpkgᚋdbᚋdatatypesᚐJSONArray(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BandwidthUsage_id(ctx context.Context, field graphql.CollectedField, obj *model.BandwidthUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BandwidthUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BandwidthUsage_date(ctx context.Context, field graphql.CollectedField, obj *model.BandwidthUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BandwidthUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BandwidthUsage_resource(ctx context.Context, field graphql.CollectedField, obj *model.BandwidthUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BandwidthUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Resource, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BandwidthUsage_usage(ctx context.Context, field graphql.CollectedField, obj *model.BandwidthUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BandwidthUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Usage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BandwidthUsage_limit(ctx context.Context, field graphql.CollectedField, obj *model.BandwidthUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BandwidthUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Limit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int64)
+	fc.Result = res
+	return ec.marshalNInt2int64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BandwidthUsage_type(ctx context.Context, field graphql.CollectedField, obj *model.BandwidthUsage) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BandwidthUsage",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.BandwidthType)
+	fc.Result = res
+	return ec.marshalNBandwidthType2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createRemote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3199,6 +3515,48 @@ func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.C
 	res := resTmp.([]*model.RoleBinding)
 	fc.Result = res
 	return ec.marshalNRoleBinding2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐRoleBindingᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getBandwidthUsage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getBandwidthUsage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetBandwidthUsage(rctx, args["resource"].(string), args["date"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.BandwidthUsage)
+	fc.Result = res
+	return ec.marshalNBandwidthUsage2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthUsageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_listUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6649,6 +7007,87 @@ func (ec *executionContext) _Artifact(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
+var bandwidthUsageImplementors = []string{"BandwidthUsage"}
+
+func (ec *executionContext) _BandwidthUsage(ctx context.Context, sel ast.SelectionSet, obj *model.BandwidthUsage) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bandwidthUsageImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BandwidthUsage")
+		case "id":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BandwidthUsage_id(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "date":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BandwidthUsage_date(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "resource":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BandwidthUsage_resource(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "usage":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BandwidthUsage_usage(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "limit":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BandwidthUsage_limit(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "type":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._BandwidthUsage_type(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -7189,6 +7628,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getUsers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getBandwidthUsage":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getBandwidthUsage(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -8452,6 +8914,70 @@ func (ec *executionContext) unmarshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism
 
 func (ec *executionContext) marshalNAuthMode2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐAuthMode(ctx context.Context, sel ast.SelectionSet, v model.AuthMode) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalNBandwidthType2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthType(ctx context.Context, v interface{}) (model.BandwidthType, error) {
+	var res model.BandwidthType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBandwidthType2gitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthType(ctx context.Context, sel ast.SelectionSet, v model.BandwidthType) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNBandwidthUsage2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthUsageᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.BandwidthUsage) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBandwidthUsage2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthUsage(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNBandwidthUsage2ᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthUsage(ctx context.Context, sel ast.SelectionSet, v *model.BandwidthUsage) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BandwidthUsage(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

@@ -53,6 +53,7 @@ import {RESOURCE_REMOTE} from "../../../config/constants";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
+import BandwidthOpts from "./options/BandwidthOpts";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -113,6 +114,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 	const {data} = getData;
 	const loading = getData.loading || patchData.loading;
 	const canPatch = useCanRBAC({type: RESOURCE_REMOTE, id, verb: Verb.Update});
+	const canSudo = useCanRBAC({type: RESOURCE_REMOTE, id, verb: Verb.Sudo});
 
 	// local state
 	const [url, setURL] = useState<ValidatedData>(initialURL);
@@ -273,6 +275,16 @@ const EditRemote: React.FC = (): JSX.Element => {
 				secondary: "",
 				children: data?.getRemote == null ? "" : <ResourceRoleViewer type={RESOURCE_REMOTE} id={data.getRemote.name}/>,
 				hidden: !canPatch
+			},
+			{
+				id: "usage",
+				primary: "Usage quotas",
+				secondary: "View usage of compute and network resources for this calendar month.",
+				children: data?.getRemote == null ? "" : <BandwidthOpts
+					type={RESOURCE_REMOTE}
+					id={data.getRemote.id}
+				/>,
+				hidden: !canSudo
 			}
 		];
 		return items.filter(d => !d.hidden).map(d => <ExpandableListItem

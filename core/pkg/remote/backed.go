@@ -23,6 +23,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/djcass44/go-utils/utilities/sliceutils"
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -30,6 +31,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/policy"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/quota"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
@@ -47,14 +49,15 @@ var partitions = []partition.Partition{
 }
 
 type BackedRemote struct {
-	rm       *model.Remote
-	eph      Remote
-	onCreate repo.CreateArtifactFunc
-	pol      policy.Enforcer
-	store    storage.Reader
+	rm          *model.Remote
+	eph         Remote
+	onCreate    repo.CreateArtifactFunc
+	pol         policy.Enforcer
+	store       storage.Reader
+	netObserver quota.Observer
 }
 
-func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
+func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader, netObserver quota.Observer, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
 	client := httpclient.GetConfigured(ctx, rm.Transport)
 	var eph Remote
 	switch rm.Archetype {
@@ -66,11 +69,12 @@ func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader
 		eph = NewEphemeralRemote(ctx, rm.URI, client)
 	}
 	return &BackedRemote{
-		rm:       rm,
-		eph:      eph,
-		onCreate: onCreate,
-		pol:      policy.NewRegexEnforcer(ctx, rm),
-		store:    store,
+		rm:          rm,
+		eph:         eph,
+		onCreate:    onCreate,
+		pol:         policy.NewRegexEnforcer(ctx, rm),
+		store:       store,
+		netObserver: netObserver,
 	}
 }
 
@@ -215,7 +219,11 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 			metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheHit))
 			log.V(1).Info("located existing file in cache")
 			_ = b.onCreate(ctx, normalPath, b.rm.ID)
-			return b.store.Get(ctx, uploadPath)
+			r, s, err := b.store.Get(ctx, uploadPath)
+			if s > 0 {
+				b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), s, model.BandwidthTypeNetworkB)
+			}
+			return r, err
 		}
 		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheMiss))
 	} else {
@@ -236,6 +244,8 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 		tee := io.TeeReader(r, buf)
 		// upload to storage
 		_ = b.store.Put(ctx, uploadPath, tee)
+		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeNetworkA)
+		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeStorage)
 		return buf, nil
 	}
 	return r, nil

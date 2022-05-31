@@ -23,6 +23,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/djcass44/go-utils/utilities/sliceutils"
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
@@ -30,6 +31,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/policy"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/httpclient"
+	"gitlab.com/go-prism/prism3/core/pkg/quota"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
@@ -47,14 +49,15 @@ var partitions = []partition.Partition{
 }
 
 type BackedRemote struct {
-	rm       *model.Remote
-	eph      Remote
-	onCreate repo.CreateArtifactFunc
-	pol      policy.Enforcer
-	store    storage.Reader
+	rm          *model.Remote
+	eph         Remote
+	onCreate    repo.CreateArtifactFunc
+	pol         policy.Enforcer
+	store       storage.Reader
+	netObserver quota.Observer
 }
 
-func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
+func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader, netObserver quota.Observer, onCreate repo.CreateArtifactFunc, getPyPi, getHelm repo.GetPackageFunc) *BackedRemote {
 	client := httpclient.GetConfigured(ctx, rm.Transport)
 	var eph Remote
 	switch rm.Archetype {
@@ -66,11 +69,12 @@ func NewBackedRemote(ctx context.Context, rm *model.Remote, store storage.Reader
 		eph = NewEphemeralRemote(ctx, rm.URI, client)
 	}
 	return &BackedRemote{
-		rm:       rm,
-		eph:      eph,
-		onCreate: onCreate,
-		pol:      policy.NewRegexEnforcer(ctx, rm),
-		store:    store,
+		rm:          rm,
+		eph:         eph,
+		onCreate:    onCreate,
+		pol:         policy.NewRegexEnforcer(ctx, rm),
+		store:       store,
+		netObserver: netObserver,
 	}
 }
 
@@ -142,7 +146,7 @@ func (b *BackedRemote) validateContext(ctx context.Context, rctx *schemas.Reques
 		if ok {
 			log.V(1).Info("completed context validation")
 			rctx.PartitionID = val
-			span.SetAttributes(attribute.String("auth_partition_id", val))
+			span.SetAttributes(attribute.String(attributeAuthPartitionID, val))
 			return
 		}
 	}
@@ -170,9 +174,13 @@ func (b *BackedRemote) Exists(ctx context.Context, path string, rctx *schemas.Re
 		log.V(1).Info("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheHit))
 			log.V(1).Info("located existing file in cache")
 			return path, nil
 		}
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheMiss))
+	} else {
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheBypass))
 	}
 	// HEAD the remote
 	uri, err := b.eph.Exists(ctx, path, rctx)
@@ -208,12 +216,18 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 		log.V(1).Info("checking cache for existing file")
 		ok, _ := b.store.Head(ctx, uploadPath)
 		if ok {
+			metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheHit))
 			log.V(1).Info("located existing file in cache")
-			if canCache {
-				_ = b.onCreate(ctx, normalPath, b.rm.ID)
+			_ = b.onCreate(ctx, normalPath, b.rm.ID)
+			r, s, err := b.store.Get(ctx, uploadPath)
+			if s > 0 {
+				b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), s, model.BandwidthTypeNetworkB)
 			}
-			return b.store.Get(ctx, uploadPath)
+			return r, err
 		}
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheMiss))
+	} else {
+		metricBackedCache.Add(ctx, 1, attribute.String(attributeCacheKey, cacheBypass))
 	}
 
 	r, err := b.eph.Download(ctx, path, rctx)
@@ -230,6 +244,8 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 		tee := io.TeeReader(r, buf)
 		// upload to storage
 		_ = b.store.Put(ctx, uploadPath, tee)
+		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeNetworkA)
+		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeStorage)
 		return buf, nil
 	}
 	return r, nil
@@ -254,14 +270,14 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.R
 	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
 		// use the partition ID if present
 		partId := rctx.PartitionID
-		span.SetAttributes(attribute.String("auth_partition_id", partId))
+		span.SetAttributes(attribute.String(attributeAuthPartitionID, partId))
 		if partId == "" {
 			log.V(2).Info("explicit partition ID is not set, falling back to authorisation token")
 			partId = rctx.Token
 		}
 		partId = hash(partId)
 		log.V(1).Info("creating partition", "PartitionHash", partId, "PartitionID", rctx.PartitionID)
-		span.SetAttributes(attribute.String("auth_partition_hash", partId))
+		span.SetAttributes(attribute.String(attributeAuthPartitionHash, partId))
 		uploadPath = filepath.Join(uploadPath, partId)
 	}
 	log.V(1).Info("normalised path", "UploadPath", uploadPath)

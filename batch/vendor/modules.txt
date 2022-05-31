@@ -184,7 +184,7 @@ github.com/djcass44/go-utils/logging
 # github.com/djcass44/go-utils/orm v0.1.1
 ## explicit; go 1.18
 github.com/djcass44/go-utils/orm
-# github.com/djcass44/go-utils/otel v0.1.2
+# github.com/djcass44/go-utils/otel v0.1.4
 ## explicit; go 1.18
 github.com/djcass44/go-utils/otel
 # github.com/djcass44/go-utils/utilities v0.1.1
@@ -543,6 +543,7 @@ gitlab.com/go-prism/prism3/core/pkg/db/datatypes
 gitlab.com/go-prism/prism3/core/pkg/db/notify
 gitlab.com/go-prism/prism3/core/pkg/db/repo
 gitlab.com/go-prism/prism3/core/pkg/httpclient
+gitlab.com/go-prism/prism3/core/pkg/quota
 gitlab.com/go-prism/prism3/core/pkg/remote
 gitlab.com/go-prism/prism3/core/pkg/schemas
 gitlab.com/go-prism/prism3/core/pkg/storage

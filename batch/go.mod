@@ -10,7 +10,7 @@ replace gitlab.com/go-prism/go-rbac-proxy v0.2.1 => gitlab.dcas.dev/prism/go-rba
 
 require (
 	github.com/djcass44/go-utils/logging v0.1.0
-	github.com/djcass44/go-utils/otel v0.1.2
+	github.com/djcass44/go-utils/otel v0.1.4
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gorilla/mux v1.8.0

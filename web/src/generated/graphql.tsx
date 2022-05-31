@@ -47,6 +47,22 @@ export enum AuthMode {
   Proxy = 'PROXY'
 }
 
+export enum BandwidthType {
+  NetworkA = 'NETWORK_A',
+  NetworkB = 'NETWORK_B',
+  Storage = 'STORAGE'
+}
+
+export type BandwidthUsage = {
+  __typename?: 'BandwidthUsage';
+  date: Scalars['String'];
+  id: Scalars['ID'];
+  limit: Scalars['Int'];
+  resource: Scalars['String'];
+  type: BandwidthType;
+  usage: Scalars['Int'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createRefraction: Refraction;
@@ -174,6 +190,7 @@ export type PatchRemote = {
 
 export type Query = {
   __typename?: 'Query';
+  getBandwidthUsage: Array<BandwidthUsage>;
   getCurrentUser: StoredUser;
   getOverview: Overview;
   getRefraction: Refraction;
@@ -189,6 +206,12 @@ export type Query = {
   listUsers: Array<StoredUser>;
   userCan: Scalars['Boolean'];
   userHas: Scalars['Boolean'];
+};
+
+
+export type QueryGetBandwidthUsageArgs = {
+  date: Scalars['String'];
+  resource: Scalars['String'];
 };
 
 
@@ -336,6 +359,14 @@ export enum Verb {
   Sudo = 'SUDO',
   Update = 'UPDATE'
 }
+
+export type GetBandwidthQueryVariables = Exact<{
+  resource: Scalars['String'];
+  date: Scalars['String'];
+}>;
+
+
+export type GetBandwidthQuery = { __typename?: 'Query', getBandwidthUsage: Array<{ __typename?: 'BandwidthUsage', id: string, date: string, resource: string, usage: number, limit: number, type: BandwidthType }> };
 
 export type GetOverviewQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -503,6 +534,47 @@ export type ListTransportsQueryVariables = Exact<{ [key: string]: never; }>;
 export type ListTransportsQuery = { __typename?: 'Query', listTransports: Array<{ __typename?: 'TransportSecurity', id: string, name: string, skipTLSVerify: boolean, ca: string, cert: string, noProxy: string, httpProxy: string, httpsProxy: string }> };
 
 
+export const GetBandwidthDocument = gql`
+    query getBandwidth($resource: String!, $date: String!) {
+  getBandwidthUsage(resource: $resource, date: $date) {
+    id
+    date
+    resource
+    usage
+    limit
+    type
+  }
+}
+    `;
+
+/**
+ * __useGetBandwidthQuery__
+ *
+ * To run a query within a React component, call `useGetBandwidthQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBandwidthQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBandwidthQuery({
+ *   variables: {
+ *      resource: // value for 'resource'
+ *      date: // value for 'date'
+ *   },
+ * });
+ */
+export function useGetBandwidthQuery(baseOptions: Apollo.QueryHookOptions<GetBandwidthQuery, GetBandwidthQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBandwidthQuery, GetBandwidthQueryVariables>(GetBandwidthDocument, options);
+      }
+export function useGetBandwidthLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBandwidthQuery, GetBandwidthQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBandwidthQuery, GetBandwidthQueryVariables>(GetBandwidthDocument, options);
+        }
+export type GetBandwidthQueryHookResult = ReturnType<typeof useGetBandwidthQuery>;
+export type GetBandwidthLazyQueryHookResult = ReturnType<typeof useGetBandwidthLazyQuery>;
+export type GetBandwidthQueryResult = Apollo.QueryResult<GetBandwidthQuery, GetBandwidthQueryVariables>;
 export const GetOverviewDocument = gql`
     query getOverview {
   getOverview {

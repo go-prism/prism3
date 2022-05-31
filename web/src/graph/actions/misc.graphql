@@ -1,0 +1,10 @@
+query getBandwidth($resource: String!, $date: String!) {
+    getBandwidthUsage(resource: $resource, date: $date) {
+        id
+        date
+        resource
+        usage
+        limit
+        type
+    }
+}

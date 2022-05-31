@@ -15,22 +15,21 @@
  *
  */
 
-package policy
+package quota
 
 import (
-	"go.opentelemetry.io/otel/metric/global"
-	"go.opentelemetry.io/otel/metric/instrument"
-	"go.opentelemetry.io/otel/metric/unit"
+	"github.com/go-logr/logr"
+	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 )
 
-var (
-	meter            = global.MeterProvider().Meter("prism")
-	metricReceive, _ = meter.SyncInt64().Counter(
-		"prism.core.policy.receive.total",
-		instrument.WithUnit(unit.Dimensionless),
-	)
-	metricCache, _ = meter.SyncInt64().Counter(
-		"prism.core.policy.cache.total",
-		instrument.WithUnit(unit.Dimensionless),
-	)
-)
+type NetObserver struct {
+	repo *repo.BandwidthRepo
+	log  logr.Logger
+
+	buckets map[model.BandwidthType]map[string]int64
+}
+
+type Observer interface {
+	Observe(resource string, usage int64, bandwidthType model.BandwidthType)
+}

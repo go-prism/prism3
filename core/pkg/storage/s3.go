@@ -79,7 +79,7 @@ func NewS3(ctx context.Context, opt S3Options) (*S3, error) {
 	}, nil
 }
 
-func (s *S3) Get(ctx context.Context, path string) (io.Reader, error) {
+func (s *S3) Get(ctx context.Context, path string) (io.Reader, int64, error) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "storage_s3_get", trace.WithAttributes(attribute.String("path", path)))
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithName("s3").WithValues("Path", path, "Bucket", s.bucket)
@@ -96,10 +96,10 @@ func (s *S3) Get(ctx context.Context, path string) (io.Reader, error) {
 	if err != nil {
 		metricGetErrCount.Add(ctx, 1, attribute.String(attributeKeyPath, path), attribute.String(attributeKeyBucket, *s.bucket))
 		log.Error(err, "failed to successfully download object")
-		return nil, err
+		return nil, n, err
 	}
 	log.V(1).Info("successfully downloaded object")
-	return bytes.NewReader(buf.Bytes()), nil
+	return bytes.NewReader(buf.Bytes()), n, nil
 }
 
 func (s *S3) Put(ctx context.Context, path string, r io.Reader) error {
