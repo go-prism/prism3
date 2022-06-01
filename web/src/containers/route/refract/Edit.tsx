@@ -68,6 +68,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	chip: {
 		margin: theme.spacing(0.5)
+	},
+	textField: {
+		borderRadius: theme.spacing(1)
+	},
+	textLabel: {
+		color: theme.palette.text.primary,
+		fontWeight: 500
 	}
 }));
 
@@ -192,18 +199,21 @@ const EditRefract: React.FC = (): JSX.Element => {
 					invalidLabel="Must be at least 3 characters."
 					fieldProps={{
 						className: classes.formItem,
+						InputProps: {className: classes.textField},
+						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
-						label: "Refraction name",
-						variant: "filled",
+						label: "Name",
+						variant: "outlined",
 						id: "txt-name",
-						disabled: loading || readOnly
+						size: "small",
+						disabled: loading || readOnly || !canPatch
 					}}
 				/>
 				{data?.getRefraction && <RemoteSelect
 					arch={data.getRefraction.archetype}
 					setRemotes={setRemotes}
 					defaultRemotes={data.getRefraction.remotes as Remote[]}
-					disabled={readOnly}
+					disabled={readOnly || !canPatch}
 				/>}
 				<List>
 					{options}
@@ -222,7 +232,7 @@ const EditRefract: React.FC = (): JSX.Element => {
 					<Button
 						className={classes.button}
 						style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
-						disabled={!DataIsValid(name) || loading || readOnly}
+						disabled={!DataIsValid(name) || loading || readOnly || !canPatch}
 						onClick={handleUpdate}
 						variant="contained">
 						Save changes

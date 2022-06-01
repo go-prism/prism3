@@ -1,7 +1,24 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 import React, {useState} from "react";
 import {
 	Alert,
-	Badge,
+	Box,
 	Button,
 	FormControlLabel,
 	FormGroup,
@@ -20,12 +37,15 @@ import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import {REMOTE_ARCHETYPES} from "../../../config/constants";
 import {Archetype, Remote, useCreateRefractMutation} from "../../../generated/graphql";
+import Flexbox from "../../widgets/Flexbox";
+import InlineBadge from "../../../components/feedback/InlineBadge";
 import RemoteSelect from "./RemoteSelect";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
-		fontWeight: 500
+		fontWeight: 500,
+		marginLeft: theme.spacing(0.5)
 	},
 	form: {
 		marginTop: theme.spacing(1)
@@ -46,6 +66,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		fontFamily: "Manrope",
 		fontWeight: 600,
 		textTransform: "none"
+	},
+	textField: {
+		borderRadius: theme.spacing(1)
+	},
+	textLabel: {
+		color: theme.palette.text.primary,
+		fontWeight: 500
 	}
 }));
 
@@ -85,8 +112,10 @@ const CreateRefract: React.FC = (): JSX.Element => {
 	}
 
 	return (
-		<StandardLayout>
-			<div>
+		<StandardLayout
+			size="small">
+			<Box
+				sx={{mt: 2}}>
 				<Typography
 					className={classes.title}
 					color="textPrimary"
@@ -106,10 +135,13 @@ const CreateRefract: React.FC = (): JSX.Element => {
 						invalidLabel="Must be at least 3 characters."
 						fieldProps={{
 							className: classes.formItem,
+							InputProps: {className: classes.textField},
+							InputLabelProps: {classes: {shrink: classes.textLabel}},
 							required: true,
-							label: "Refraction name",
+							label: "Name",
 							variant: "outlined",
-							id: "txt-name"
+							id: "txt-name",
+							size: "small"
 						}}
 					/>
 					<FormLabel
@@ -117,11 +149,6 @@ const CreateRefract: React.FC = (): JSX.Element => {
 						component="legend">
 						Archetype
 					</FormLabel>
-					<Alert
-						severity="info">
-						Some archetypes are available for Early Access, however they are not production ready.
-						They are indicated by the&emsp;<Badge badgeContent="EA" color="primary"/>.
-					</Alert>
 					<RadioGroup
 						className={classes.formItem}
 						aria-label="archetype"
@@ -133,13 +160,13 @@ const CreateRefract: React.FC = (): JSX.Element => {
 							control={<Radio
 								color="primary"
 							/>}
-							label={a.stable ? <>
+							label={<Flexbox inline>
 								{a.name}
-							</> : <Badge
-								badgeContent="EA"
-								color="primary">
-								{a.name}
-							</Badge>}
+								{!a.stable && <InlineBadge
+									colour={theme.palette.info.main}>
+									Preview
+								</InlineBadge>}
+							</Flexbox>}
 							value={a.value}
 						/>)}
 					</RadioGroup>
@@ -175,7 +202,7 @@ const CreateRefract: React.FC = (): JSX.Element => {
 						</Button>
 					</div>
 				</FormGroup>
-			</div>
+			</Box>
 		</StandardLayout>
 	);
 }

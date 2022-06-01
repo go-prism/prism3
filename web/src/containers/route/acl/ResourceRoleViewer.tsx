@@ -67,7 +67,8 @@ const ResourceRoleViewer: React.FC<Props> = ({type, id}): JSX.Element => {
 	}
 	
 	return <TableContainer>
-		<Table>
+		<Table
+			size="small">
 			<TableHead>
 				<TableRow>
 					<TableCell>Subject</TableCell>

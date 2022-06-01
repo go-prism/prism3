@@ -18,6 +18,7 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {
 	Alert,
+	Box,
 	Button,
 	Chip,
 	Collapse,
@@ -86,6 +87,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	chip: {
 		margin: theme.spacing(0.5)
+	},
+	textField: {
+		borderRadius: theme.spacing(1)
+	},
+	textLabel: {
+		color: theme.palette.text.primary,
+		fontWeight: 500
 	}
 }));
 
@@ -230,7 +238,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 			{
 				id: "firewall-rules",
 				primary: "Firewall rules",
-				secondary: "Firewall rules define when this remote should be used or skipped.",
+				secondary: "Firewall rules define when this remote should be used or skipped. Useful to avoiding leaking internal project or package names.",
 				children: <FirewallRules
 					allowRules={allowList}
 					blockRules={blockList}
@@ -261,7 +269,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 			},
 			{
 				id: "transport",
-				primary: "HTTP/TLS/Proxy options",
+				primary: "Transport options",
 				secondary: "Configure how Prism communicates with remotes.",
 				children: data?.getRemote == null ? "" : <TransportOpts
 					disabled={readOnly}
@@ -272,8 +280,18 @@ const EditRemote: React.FC = (): JSX.Element => {
 			{
 				id: "rbac",
 				primary: "Permissions",
-				secondary: "",
-				children: data?.getRemote == null ? "" : <ResourceRoleViewer type={RESOURCE_REMOTE} id={data.getRemote.name}/>,
+				secondary: "Control who can view and modify remotes.",
+				children: data?.getRemote == null ? "" : <Box
+					sx={{m: 1}}>
+					<Alert
+						severity="info">
+						Permissions apply to the Remote itself, not the Artifacts within.
+					</Alert>
+					<ResourceRoleViewer
+						type={RESOURCE_REMOTE}
+						id={data.getRemote.name}
+					/>
+				</Box>,
 				hidden: !canPatch
 			},
 			{
@@ -355,10 +373,13 @@ const EditRemote: React.FC = (): JSX.Element => {
 					invalidLabel="Must be at least 3 characters."
 					fieldProps={{
 						className: classes.formItem,
+						InputProps: {className: classes.textField},
+						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
-						label: "Remote name",
-						variant: "filled",
+						label: "Name",
+						variant: "outlined",
 						id: "txt-name",
+						size: "small",
 						disabled: loading || readOnly || !canPatch
 					}}
 				/>
@@ -368,10 +389,13 @@ const EditRemote: React.FC = (): JSX.Element => {
 					invalidLabel="Must be a valid URL."
 					fieldProps={{
 						className: classes.formItem,
+						InputProps: {className: classes.textField},
+						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
-						label: "Remote URL",
-						variant: "filled",
+						label: "URL",
+						variant: "outlined",
 						id: "txt-url",
+						size: "small",
 						disabled: loading || readOnly || !canPatch
 					}}
 				/>
@@ -414,7 +438,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 						classes={{
 							disabled: classes.buttonDisabled
 						}}
-						disabled={!DataIsValid(url) || !DataIsValid(name) || loading || !hasChanged() || readOnly}
+						disabled={!DataIsValid(url) || !DataIsValid(name) || loading || !hasChanged() || readOnly || !canPatch}
 						onClick={handleUpdate}
 						variant="contained">
 						Save changes

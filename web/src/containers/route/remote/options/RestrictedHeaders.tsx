@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -53,6 +53,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	text: {
 		margin: theme.spacing(1)
+	},
+	textField: {
+		borderRadius: theme.spacing(1)
+	},
+	textLabel: {
+		color: theme.palette.text.primary,
+		fontWeight: 500
 	}
 }));
 
@@ -214,9 +221,12 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 					invalidLabel="Must be a valid HTTP header"
 					fieldProps={{
 						required: true,
+						InputProps: {className: classes.textField},
+						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						label: "Header",
-						variant: "filled",
+						variant: "outlined",
 						id: "txt-header",
+						size: "small",
 						fullWidth: true,
 						disabled: loading || disabled,
 						placeholder: "Authorization"
@@ -228,10 +238,13 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 					invalidLabel="Must be set"
 					fieldProps={{
 						sx: {mt: 1},
+						InputProps: {className: classes.textField},
+						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
 						label: "Token",
-						variant: "filled",
+						variant: "outlined",
 						id: "txt-token",
+						size: "small",
 						fullWidth: true,
 						disabled: loading || disabled,
 						placeholder: "Basic admin:hunter2"
