@@ -39,7 +39,8 @@ const ResourceRoleViewer: React.FC<Props> = ({type, id}): JSX.Element => {
 	const loadingItems = (): ReactNode[] => {
 		const items = [];
 		for (let i = 0; i < 8; i++) {
-			items.push(<TableRow>
+			items.push(<TableRow
+				key={i}>
 				<TableCell>
 					<Skeleton
 						width="20%"

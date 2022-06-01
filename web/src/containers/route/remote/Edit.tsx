@@ -41,6 +41,7 @@ import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {useParams} from "react-router";
 import {formatDistanceToNow} from "date-fns";
 import {Apps, CirclePlus, Edit} from "tabler-icons-react";
+import {ErrorBoundary} from "react-error-boundary";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
@@ -51,6 +52,7 @@ import {Archetype, AuthMode, useGetRemoteLazyQuery, usePatchRemoteMutation, Verb
 import ResourceRoleViewer from "../acl/ResourceRoleViewer";
 import useCanRBAC from "../../../hooks/useRBAC";
 import {RESOURCE_REMOTE} from "../../../config/constants";
+import Error from "../../alert/Error";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
@@ -313,7 +315,10 @@ const EditRemote: React.FC = (): JSX.Element => {
 			setOpen={o => {
 				handleOpen(o ? d.id : "");
 			}}>
-			{d.children}
+			<ErrorBoundary
+				fallbackRender={p => <Error props={p}/>}>
+				{d.children}
+			</ErrorBoundary>
 		</ExpandableListItem>);
 	};
 

@@ -22,6 +22,7 @@ import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {useParams} from "react-router";
+import {ErrorBoundary} from "react-error-boundary";
 import {DataIsValid} from "../../../utils/data";
 import getErrorMessage from "../../../selectors/getErrorMessage";
 import ExpandableListItem from "../../list/ExpandableListItem";
@@ -38,6 +39,7 @@ import {
 import ResourceRoleViewer from "../acl/ResourceRoleViewer";
 import useCanRBAC from "../../../hooks/useRBAC";
 import {RESOURCE_REFRACT} from "../../../config/constants";
+import Error from "../../alert/Error";
 import Setup from "./options/Setup";
 import RemoteSelect from "./RemoteSelect";
 
@@ -168,7 +170,10 @@ const EditRefract: React.FC = (): JSX.Element => {
 			disabled={d.disabled}
 			open={open === d.id}
 			setOpen={o => handleOpen(o ? d.id : "")}>
-			{d.children}
+			<ErrorBoundary
+				fallbackRender={p => <Error props={p}/>}>
+				{d.children}
+			</ErrorBoundary>
 		</ExpandableListItem>);
 	}, [open, data?.getRefraction]);
 
