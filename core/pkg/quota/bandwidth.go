@@ -22,6 +22,7 @@ import (
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"sync"
 	"time"
 )
 
@@ -29,9 +30,10 @@ func NewNetObserver(ctx context.Context, repo *repo.BandwidthRepo) *NetObserver 
 	log := logr.FromContextOrDiscard(ctx).WithName("observer.net")
 	log.V(2).Info("starting network observer")
 	o := &NetObserver{
-		repo:    repo,
-		log:     log,
-		buckets: map[model.BandwidthType]map[string]int64{},
+		repo:       repo,
+		log:        log,
+		buckets:    map[model.BandwidthType]map[string]int64{},
+		bucketSync: sync.Mutex{},
 	}
 
 	go func() {
@@ -51,7 +53,9 @@ func (o *NetObserver) Observe(resource string, usage int64, bandwidthType model.
 		m = map[string]int64{}
 	}
 	m[resource] += usage
+	o.bucketSync.Lock()
 	o.buckets[bandwidthType] = m
+	o.bucketSync.Unlock()
 }
 
 func (o *NetObserver) flush() {
@@ -63,5 +67,7 @@ func (o *NetObserver) flush() {
 			_ = o.repo.Create(ctx, k, vv, t)
 		}
 	}
+	o.bucketSync.Lock()
 	o.buckets = map[model.BandwidthType]map[string]int64{}
+	o.bucketSync.Unlock()
 }
