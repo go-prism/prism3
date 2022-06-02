@@ -11,9 +11,9 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/bluele/gcache v0.0.2
 	github.com/djcass44/go-utils/flagging v0.1.2
-	github.com/djcass44/go-utils/logging v0.1.0
+	github.com/djcass44/go-utils/logging v0.2.0
 	github.com/djcass44/go-utils/orm v0.1.1
-	github.com/djcass44/go-utils/otel v0.1.4
+	github.com/djcass44/go-utils/otel v0.1.5
 	github.com/djcass44/go-utils/utilities v0.1.1
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -39,7 +39,7 @@ require (
 	go.opentelemetry.io/otel/metric v0.30.0
 	go.opentelemetry.io/otel/trace v1.7.0
 	go.uber.org/zap v1.21.0
-	golang.org/x/net v0.0.0-20220526153639-5463443f8c37
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.0
 	gorm.io/datatypes v1.0.6

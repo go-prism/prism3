@@ -3,6 +3,7 @@ image:
 podAnnotations:
   app.kubernetes.io/name: batch
   app.kubernetes.io/part-of: prism3
+  linkerd.io/inject: enabled
 env:
   PRISM_AUTH_SUPER_USER: "C=AU,CN=dcas.dev Root CA,L=Canberra,O=dcas.dev,ST=ACT/C=AU,CN=Django Cass,L=Canberra,O=dcas.dev,ST=ACT,emailAddress=django@dcas.dev"
   PRISM_DB_DSN: "user=prism password=password dbname=prism host=postgresql port=5432 sslmode=disable"

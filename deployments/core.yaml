@@ -3,6 +3,7 @@ image:
 podAnnotations:
   app.kubernetes.io/name: core
   app.kubernetes.io/part-of: prism3
+  linkerd.io/inject: enabled
 env:
   PRISM_AUTH_SUPER_USER: "https://gitlab.dcas.dev/4"
   PRISM_DB_DSN: "user=prism password=password dbname=prism host=postgresql port=5432 sslmode=disable"

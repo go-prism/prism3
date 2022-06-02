@@ -6,3 +6,6 @@ global:
       username: prism
       password: password
       database: prism
+primary:
+  podAnnotations:
+    linkerd.io/inject: enabled

@@ -9,8 +9,8 @@ replace gitlab.com/go-prism/go-rbac-proxy v0.2.0 => gitlab.dcas.dev/prism/go-rba
 replace gitlab.com/go-prism/go-rbac-proxy v0.2.1 => gitlab.dcas.dev/prism/go-rbac-proxy.git v0.2.1
 
 require (
-	github.com/djcass44/go-utils/logging v0.1.0
-	github.com/djcass44/go-utils/otel v0.1.4
+	github.com/djcass44/go-utils/logging v0.2.0
+	github.com/djcass44/go-utils/otel v0.1.5
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
 	github.com/gorilla/mux v1.8.0
@@ -149,7 +149,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
-	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
+	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect

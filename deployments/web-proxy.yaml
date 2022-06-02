@@ -31,3 +31,8 @@ ingress:
     - secretName: tls-prism3-core
       hosts:
         - prism3.devel
+podAnnotations:
+  linkerd.io/inject: enabled
+serviceAccount:
+  automountServiceAccountToken: true
+  name: default

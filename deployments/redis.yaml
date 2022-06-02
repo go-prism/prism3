@@ -5,6 +5,8 @@ auth:
   enabled: true
   password: password
 master:
+  podAnnotations:
+    linkerd.io/inject: enabled
   persistence:
     enabled: false
   resources:

@@ -3,6 +3,7 @@ image:
 podAnnotations:
   app.kubernetes.io/name: goproxy
   app.kubernetes.io/part-of: prism3
+  linkerd.io/inject: enabled
 env:
   PRISM_S3_REGION: "us-east-1"
   PRISM_S3_PATH_STYLE: "true"

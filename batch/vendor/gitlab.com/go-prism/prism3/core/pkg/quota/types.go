@@ -21,13 +21,15 @@ import (
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"sync"
 )
 
 type NetObserver struct {
 	repo *repo.BandwidthRepo
 	log  logr.Logger
 
-	buckets map[model.BandwidthType]map[string]int64
+	buckets    map[model.BandwidthType]map[string]int64
+	bucketSync sync.Mutex
 }
 
 type Observer interface {
