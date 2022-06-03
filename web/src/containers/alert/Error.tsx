@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 
 import React from "react";
-import {Alert, AlertTitle} from "@mui/material";
+import {Alert, AlertTitle, Button} from "@mui/material";
 import {FallbackProps} from "react-error-boundary";
 import {Code} from "jmp-coreui";
 
@@ -36,6 +36,14 @@ const Error: React.FC<ErrorProps> = ({props}): JSX.Element => {
 				<br/>
 				<br/>
 				<Code>{props.error.name}: {props.error.message}</Code>
+				<br/>
+				<Button
+					sx={{mt: 2, textTransform: "none"}}
+					variant="contained"
+					color="primary"
+					onClick={() => window.location.reload()}>
+					Reload page
+				</Button>
 			</Alert>
 		</div>
 	);

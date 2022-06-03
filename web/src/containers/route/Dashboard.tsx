@@ -92,7 +92,8 @@ const Dashboard: React.FC = (): JSX.Element => {
 	}, []);
 
 	const item = (title: string, icon: ReactNode, children: ReactNode, info?: string): ReactNode => {
-		return <ListItem>
+		return <ListItem
+			key={title}>
 			<ListItemIcon>
 				{icon}
 			</ListItemIcon>
