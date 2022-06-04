@@ -10,6 +10,8 @@ build:
       builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
       runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
       trustBuilder: true
+      env:
+        - GOPROXY=https://prism.v2.dcas.dev/api/go
       dependencies:
         paths:
         - cmd/core/
@@ -50,6 +52,7 @@ build:
     context: goproxy
     docker:
       buildArgs:
+        GOPROXY: https://prism.v2.dcas.dev/api/go
         GITLAB_PREFIX: harbor.dcas.dev/
   local:
     push: false
@@ -81,6 +84,8 @@ build:
       builder: harbor.dcas.dev/docker.io/paketobuildpacks/builder:tiny
       runImage: harbor.dcas.dev/docker.io/paketobuildpacks/run:tiny-cnb
       trustBuilder: true
+      env:
+        - GOPROXY=https://prism.v2.dcas.dev/api/go
       dependencies:
         paths:
         - cmd/batch/

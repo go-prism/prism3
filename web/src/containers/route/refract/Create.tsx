@@ -66,13 +66,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		fontFamily: "Manrope",
 		fontWeight: 600,
 		textTransform: "none"
-	},
-	textField: {
-		borderRadius: theme.spacing(1)
-	},
-	textLabel: {
-		color: theme.palette.text.primary,
-		fontWeight: 500
 	}
 }));
 
@@ -135,8 +128,6 @@ const CreateRefract: React.FC = (): JSX.Element => {
 						invalidLabel="Must be at least 3 characters."
 						fieldProps={{
 							className: classes.formItem,
-							InputProps: {className: classes.textField},
-							InputLabelProps: {classes: {shrink: classes.textLabel}},
 							required: true,
 							label: "Name",
 							variant: "outlined",

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 
 import React, {useState} from "react";
-import {Alert, Button, FormGroup, Theme, Typography,} from "@mui/material";
+import {Alert, Box, Button, FormGroup, Theme, Typography,} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {Link, useHistory} from "react-router-dom";
 import {useTheme} from "@mui/material/styles";
@@ -29,7 +29,8 @@ import {TransportSecurity, useCreateTransportMutation} from "../../../generated/
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
-		fontWeight: 500
+		fontWeight: 500,
+		marginLeft: theme.spacing(0.5)
 	},
 	form: {
 		marginTop: theme.spacing(1)
@@ -100,8 +101,9 @@ const CreateTransport: React.FC = (): JSX.Element => {
 	}
 
 	return (
-		<StandardLayout>
-			<div>
+		<StandardLayout
+			size="small">
+			<Box sx={{mt: 2}}>
 				<Typography
 					className={classes.title}
 					color="textPrimary"
@@ -118,7 +120,8 @@ const CreateTransport: React.FC = (): JSX.Element => {
 							sx: {m: 1},
 							required: true,
 							label: "Name",
-							variant: "filled",
+							variant: "outlined",
+							size: "small",
 							id: "txt-name"
 						}}
 					/>
@@ -154,7 +157,7 @@ const CreateTransport: React.FC = (): JSX.Element => {
 						</Button>
 					</div>
 				</FormGroup>
-			</div>
+			</Box>
 		</StandardLayout>
 	);
 }

@@ -143,6 +143,7 @@ const FirewallRules: React.FC<FirewallRulesProps> = ({
 						label: "Regex rule",
 						variant: "outlined",
 						id: "txt-rule",
+						size: "small",
 						fullWidth: true,
 						disabled: loading || disabled
 					}}

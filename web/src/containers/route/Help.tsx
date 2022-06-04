@@ -36,8 +36,10 @@ const Help: React.FC = (): JSX.Element => {
 	useEffect(() => {
 		setError(() => null);
 		setLoading(() => true);
-		import(`../../docs/${path}.md?raw`)
-			.then(v => setData(() => v?.default || ""))
+		import(`../../docs/${path}.md`)
+			.then(res => fetch(res?.default))
+			.then(res => res.text())
+			.then(v => setData(() => v || ""))
 			.catch(err => setError(() => err))
 			.finally(() => setLoading(() => false));
 	}, [path]);

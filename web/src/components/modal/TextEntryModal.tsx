@@ -16,20 +16,11 @@
  */
 
 import React from "react";
-import {
-	Button,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogContentText,
-	DialogTitle,
-	Theme,
-	Typography
-} from "@mui/material";
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {ValidatedData, ValidatedTextField} from "jmp-coreui";
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(() => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500,
@@ -39,13 +30,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		fontFamily: "Manrope",
 		fontWeight: "bold",
 		textTransform: "none"
-	},
-	textField: {
-		borderRadius: theme.spacing(1)
-	},
-	textLabel: {
-		color: theme.palette.text.primary,
-		fontWeight: 500
 	}
 }));
 
@@ -95,8 +79,6 @@ const TextEntryModal: React.FC<Props> = ({open, setOpen, title, description, val
 				invalidLabel={invalidLabel || "Invalid data has been entered."}
 				fieldProps={{
 					sx: {mt: 1},
-					InputProps: {className: classes.textField},
-					InputLabelProps: {classes: {shrink: classes.textLabel}},
 					required: true,
 					variant: "outlined",
 					id: "txt-value",

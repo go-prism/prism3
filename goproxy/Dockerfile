@@ -6,6 +6,7 @@ RUN mkdir -p /home/somebody/go && \
 WORKDIR /home/somebody/go
 
 ARG GOPRIVATE
+ARG GOPROXY
 
 ARG AUTO_DEVOPS_GO_GIT_CFG
 ARG AUTO_DEVOPS_GO_COMPILE_FLAGS

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -97,7 +97,9 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-ca"
-				variant="filled"
+				variant="outlined"
+				size="small"
+				minRows={5}
 				placeholder="Enter one or more pem-encoded certificates..."
 				value={ca}
 				disabled={loading || disabled}
@@ -107,7 +109,9 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-cert"
-				variant="filled"
+				variant="outlined"
+				size="small"
+				minRows={5}
 				label="Certificate"
 				placeholder="Enter a pem-encoded certificate..."
 				value={cert}
@@ -117,7 +121,9 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-key"
-				variant="filled"
+				variant="outlined"
+				size="small"
+				minRows={5}
 				label="Key"
 				placeholder="Enter a decrypted key..."
 				value={key}
@@ -151,7 +157,8 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-http-proxy"
-				variant="filled"
+				variant="outlined"
+				size="small"
 				label="HTTP Proxy URL"
 				placeholder="Enter a URL..."
 				value={httpProxy}
@@ -161,7 +168,8 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-https-proxy"
-				variant="filled"
+				variant="outlined"
+				size="small"
 				label="HTTPS Proxy URL"
 				placeholder="Enter a URL..."
 				value={httpsProxy}
@@ -171,7 +179,8 @@ const ClientConfig: React.FC<ClientConfigProps> = ({profile, setProfile, loading
 			<TextField
 				{...defaultProps}
 				id="textfield-no-proxy"
-				variant="filled"
+				variant="outlined"
+				size="small"
 				label="No Proxy"
 				placeholder="Enter a comma separated list of host names..."
 				value={noProxy}

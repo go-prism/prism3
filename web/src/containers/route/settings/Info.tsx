@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ const Info: React.FC = (): JSX.Element => {
 				<ListItem>
 					<ListItemText
 						className={classes.item}
-						secondary={`Version ${import.meta.env.VERSION} (${import.meta.env.REVISION || "unknown commit"})`}
+						secondary={`Version ${process.env.REACT_APP_VERSION} (${process.env.REACT_APP_REVISION || "unknown revision"})`}
 					/>
 				</ListItem>
 			</Card>

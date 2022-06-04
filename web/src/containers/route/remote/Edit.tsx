@@ -21,6 +21,7 @@ import {
 	Box,
 	Button,
 	Chip,
+	CircularProgress,
 	Collapse,
 	FormControlLabel,
 	FormGroup,
@@ -89,13 +90,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	chip: {
 		margin: theme.spacing(0.5)
-	},
-	textField: {
-		borderRadius: theme.spacing(1)
-	},
-	textLabel: {
-		color: theme.palette.text.primary,
-		fontWeight: 500
 	}
 }));
 
@@ -273,7 +267,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 				id: "transport",
 				primary: "Transport options",
 				secondary: "Configure how Prism communicates with remotes.",
-				children: data?.getRemote == null ? "" : <TransportOpts
+				children: data?.getRemote == null ? <CircularProgress/> : <TransportOpts
 					disabled={readOnly}
 					onSelect={() => {}}
 				/>,
@@ -283,7 +277,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 				id: "rbac",
 				primary: "Permissions",
 				secondary: "Control who can view and modify remotes.",
-				children: data?.getRemote == null ? "" : <Box
+				children: data?.getRemote == null ? <CircularProgress/> : <Box
 					sx={{m: 1}}>
 					<Alert
 						severity="info">
@@ -300,7 +294,7 @@ const EditRemote: React.FC = (): JSX.Element => {
 				id: "usage",
 				primary: "Usage quotas",
 				secondary: "View usage of compute and network resources for this calendar month.",
-				children: data?.getRemote == null ? "" : <BandwidthOpts
+				children: data?.getRemote == null ? <CircularProgress/> : <BandwidthOpts
 					type={RESOURCE_REMOTE}
 					id={data.getRemote.id}
 				/>,
@@ -378,8 +372,6 @@ const EditRemote: React.FC = (): JSX.Element => {
 					invalidLabel="Must be at least 3 characters."
 					fieldProps={{
 						className: classes.formItem,
-						InputProps: {className: classes.textField},
-						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
 						label: "Name",
 						variant: "outlined",
@@ -394,8 +386,6 @@ const EditRemote: React.FC = (): JSX.Element => {
 					invalidLabel="Must be a valid URL."
 					fieldProps={{
 						className: classes.formItem,
-						InputProps: {className: classes.textField},
-						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
 						label: "URL",
 						variant: "outlined",

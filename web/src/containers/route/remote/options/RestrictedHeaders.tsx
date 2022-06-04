@@ -53,13 +53,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	text: {
 		margin: theme.spacing(1)
-	},
-	textField: {
-		borderRadius: theme.spacing(1)
-	},
-	textLabel: {
-		color: theme.palette.text.primary,
-		fontWeight: 500
 	}
 }));
 
@@ -221,8 +214,6 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 					invalidLabel="Must be a valid HTTP header"
 					fieldProps={{
 						required: true,
-						InputProps: {className: classes.textField},
-						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						label: "Header",
 						variant: "outlined",
 						id: "txt-header",
@@ -238,8 +229,6 @@ const RestrictedHeaders: React.FC<RestrictedHeadersProps> = ({
 					invalidLabel="Must be set"
 					fieldProps={{
 						sx: {mt: 1},
-						InputProps: {className: classes.textField},
-						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
 						label: "Token",
 						variant: "outlined",

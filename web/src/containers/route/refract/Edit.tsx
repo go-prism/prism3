@@ -16,7 +16,7 @@
  */
 
 import React, {useEffect, useMemo, useState} from "react";
-import {Alert, Button, FormGroup, FormLabel, List, Theme} from "@mui/material";
+import {Alert, Button, CircularProgress, FormGroup, FormLabel, List, Theme} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {useTheme} from "@mui/material/styles";
 import {useHistory} from "react-router-dom";
@@ -70,13 +70,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	chip: {
 		margin: theme.spacing(0.5)
-	},
-	textField: {
-		borderRadius: theme.spacing(1)
-	},
-	textLabel: {
-		color: theme.palette.text.primary,
-		fontWeight: 500
 	}
 }));
 
@@ -151,15 +144,15 @@ const EditRefract: React.FC = (): JSX.Element => {
 				id: "getting-setup",
 				primary: "Getting setup",
 				secondary: "Application-specific setup information.",
-				children: data?.getRefraction && <Setup refract={data.getRefraction as Refraction}/>,
+				children: data?.getRefraction == null ? <CircularProgress/> : <Setup refract={data.getRefraction as Refraction}/>,
 				disabled: data?.getRefraction == null || loading,
 				hidden: false
 			},
 			{
 				id: "rbac",
 				primary: "Permissions",
-				secondary: "",
-				children: data?.getRefraction == null ? "" : <ResourceRoleViewer type={RESOURCE_REFRACT} id={data.getRefraction.name}/>,
+				secondary: "Control who can view and modify refractions.",
+				children: data?.getRefraction == null ? <CircularProgress/> : <ResourceRoleViewer type={RESOURCE_REFRACT} id={data.getRefraction.name}/>,
 				hidden: !canPatch
 			}
 		];
@@ -204,8 +197,6 @@ const EditRefract: React.FC = (): JSX.Element => {
 					invalidLabel="Must be at least 3 characters."
 					fieldProps={{
 						className: classes.formItem,
-						InputProps: {className: classes.textField},
-						InputLabelProps: {classes: {shrink: classes.textLabel}},
 						required: true,
 						label: "Name",
 						variant: "outlined",

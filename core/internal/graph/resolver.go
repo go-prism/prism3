@@ -23,12 +23,16 @@ import (
 	"github.com/djcass44/go-utils/utilities/sliceutils"
 	"github.com/go-logr/logr"
 	"github.com/hibiken/asynq"
+	"gitlab.com/av1o/cap10/pkg/client"
+	"gitlab.com/go-prism/go-rbac-proxy/pkg/rbac"
+	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"strings"
 	"time"
 )
 
@@ -109,4 +113,43 @@ func (r *Resolver) stream(ctx context.Context, tables []string, f func(msg *noti
 			}
 		}
 	}()
+}
+
+func (r *Resolver) createRoleBinding(ctx context.Context, resourceOrRole string, action rbac.Verb) error {
+	user, _ := client.GetContextUser(ctx)
+	log := logr.FromContextOrDiscard(ctx)
+	subject := permissions.NormalUser(user.AsUsername())
+	// if no resource is declared,
+	// create a global role
+	res, id, ok := strings.Cut(resourceOrRole, "::")
+	if !ok {
+		if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+			return err
+		}
+		_, err := r.authz.RBAC.AddGlobalRole(ctx, &rbac.AddGlobalRoleRequest{
+			Subject: subject,
+			Role:    resourceOrRole,
+		})
+		if err != nil {
+			log.Error(err, "failed to create global role binding")
+			return err
+		}
+	} else {
+		// allow owners of a resource
+		// to create role bindings for it
+		if err := r.authz.CanI(ctx, repo.Resource(res), id, rbac.Verb_SUDO); err != nil {
+			return err
+		}
+		// create a standard role
+		_, err := r.authz.RBAC.AddRole(ctx, &rbac.AddRoleRequest{
+			Subject:  subject,
+			Resource: resourceOrRole,
+			Action:   action,
+		})
+		if err != nil {
+			log.Error(err, "failed to create global role binding")
+			return err
+		}
+	}
+	return nil
 }

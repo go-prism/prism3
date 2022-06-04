@@ -69,9 +69,9 @@ func (g *Gateway) RedirectNPM(w http.ResponseWriter, r *http.Request) {
 func (g *Gateway) ServeHTTPNPM(w http.ResponseWriter, r *http.Request) {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(r.Context(), "gateway_npm_serve")
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("npm")
 	vars := mux.Vars(r)
 	bucket, scope, pkg, version := vars["bucket"], vars["scope"], vars["package"], vars["version"]
+	log := logr.FromContextOrDiscard(ctx).WithValues("Bucket", bucket)
 	// re-assembled scoped packages
 	if scope != "" {
 		log.V(1).Info("handling NPM scoped request", "Scope", scope)

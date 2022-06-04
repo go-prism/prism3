@@ -47,6 +47,7 @@ import {getResourceIcon} from "../../../utils/remote";
 import {Role, StoredUser, useCreateRoleBindingMutation, useListUsersQuery, Verb} from "../../../generated/graphql";
 import {getClaimValue, parseUsername} from "../../../utils/parse";
 import {RESOURCE_REFRACT, RESOURCE_REMOTE, RESOURCE_TRANSPORT} from "../../../config/constants";
+import {DataIsValid} from "../../../utils/data";
 
 const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
@@ -55,9 +56,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	},
 	form: {
 		marginTop: theme.spacing(1)
-	},
-	formItem: {
-		margin: theme.spacing(1)
 	},
 	formIcon: {
 		paddingTop: theme.spacing(1.75)
@@ -72,6 +70,13 @@ const useStyles = makeStyles()((theme: Theme) => ({
 		fontFamily: "Manrope",
 		fontWeight: 600,
 		textTransform: "none"
+	},
+	textField: {
+		borderRadius: theme.spacing(1)
+	},
+	textLabel: {
+		color: theme.palette.text.primary,
+		fontWeight: 500
 	}
 }));
 
@@ -102,6 +107,7 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 	const [id, setID] = useState<ValidatedData>(initialID);
 	const [role, setRole] = useState<string>(ROLE_SCOPED);
 	const [resource, setResource] = useState<string>("");
+	const [verb, setVerb] = useState<Verb>(Verb.Read);
 
 	const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
 		setRole((e.target as HTMLInputElement).value);
@@ -112,13 +118,14 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 			return;
 		setResource(() => "");
 		setID(i => ({...i, value: ""}));
+		setVerb(() => Verb.Read);
 	}, [role]);
 
 	const handleCreate = (): void => {
 		createRoleBinding({variables: {
 			subject: user,
 			resource: role === ROLE_SCOPED ? `${resource}::${id.value}` : resource,
-			verb: Verb.Sudo
+			verb: verb
 		}}).then(r => {
 			if (!r.errors) {
 				history.push("/settings/sys/acl");
@@ -127,7 +134,8 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 	}
 
 	return (
-		<StandardLayout>
+		<StandardLayout
+			size="small">
 			<Box sx={{mt: 2}}>
 				<Typography
 					className={classes.title}
@@ -138,12 +146,12 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 				<FormGroup
 					className={classes.form}>
 					<FormLabel
-						className={classes.formItem}
+						className={classes.form}
 						component="legend">
 						Role type
 					</FormLabel>
 					<RadioGroup
-						className={classes.formItem}
+						className={classes.form}
 						aria-label="role"
 						name="role"
 						value={role}
@@ -166,20 +174,32 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						/>)}
 					</RadioGroup>
 					<Autocomplete
-						className={classes.formItem}
+						sx={{mb: 2, mt: 2}}
 						disablePortal
 						options={listUsers.data?.listUsers || []}
-						renderInput={params => <TextField {...params} label="User"/>}
+						size="small"
+						renderInput={params => <TextField
+							{...params}
+							label="User"
+						/>}
 						getOptionLabel={option => getClaimValue(option as StoredUser, "name") || getClaimValue(option as StoredUser, "nickname") || parseUsername(option.sub)}
 						onChange={(e, value) => setUser(() => value?.id || "")}
+						loading={loading}
+						loadingText="Loading users..."
+						noOptionsText="No users"
 					/>
 					{role === ROLE_GLOBAL && <FormControl
-						sx={{m: 1, pr: 1}}
 						fullWidth>
-						<InputLabel>Role</InputLabel>
+						<InputLabel
+							classes={{shrink: classes.textLabel}}
+							size="small">
+							Role
+						</InputLabel>
 						<Select
 							sx={{minWidth: 200}}
+							className={classes.textField}
 							variant="outlined"
+							size="small"
 							value={resource}
 							label="Role"
 							required>
@@ -191,15 +211,21 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 							</MenuItem>)}
 						</Select>
 					</FormControl>}
-					{role === ROLE_SCOPED && <Grid container>
-						<Grid item xs={6}>
+					{role === ROLE_SCOPED && <Grid
+						container
+						spacing={1}>
+						<Grid item xs={3}>
 							<FormControl
-								sx={{m: 1, pr: 1}}
 								fullWidth>
-								<InputLabel>Resource</InputLabel>
+								<InputLabel
+									classes={{shrink: classes.textLabel}}
+									size="small">
+									Resource
+								</InputLabel>
 								<Select
-									sx={{minWidth: 200}}
+									className={classes.textField}
 									variant="outlined"
+									size="small"
 									value={resource}
 									label="Resource"
 									required>
@@ -217,22 +243,48 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						</Grid>
 						<Grid
 							item
-							xs={6}
-							sx={{pr: 2, pl: 1}}>
+							xs={6}>
 							<ValidatedTextField
 								data={id}
 								setData={setID}
 								invalidLabel="Must be at least 3 characters."
 								fieldProps={{
-									className: classes.formItem,
 									required: true,
 									label: `${toTitleCase(resource || "Resource")} name`,
 									placeholder: "maven-central",
-									variant: "filled",
+									variant: "outlined",
 									id: "txt-resource",
+									size: "small",
 									fullWidth: true
 								}}
 							/>
+						</Grid>
+						<Grid item xs={3}>
+							<FormControl
+								fullWidth>
+								<InputLabel
+									classes={{shrink: classes.textLabel}}
+									size="small">
+									Verb
+								</InputLabel>
+								<Select
+									className={classes.textField}
+									variant="outlined"
+									size="small"
+									value={verb}
+									label="Verb"
+									required>
+									{Object.values(Verb).map(r => <MenuItem
+										key={r}
+										value={r}
+										onClick={() => setVerb(() => r)}>
+										<Flexbox>
+											{getResourceIcon(theme, r)}
+											{toTitleCase(r)}
+										</Flexbox>
+									</MenuItem>)}
+								</Select>
+							</FormControl>
 						</Grid>
 					</Grid>}
 					{error != null && <Alert
@@ -243,8 +295,9 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 							{getErrorMessage(error)}
 						</Code>
 					</Alert>}
-					<div
-						className={`${classes.formItem} ${classes.flex}`}>
+					<Box
+						className={classes.flex}
+						sx={{mt: 2}}>
 						<Button
 							className={classes.button}
 							component={Link}
@@ -256,12 +309,12 @@ const CreateRoleBinding: React.FC = (): JSX.Element => {
 						<Button
 							className={classes.button}
 							style={{color: theme.palette.success.contrastText, backgroundColor: theme.palette.success.main}}
-							disabled={user === "" || loading || role == null}
+							disabled={user === "" || resource === "" || !DataIsValid(id) || loading || role == null}
 							onClick={handleCreate}
 							variant="contained">
 							Create
 						</Button>
-					</div>
+					</Box>
 				</FormGroup>
 			</Box>
 		</StandardLayout>

@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package graph
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
@@ -6,6 +23,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -16,7 +34,6 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
-	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
@@ -29,6 +46,11 @@ import (
 
 func (r *mutationResolver) CreateRemote(ctx context.Context, input model.NewRemote) (*model.Remote, error) {
 	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
+		return nil, err
+	}
+	// make sure that the creator has full
+	// access to the remote
+	if err := r.createRoleBinding(ctx, fmt.Sprintf("%s::%s", repo.ResourceRemote, input.Name), rbac.Verb_SUDO); err != nil {
 		return nil, err
 	}
 	rem, err := r.repos.RemoteRepo.CreateRemote(ctx, &input)
@@ -61,6 +83,11 @@ func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.New
 	if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
 		return nil, err
 	}
+	// make sure that the creator has full
+	// access to the remote
+	if err := r.createRoleBinding(ctx, fmt.Sprintf("%s::%s", repo.ResourceRefraction, input.Name), rbac.Verb_SUDO); err != nil {
+		return nil, err
+	}
 	return r.repos.RefractRepo.CreateRefraction(ctx, &input)
 }
 
@@ -79,39 +106,10 @@ func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (boo
 }
 
 func (r *mutationResolver) CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error) {
-	log := logr.FromContextOrDiscard(ctx)
-	subject := permissions.NormalUser(input.Subject)
-	// if no resource is declared,
-	// create a global role
-	if input.Resource == "" {
-		if err := r.authz.AmI(ctx, model.RoleSuper); err != nil {
-			return nil, err
-		}
-		_, err := r.authz.RBAC.AddGlobalRole(ctx, &rbac.AddGlobalRoleRequest{
-			Subject: subject,
-			Role:    input.Resource,
-		})
-		if err != nil {
-			log.Error(err, "failed to create global role binding")
-			return nil, err
-		}
-	} else {
-		// allow owners of a resource
-		// to create role bindings for it
-		res, id, _ := strings.Cut(input.Resource, "::")
-		if err := r.authz.CanI(ctx, repo.Resource(res), id, rbac.Verb_SUDO); err != nil {
-			return nil, err
-		}
-		// create a standard role
-		_, err := r.authz.RBAC.AddRole(ctx, &rbac.AddRoleRequest{
-			Subject:  subject,
-			Resource: input.Resource,
-			Action:   rbac.Verb_SUDO,
-		})
-		if err != nil {
-			log.Error(err, "failed to create global role binding")
-			return nil, err
-		}
+	user, _ := client.GetContextUser(ctx)
+	subject := permissions.NormalUser(user.AsUsername())
+	if err := r.createRoleBinding(ctx, input.Resource, rbac.Verb(rbac.Verb_value[input.Verb.String()])); err != nil {
+		return nil, err
 	}
 	return &model.RoleBinding{
 		Subject:  subject,
