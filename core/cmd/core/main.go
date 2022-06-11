@@ -45,6 +45,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/errtack"
 	"gitlab.com/go-prism/prism3/core/pkg/flag"
+	"gitlab.com/go-prism/prism3/core/pkg/quota"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gitlab.com/go-prism/prism3/core/pkg/storage"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
@@ -199,7 +200,7 @@ func main() {
 	}
 
 	// configure graphql
-	h := v1.NewGateway(resolver.NewResolver(ctx, repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo)
+	h := v1.NewGateway(resolver.NewResolver(ctx, repos, s3, e.PublicURL), goProxyURL, repos.ArtifactRepo, quota.NewNetObserver(ctx, repos.BandwidthRepo))
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(repos, s3, batchClient, notifier, perms)}))
 	srv.AddTransport(transport.POST{})
 	srv.AddTransport(transport.Websocket{

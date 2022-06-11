@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"gitlab.com/go-prism/prism3/core/internal/resolver"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"gitlab.com/go-prism/prism3/core/pkg/quota"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/net/http2"
 	"net"
@@ -12,7 +13,7 @@ import (
 	"sync"
 )
 
-func NewGateway(r resolver.IResolver, goProxyURL *url.URL, artifactRepo *repo.ArtifactRepo) *Gateway {
+func NewGateway(r resolver.IResolver, goProxyURL *url.URL, artifactRepo *repo.ArtifactRepo, goNetObserver quota.Observer) *Gateway {
 	var goProxy *httputil.ReverseProxy
 	if goProxyURL != nil {
 		goProxy = httputil.NewSingleHostReverseProxy(goProxyURL)
@@ -35,7 +36,8 @@ func NewGateway(r resolver.IResolver, goProxyURL *url.URL, artifactRepo *repo.Ar
 				return new(resolver.NPMRequest)
 			},
 		},
-		goProxy:      goProxy,
-		artifactRepo: artifactRepo,
+		goProxy:       goProxy,
+		artifactRepo:  artifactRepo,
+		goNetObserver: goNetObserver,
 	}
 }

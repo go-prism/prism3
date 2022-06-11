@@ -20,6 +20,7 @@ package v1
 import (
 	"context"
 	"github.com/go-logr/logr"
+	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
@@ -53,6 +54,7 @@ func (g *Gateway) ServeGo(w http.ResponseWriter, r *http.Request) {
 		go func() {
 			metricCountResolved.Add(ctx, 1, attribute.String("type", "go"), attribute.String("bucket", "go"))
 			_ = g.artifactRepo.CreateArtifact(context.TODO(), strings.TrimPrefix(name, "/"), db.GoRemote)
+			g.goNetObserver.Observe("remote::go", response.ContentLength, model.BandwidthTypeNetworkB)
 		}()
 		return nil
 	}
