@@ -22,6 +22,7 @@ import (
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
+	"go.opentelemetry.io/otel/attribute"
 	"sync"
 	"time"
 )
@@ -52,10 +53,13 @@ func (o *NetObserver) Observe(resource string, usage int64, bandwidthType model.
 	if !ok {
 		m = map[string]int64{}
 	}
-	m[resource] += usage
 	o.bucketSync.Lock()
+	m[resource] += usage
 	o.buckets[bandwidthType] = m
 	o.bucketSync.Unlock()
+
+	// capture metrics
+	metricNet.Record(context.Background(), usage, attribute.String(attrKeyClass, string(bandwidthType)), attribute.String(attrKeyRes, resource))
 }
 
 func (o *NetObserver) flush() {

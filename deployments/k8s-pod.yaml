@@ -56,6 +56,9 @@ spec:
   containers:
     - name: app
       image: harbor.dcas.dev/docker.io/library/alpine:3.15
+      env:
+        - name: GOPROXY
+          value: http://core3-auto-deploy:8080/api/go
       command:
         - sh
         - -c
@@ -92,6 +95,9 @@ spec:
   containers:
     - name: app
       image: harbor.dcas.dev/docker.io/library/debian:bullseye
+      env:
+        - name: GOPROXY
+          value: http://core3-auto-deploy:8080/api/go
       command:
         - bash
         - -c
