@@ -164,3 +164,14 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the PostgreSQL DSN
+*/}}
+{{- define "prism.primaryDSN" -}}
+{{- if not .Values.db.dsn.primary }}
+{{- printf "user=%s password=%s dbname=%s port=5432 sslmode=disable host=%s-postgresql" .Values.global.postgresql.username .Values.global.postgresql.password .Values.global.postgresql.database .Release.Name }}
+{{- else }}
+{{- printf "%s" .Values.db.dsn.primary }}
+{{- end }}
+{{- end }}

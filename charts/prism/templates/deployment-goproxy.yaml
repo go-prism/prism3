@@ -45,6 +45,11 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
             - name: PRISM_LOG_LEVEL
               value: {{ .Values.global.logLevel | default .Values.goproxy.logLevel | quote }}
             {{- with .Values.s3 }}

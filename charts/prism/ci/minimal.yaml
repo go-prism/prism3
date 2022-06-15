@@ -1,0 +1,14 @@
+global:
+  redis:
+    password: password
+  postgresql:
+    username: prism
+    password: password
+    database: prism
+url: https://prism.example.com
+initialSuperUser: https://auth.example.com/first.last
+oidc:
+  id: client_id
+  secret: client_secret
+  issuer: https://auth.example.com
+  redirect_url: https://prism.example.com/auth/callback

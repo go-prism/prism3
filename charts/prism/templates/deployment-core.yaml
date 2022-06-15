@@ -46,6 +46,11 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
             - name: HELM_CACHE_HOME
               value: /tmp
             - name: HELM_CONFIG_HOME
@@ -122,6 +127,11 @@ spec:
               containerPort: 8081
               protocol: TCP
           env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
             - name: PROXY_TARGET
               value: "http://localhost:8080"
             - name: PROXY_PROBE_PATH
@@ -131,7 +141,7 @@ spec:
             - name: OIDC_ISSUER
               value: {{ .Values.oidc.issuer }}
             - name: OIDC_REDIRECT_URL
-              value: {{ .Values.oidc.redirect_url }}
+              value: "{{ .Values.url }}/auth/callback"
             - name: BASE_URL
               value: {{ .Values.url }}
           envFrom:

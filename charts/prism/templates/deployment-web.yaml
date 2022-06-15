@@ -44,6 +44,11 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
             - name: SRV_DOT_ENV
               value: .env
             - name: PRISM_API_URL

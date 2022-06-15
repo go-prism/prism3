@@ -42,6 +42,11 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
             - name: HELM_CACHE_HOME
               value: /tmp
             - name: HELM_CONFIG_HOME

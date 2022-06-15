@@ -7,6 +7,10 @@ global:
   logLevel:
   redis:
     password: ""
+  postgresql:
+    username: ""
+    password: ""
+    database: ""
 
 
 replicaCount: 1
@@ -140,7 +144,6 @@ oidc:
   id: ""
   secret: ""
   issuer: ""
-  redirect_url: "" # https://prism.example.com/auth/callback
 
 tracing:
   enabled: false
@@ -149,8 +152,8 @@ tracing:
 
 # https://artifacthub.io/packages/helm/bitnami/redis
 redis:
-  enabled: false
+  enabled: true
 
 # https://artifacthub.io/packages/helm/bitnami/postgresql
 postgresql:
-  enabled: false
+  enabled: true
