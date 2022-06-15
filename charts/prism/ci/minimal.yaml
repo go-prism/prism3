@@ -1,4 +1,5 @@
 global:
+  imageRegistry: harbor.dcas.dev/docker.io
   redis:
     password: password
   postgresql:
