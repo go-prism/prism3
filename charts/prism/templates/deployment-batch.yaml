@@ -77,6 +77,20 @@ spec:
             - name: PRISM_OTEL_SAMPLE_RATE
               value: {{ .sampleRate | quote }}
             {{- end }}
+            {{- if .Values.global.postgresql.auth.existingSecret }}
+            - name: PRISM_DB_DSN
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.global.postgresql.auth.secretKeys.dsnKey | default "dsn" }}
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+            {{- end }}
+            {{- if .Values.global.redis.auth.existingSecret }}
+            - name: PRISM_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.global.redis.auth.existingSecretPasswordKey | default "password" }}
+                  name: {{ .Values.global.redis.auth.existingSecret }}
+            {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "prism.coreName" . }}

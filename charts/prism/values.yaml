@@ -7,10 +7,19 @@ global:
   logLevel:
   redis:
     password: ""
+    auth:
+      # redis chart doesn't currently support this, but hopefully it will soon
+      existingSecret: ""
+      existingSecretPasswordKey: ""
   postgresql:
-    username: ""
-    password: ""
-    database: ""
+    auth:
+      username: ""
+      password: ""
+      database: ""
+      existingSecret: ""
+      secretKeys:
+        dsnKey: ""
+        userPasswordKey: ""
 
 
 replicaCount: 1
@@ -141,6 +150,12 @@ s3:
   bucket: ""
 
 oidc:
+  # if set, OIDC secret values will be pulled
+  # from the requested secret.
+  #
+  # OIDC_CLIENT_ID: <required>
+  # OIDC_CLIENT_SECERT: <required>
+  existingSecret: ""
   id: ""
   secret: ""
   issuer: ""

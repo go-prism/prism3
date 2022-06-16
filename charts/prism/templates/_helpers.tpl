@@ -23,6 +23,12 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
+{{/*OIDC secret name*/}}
+{{- define "prism.oidcSecretName" }}
+{{- $name := include "prism.coreName" . }}
+{{- .Values.oidc.existingSecret | default (printf "%s-oidc" $name) }}
+{{- end }}
+
 {{/*Core name*/}}
 {{- define "prism.coreName" }}
 {{- $name := include "prism.fullname" . }}
@@ -170,7 +176,7 @@ Create the PostgreSQL DSN
 */}}
 {{- define "prism.primaryDSN" -}}
 {{- if not .Values.db.dsn.primary }}
-{{- printf "user=%s password=%s dbname=%s port=5432 sslmode=disable host=%s-postgresql" .Values.global.postgresql.username .Values.global.postgresql.password .Values.global.postgresql.database .Release.Name }}
+{{- printf "user=%s password=%s dbname=%s port=5432 sslmode=disable host=%s-postgresql" .Values.global.postgresql.auth.username .Values.global.postgresql.auth.password .Values.global.postgresql.auth.database .Release.Name }}
 {{- else }}
 {{- printf "%s" .Values.db.dsn.primary }}
 {{- end }}
