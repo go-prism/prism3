@@ -87,6 +87,15 @@ cap10:
     pullPolicy: IfNotPresent
     tag: ""
 
+rbac:
+  logLevel: 0
+  resources: {}
+  image:
+    registry: registry.dcas.dev
+    repository: prism/go-rbac-proxy
+    pullPolicy: IfNotPresent
+    tag: ""
+
 goproxy:
   logLevel: 0
   enabled: true
