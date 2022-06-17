@@ -166,6 +166,9 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "prism.oidcSecretName" . }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
           livenessProbe:
             httpGet:
               path: /healthz
@@ -215,6 +218,8 @@ spec:
             - mountPath: /var/run/config/rbac
               name: rbac
               readOnly: true
+            - mountPath: /tmp
+              name: tmp
           livenessProbe:
             httpGet:
               path: /healthz
