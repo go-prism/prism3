@@ -19,8 +19,7 @@ package client
 
 import (
 	"context"
-	"github.com/djcass44/go-tracer/tracer"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"net/http"
 )
 
@@ -108,27 +107,23 @@ func (c *Client) WithUserFunc(f http.HandlerFunc) http.HandlerFunc {
 
 // getChain extracts the user chain from a given request
 func (c *Client) getChain(r *http.Request) (*ChainClaim, *UserClaim, error) {
-	reqID := tracer.GetRequestId(r)
+	log := logr.FromContextOrDiscard(r.Context())
 	userChain, err := GetClaim(r)
 	if err != nil {
-		log.WithError(err).WithField("id", reqID).Warn("failed to locate user claim")
+		log.Error(err, "failed to locate user claim in request")
 		return nil, nil, err
 	}
 	user, err := userChain.GetOriginalClaim(r.Context())
 	if err != nil {
-		log.WithError(err).WithField("id", reqID).Warn("failed to locate original user within claim")
+		log.Error(err, "failed to locate original user within chain")
 		return nil, nil, err
 	}
 	// check that the authenticity token is valid
 	if !c.v.IsValid(r.Context(), userChain.RawClaim, userChain.Token, userChain.TokenHash) {
-		log.WithFields(log.Fields{"user": user.AsUsername(), "id": reqID}).Warnf("user failed authenticity check with token: '%s'", userChain.Token)
+		log.Info("user failed authenticity check", "Token", userChain.Token, "Hash", userChain.TokenHash)
 		return nil, nil, err
 	}
-	log.WithFields(log.Fields{
-		"token": userChain.Token,
-		"id":    reqID,
-		"user":  user.AsUsername(),
-	}).Debug("authenticity token validation passed")
+	log.V(1).Info("authenticity token validation passed", "Hash", userChain.TokenHash)
 	return userChain, user, nil
 }
 
@@ -142,6 +137,8 @@ func (c *Client) getUser(r *http.Request) (user *UserClaim, err error) {
 //
 // May return nil if not processed by a Client.
 func GetRequestingUser(r *http.Request) (*UserClaim, bool) {
+	log := logr.FromContextOrDiscard(r.Context())
+	log.V(2).Info("retrieving user from request", "Key", UserContextKey)
 	v := r.Context().Value(UserContextKey)
 	return castUser(v)
 }
@@ -151,6 +148,8 @@ func GetRequestingUser(r *http.Request) (*UserClaim, bool) {
 //
 // May return nil if not processed by a Client.
 func GetRequestingChain(r *http.Request) (*ChainClaim, bool) {
+	log := logr.FromContextOrDiscard(r.Context())
+	log.V(2).Info("retrieving chain from request", "Key", ChainContextKey)
 	v := r.Context().Value(ChainContextKey)
 	return castChain(v)
 }
@@ -159,6 +158,8 @@ func GetRequestingChain(r *http.Request) (*ChainClaim, bool) {
 //
 // May return nil if not processed by a Client.
 func GetContextUser(ctx context.Context) (*UserClaim, bool) {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(2).Info("retrieving user from context", "Key", UserContextKey)
 	v := ctx.Value(UserContextKey)
 	return castUser(v)
 }
@@ -168,6 +169,8 @@ func GetContextUser(ctx context.Context) (*UserClaim, bool) {
 //
 // May return nil if not processed by a Client.
 func GetContextChain(ctx context.Context) (*ChainClaim, bool) {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(2).Info("retrieving chain from context", "Key", ChainContextKey)
 	v := ctx.Value(ChainContextKey)
 	return castChain(v)
 }
@@ -192,6 +195,8 @@ func castChain(v interface{}) (*ChainClaim, bool) {
 // `chain` or `user` can be nil if only one is required.
 // Nil parameters will not overwrite existing values.
 func PersistUserCtx(ctx context.Context, chain *ChainClaim, user *UserClaim) context.Context {
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(2).Info("persisting user information in context", "Chain", chain != nil, "User", user != nil)
 	if chain != nil {
 		ctx = context.WithValue(ctx, ChainContextKey, chain)
 	}

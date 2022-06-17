@@ -20,8 +20,7 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/djcass44/go-tracer/tracer"
-	log "github.com/sirupsen/logrus"
+	"github.com/go-logr/logr"
 	"net/http"
 	"strings"
 )
@@ -36,17 +35,17 @@ var (
 
 // GetClaim creates a UserClaim from a given http.Request
 func GetClaim(r *http.Request) (*ChainClaim, error) {
-	id := tracer.GetRequestId(r)
+	log := logr.FromContextOrDiscard(r.Context())
 	sub := r.Header.Get(DefaultSubjectHeader)
 	iss := r.Header.Get(DefaultIssuerHeader)
 	subjects := getPieces(sub)
 	issuers := getPieces(iss)
 	if len(subjects) == 0 || len(issuers) == 0 {
-		log.WithField("id", id).Error("cannot get user claim when sub or iss have 0 segments")
+		log.Info("unable to build user as there are no subjects or issuers", "Subjects", subjects, "Issuers", issuers)
 		return nil, ErrMissingUser
 	}
 	claims := getClaims(&r.Header)
-	log.WithField("id", id).Debugf("located %d claims", len(claims))
+	log.V(1).Info("located claims", "Count", len(claims))
 	user := &ChainClaim{
 		Subjects:  subjects,
 		Issuers:   issuers,
@@ -55,15 +54,16 @@ func GetClaim(r *http.Request) (*ChainClaim, error) {
 		RawClaim:  fmt.Sprintf("%s/%s", iss, sub),
 		Claims:    claims,
 	}
-	log.WithFields(log.Fields{"user": user, "id": id}).Debug("located user in request")
+	log.V(1).Info("successfully built user from request")
+	log.V(2).Info("successfully created user chain claim", "User", user)
 	return user, nil
 }
 
 // GetOriginalClaim returns the 1st user within a chain as a new UserClaim
 func (uc *ChainClaim) GetOriginalClaim(ctx context.Context) (*UserClaim, error) {
-	id := tracer.GetContextId(ctx)
+	log := logr.FromContextOrDiscard(ctx)
 	if len(uc.Subjects) == 0 || len(uc.Issuers) == 0 {
-		log.WithField("id", id).Error("cannot get original claim when sub or iss have 0 segments")
+		log.Info("unable to build user as there are no subjects or issuers", "Subjects", uc.Subjects, "Issuers", uc.Issuers)
 		return nil, ErrMissingUser
 	}
 	return &UserClaim{

@@ -23,10 +23,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/cenkalti/backoff/v4"
-	"github.com/djcass44/go-tracer/tracer"
-	"github.com/djcass44/go-utils/pkg/cryptoutils"
+	"github.com/djcass44/go-utils/utilities/cryptoutils"
+	"github.com/go-logr/logr"
 	"github.com/levigross/grequests"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/av1o/cap10/pkg/api"
 )
 
@@ -35,18 +34,20 @@ type Verifier struct {
 	url           string
 	publicKey     *ed25519.PublicKey
 	publicKeyHash string
+	log           logr.Logger
 }
 
 // NewVerifier creates a Verifier and attempts to load the CAP10 public key
 //goland:noinspection GoUnusedExportedFunction
-func NewVerifier(url string) (*Verifier, error) {
+func NewVerifier(ctx context.Context, url string) (*Verifier, error) {
 	v := new(Verifier)
 	v.url = url
+	v.log = logr.FromContextOrDiscard(ctx).WithValues("Url", url)
 
 	// start trying to get the public key from cap10
 	err := backoff.Retry(v.waitForPublicKey, backoff.NewExponentialBackOff())
 	if err != nil {
-		log.WithError(err).Error("failed to load public key within back-off period")
+		v.log.Error(err, "failed to load public key within back-off period")
 		return nil, err
 	}
 	return v, nil
@@ -54,6 +55,7 @@ func NewVerifier(url string) (*Verifier, error) {
 
 // waitForPublicKey tries to load the public key
 func (v *Verifier) waitForPublicKey() error {
+	log := v.log
 	// get the public key
 	key, keyHash, err := v.getPublicKey()
 	if err == nil {
@@ -62,56 +64,58 @@ func (v *Verifier) waitForPublicKey() error {
 		v.publicKeyHash = keyHash
 		return nil
 	}
-	log.WithError(err).Error("failed to load CAP10 public key, backing off")
+	log.Error(err, "failed to load CAP10 public key, backing off")
 	return err
 }
 
 func (v *Verifier) getPublicKey() (*ed25519.PublicKey, string, error) {
-	log.WithField("url", v.url).Info("loading public key from cap10")
+	log := v.log
+	log.Info("loading public key from cap10")
 	// execute the request to load public key data
 	resp, err := grequests.Get(fmt.Sprintf("%s/.well-known/cap10.json", v.url), nil)
 	if err != nil {
-		log.WithError(err).Error("failed to execute request")
+		log.Error(err, "failed to execute request")
 		return nil, "", err
 	}
-	log.Debugf("got %d code from cap10 key retrieval", resp.StatusCode)
+	log.V(1).Info("completed cap10 key retrieval", "Code", resp.StatusCode)
 	// check for 200
 	if !resp.Ok {
+		log.V(1).Info("request failed due to unexpected status code", "Code", resp.StatusCode)
 		return nil, "", fmt.Errorf("http request failed with code %d", resp.StatusCode)
 	}
 	// convert the json into something we understand
 	var dto api.PassportDTO
 	err = resp.JSON(&dto)
 	if err != nil {
-		log.WithError(err).Error("failed to read json response")
+		log.Error(err, "failed to read json response")
 		return nil, "", err
 	}
-	key, err := cryptoutils.ParseED25519PublicKey([]byte(dto.PublicKey))
+	key, err := cryptoutils.ParseED25519PublicKey(log, []byte(dto.PublicKey))
 	return key, dto.PublicKeyHash, err
 }
 
 // IsValid checks whether sig is a signed version of msg
 func (v *Verifier) IsValid(ctx context.Context, msg, sig, sigHash string) bool {
-	id := tracer.GetContextId(ctx)
+	log := v.log
 	if v.publicKey == nil {
-		log.WithField("id", id).Errorf("cap10 verifier has no public key, authenticity cannot be verified")
+		log.Info("cap10 verifier has no public key, authenticity cannot be verified")
 		return false
 	}
 	// check if our keyhash matches what we expect
 	if v.publicKeyHash != sigHash {
-		log.WithField("id", id).Warnf("detected sighash mismatch, requesting new key... (expected: '%s', got: '%s')", v.publicKeyHash, sigHash)
+		log.Info("detected sighash mismatch, requesting new key...", "Expected", v.publicKeyHash, "Actual", sigHash)
 		// try to reload our key
 		if err := v.waitForPublicKey(); err != nil {
-			log.WithError(err).WithField("id", id).Error("failed to reload key, authenticity cannot be verified")
+			log.Error(err, "failed to reload key, authenticity cannot be verified")
 			return false
 		}
 		// todo check whether we can get stuck in an infinite loop here...
 		return v.IsValid(ctx, msg, sig, sigHash)
 	}
-	log.WithField("id", id).Debugf("detected sighash: %s", sigHash)
+	log.V(1).Info("detected sighash", "Hash", sigHash)
 	bytes, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
-		log.WithError(err).WithField("id", id).Errorf("failed to decode base64 authenticity token '%s'", sig)
+		log.Error(err, "failed to decode base64 authenticity token", "Token", sig)
 		return false
 	}
 	return ed25519.Verify(*v.publicKey, []byte(msg), bytes)

@@ -19,9 +19,9 @@ package api
 
 import (
 	"github.com/djcass44/go-tracer/tracer"
-	"github.com/djcass44/go-utils/pkg/httputils"
+	"github.com/djcass44/go-utils/utilities/httputils"
+	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 	"gitlab.com/av1o/cap10/pkg/passport"
 	"net/http"
 )
@@ -38,13 +38,10 @@ func AddPassportRoute(kp *passport.KeyProvider, r *mux.Router) error {
 		PublicKeyHash: keyHash,
 	}
 	r.HandleFunc("/.well-known/cap10.json", tracer.NewFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.WithFields(log.Fields{
-			"id":         tracer.GetRequestId(r),
-			"remoteAddr": r.RemoteAddr,
-			"userAgent":  r.UserAgent(),
-		}).Infof("answering configuration request")
+		log := logr.FromContextOrDiscard(r.Context())
+		log.V(1).Info("answering configuration request", "RemoteAddr", r.RemoteAddr, "UserAgent", r.UserAgent())
 		// write back our response
-		httputils.ReturnJSON(w, http.StatusOK, &dto)
+		httputils.ReturnJSON(r.Context(), w, http.StatusOK, &dto)
 	})).Methods(http.MethodGet)
 	return nil
 }

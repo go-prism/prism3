@@ -18,18 +18,16 @@
 package api
 
 import (
+	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func AddHealthRoute(r *mux.Router) {
 	// return a canned 200 response
 	r.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		log.WithFields(log.Fields{
-			"remoteAddr": r.RemoteAddr,
-			"userAgent":  r.UserAgent(),
-		}).Debug("answering health probe")
+		log := logr.FromContextOrDiscard(r.Context())
+		log.V(1).Info("answering health probe", "RemoteAddr", r.RemoteAddr, "UserAgent", r.UserAgent())
 		_, _ = w.Write([]byte("OK"))
 	})
 }

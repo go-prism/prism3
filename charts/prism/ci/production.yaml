@@ -1,0 +1,55 @@
+global:
+  imageRegistry: harbor.dcas.dev/docker.io
+  redis:
+    auth:
+      existingSecret: redis
+      existingSecretPasswordKey: password
+  postgresql:
+    auth:
+      existingSecret: postgresql
+      username: prism
+      database: prism
+podSecurityContext:
+  fsGroup: 1234
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 12345
+  runAsGroup: 0
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+url: https://prism.example.com
+initialSuperUser: https://auth.example.com/first.last
+autoscaling:
+  enabled: true
+oidc:
+  existingSecret: oidc
+  issuer: https://auth.example.com
+  redirect_url: https://prism.example.com/auth/callback
+ingress:
+  enabled: true
+  hosts:
+    - host: prism.example.org
+  tls:
+    - secretName: prism-tls
+      hosts:
+        - prism.example.org
+redis:
+  enabled: false
+postgresql:
+  enabled: false
+db:
+  redis:
+    addr: external-redis:6379
+s3:
+  bucket: prism-storage
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/eksctl-irptest-addon-iamsa-default-my-serviceaccount-Role1-UCGG6NDYZ3UE
+tracing:
+  enabled: true
+  jaegerHost: https://grafana-tempo.example.org:16686

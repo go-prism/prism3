@@ -82,6 +82,8 @@ spec:
             - name: PRISM_PLUGIN_GO_URL
               value: "http://{{ include "prism.goproxyName" . }}:{{ .Values.service.port }}"
             {{- end }}
+            - name: PRISM_PLUGIN_RBAC_URL
+              value: localhost:8082
             {{- with .Values.tracing }}
             - name: PRISM_OTEL_ENABLED
               value: {{ .enabled | quote }}
@@ -200,6 +202,15 @@ spec:
               value: {{ .Values.tracing.sampleRate | quote }}
             - name: APP_OTEL_ENABLED
               value: {{ .Values.tracing.enabled | quote }}
+            - name: PRISM_REDIS_PASSWORD
+{{- if .Values.global.redis.auth.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .Values.global.redis.auth.existingSecretPasswordKey | default "password" }}
+                  name: {{ .Values.global.redis.auth.existingSecret }}
+{{- else }}
+              value: {{ .Values.global.redis.password }}
+{{- end }}
           volumeMounts:
             - mountPath: /var/run/config/rbac
               name: rbac

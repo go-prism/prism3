@@ -1,5 +1,5 @@
 /*
- *    Copyright 2020 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,11 +15,24 @@
  *
  */
 
-package httputils
+package quota
 
-// collection of common content-type values
+import (
+	"go.opentelemetry.io/otel/metric/global"
+	"go.opentelemetry.io/otel/metric/instrument"
+	"go.opentelemetry.io/otel/metric/unit"
+)
+
+var (
+	meter        = global.MeterProvider().Meter("prism")
+	metricNet, _ = meter.SyncInt64().Histogram(
+		"prism.core.quota.net.total",
+		instrument.WithUnit(unit.Bytes),
+		instrument.WithDescription("Measures the total number of bytes transferred."),
+	)
+)
+
 const (
-	ApplicationJSON     = "application/json"
-	TextPlain           = "text/plain"
-	ApplicationActuator = "application/vnd.spring-boot.actuator.v3+json"
+	attrKeyClass = "quota.class"
+	attrKeyRes   = "quota.resource"
 )

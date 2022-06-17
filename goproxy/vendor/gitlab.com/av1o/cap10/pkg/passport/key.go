@@ -18,11 +18,12 @@
 package passport
 
 import (
+	"context"
 	"crypto"
 	"crypto/ed25519"
 	"encoding/hex"
-	"github.com/djcass44/go-utils/pkg/cryptoutils"
-	log "github.com/sirupsen/logrus"
+	"github.com/djcass44/go-utils/utilities/cryptoutils"
+	"github.com/go-logr/logr"
 	"golang.org/x/crypto/sha3"
 	"io/ioutil"
 )
@@ -30,44 +31,49 @@ import (
 type KeyProvider struct {
 	publicKey  ed25519.PublicKey
 	privateKey ed25519.PrivateKey
+	log        logr.Logger
 }
 
 // NewFileKeyProvider reads keys from a given filesystem path
-func NewFileKeyProvider(path string) (*KeyProvider, error) {
+func NewFileKeyProvider(ctx context.Context, path string) (*KeyProvider, error) {
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
 	kp := new(KeyProvider)
-	log.WithField("path", path).Info("reading existing key")
+	log.Info("reading existing key")
 	// read key from file
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.WithError(err).WithField("path", path).Error("failed to read key file")
+		log.Error(err, "failed to read key file")
 		return nil, err
 	}
 	// parse the keys
-	priv, err := cryptoutils.ParseED25519PrivateKey(data)
+	priv, err := cryptoutils.ParseED25519PrivateKey(log, data)
 	if err != nil {
-		log.WithError(err).Error("failed to parse private key")
+		log.Error(err, "failed to parse private key")
 		return nil, err
 	}
 	kp.privateKey = *priv
 	kp.publicKey = priv.Public().(ed25519.PublicKey)
+	kp.log = log
 	log.Info("successfully setup key provider")
 
 	return kp, nil
 }
 
 // NewKeyProvider creates keys and holds them in-memory
-func NewKeyProvider() (*KeyProvider, error) {
+func NewKeyProvider(ctx context.Context) (*KeyProvider, error) {
 	kp := new(KeyProvider)
+	log := logr.FromContextOrDiscard(ctx)
 	// generate keys
 	log.Info("generating new key provider and keys...")
 	// generate key using crypto/rand.Reader
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		log.WithError(err).Errorf("failed to generate keypair")
+		log.Error(err, "failed to generate keypair")
 		return nil, err
 	}
 	kp.publicKey = pubKey
 	kp.privateKey = privKey
+	kp.log = log
 	log.Info("successfully setup key provider")
 
 	return kp, nil
@@ -87,9 +93,10 @@ func (kp *KeyProvider) GetPublicKey() *ed25519.PublicKey {
 
 // GetPublicKeyHash returns the hash value of the stored public key
 func (kp *KeyProvider) GetPublicKeyHash() string {
+	log := kp.log
 	val, err := kp.ToString()
 	if err != nil {
-		log.WithError(err).Error("failed to generate pubKey hash (key couldn't be retrieved)")
+		log.Error(err, "failed to generate pubKey hash (key couldn't be retrieved)")
 		return ""
 	}
 	// create a new generator each time
@@ -103,5 +110,5 @@ func (kp *KeyProvider) GetPublicKeyHash() string {
 
 // ToString returns the stored public key as a string
 func (kp *KeyProvider) ToString() (string, error) {
-	return cryptoutils.MarshalED25519PublicKey(&kp.publicKey)
+	return cryptoutils.MarshalED25519PublicKey(kp.log, &kp.publicKey)
 }

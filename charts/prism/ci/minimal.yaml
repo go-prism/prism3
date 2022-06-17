@@ -3,9 +3,10 @@ global:
   redis:
     password: password
   postgresql:
-    username: prism
-    password: password
-    database: prism
+    auth:
+      username: prism
+      password: password
+      database: prism
 url: https://prism.example.com
 initialSuperUser: https://auth.example.com/first.last
 oidc:

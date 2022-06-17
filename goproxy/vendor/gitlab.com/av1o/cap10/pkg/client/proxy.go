@@ -18,28 +18,32 @@
 package client
 
 import (
-	"github.com/djcass44/go-tracer/tracer"
+	"github.com/go-logr/logr"
 	"net/http"
 	"strings"
 )
 
+var copyable = []string{
+	DefaultSubjectHeader,
+	DefaultIssuerHeader,
+	DefaultVerifyHeader,
+	DefaultVerifyHashHeader,
+}
+
 // CopyTo copies user information from a source http.Request to a destination one
 // this function is useful when proxying requests from one service to another and retaining user information
 func CopyTo(src, dst *http.Request) {
+	log := logr.FromContextOrDiscard(src.Context())
 	// copy the user headers
-	dst.Header.Add(DefaultSubjectHeader, src.Header.Get(DefaultSubjectHeader))
-	dst.Header.Add(DefaultIssuerHeader, src.Header.Get(DefaultIssuerHeader))
-	dst.Header.Add(DefaultVerifyHeader, src.Header.Get(DefaultVerifyHeader))
-	dst.Header.Add(DefaultVerifyHashHeader, src.Header.Get(DefaultVerifyHashHeader))
+	for _, h := range copyable {
+		log.V(2).Info("copying header", "Header", h, "Value", src.Header.Get(h))
+		dst.Header.Add(h, src.Header.Get(h))
+	}
 	// copy the user claims
 	for k := range src.Header {
 		if strings.HasPrefix(k, DefaultClaimPrefix) {
+			log.V(2).Info("copying claim", "Header", k, "Value", src.Header.Get(k))
 			dst.Header.Set(k, src.Header.Get(k))
 		}
-	}
-	// copy the request id for tracing
-	requestID := tracer.GetRequestId(src)
-	if requestID != "" {
-		dst.Header.Add(tracer.DefaultRequestHeader, requestID)
 	}
 }

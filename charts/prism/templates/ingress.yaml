@@ -37,21 +37,21 @@ spec:
             pathType: {{ $.Values.ingress.pathType }}
             backend:
               service:
-                name: {{ include "prism.webName" . }}
+                name: {{ include "prism.webName" $ }}
                 port:
                   number: {{ $svcPort }}
           - path: /api
             pathType: {{ $.Values.ingress.pathType }}
             backend:
               service:
-                name: {{ include "prism.coreName" . }}
+                name: {{ include "prism.coreName" $ }}
                 port:
                   number: {{ $svcPort }}
           - path: /auth
             pathType: {{ $.Values.ingress.pathType }}
             backend:
               service:
-                name: {{ include "prism.coreName" . }}
+                name: {{ include "prism.coreName" $ }}
                 port:
                   number: {{ $svcPort }}
     {{- end }}
