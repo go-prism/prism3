@@ -39,7 +39,7 @@ var getPkg = func(ctx context.Context, file string) (string, error) {
 }
 
 func TestBackedRemote_Exists(t *testing.T) {
-	ctx := logr.NewContext(context.TODO(), testr.New(t))
+	ctx := logr.NewContext(context.TODO(), testr.NewWithOptions(t, testr.Options{Verbosity: 10}))
 	rem := NewBackedRemote(ctx, &model.Remote{
 		URI:      "https://mirror.aarnet.edu.au/pub/alpine",
 		Security: &model.RemoteSecurity{},
@@ -55,7 +55,7 @@ func TestBackedRemote_Exists(t *testing.T) {
 var dummyFile string
 
 func TestBackedRemote_Download(t *testing.T) {
-	ctx := logr.NewContext(context.TODO(), testr.New(t))
+	ctx := logr.NewContext(context.TODO(), testr.NewWithOptions(t, testr.Options{Verbosity: 10}))
 	token := "hunter2"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
@@ -101,4 +101,51 @@ func TestBackedRemote_Download(t *testing.T) {
 	data, err = io.ReadAll(resp)
 	assert.NoError(t, err)
 	assert.EqualValues(t, dummyFile, string(data))
+}
+
+func TestBackedRemote_DownloadDirect(t *testing.T) {
+	ctx := logr.NewContext(context.TODO(), testr.NewWithOptions(t, testr.Options{Verbosity: 10}))
+	token := "hunter2"
+	// start a fake server
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		if auth != token {
+			http.Error(w, "Forbidden.", http.StatusForbidden)
+			return
+		}
+		_, _ = w.Write([]byte(dummyFile))
+	}))
+	defer ts.Close()
+
+	// create a remote we can test
+	store := storage.NewNoOp()
+	rem := NewBackedRemote(ctx, &model.Remote{
+		URI: ts.URL,
+		Security: &model.RemoteSecurity{
+			AuthMode:     model.AuthModeDirect,
+			DirectHeader: "Authorization",
+			DirectToken:  token,
+		},
+		Archetype: model.ArchetypeGeneric,
+	}, store, &quota.NoopObserver{}, func(ctx context.Context, path, remote string) error {
+		return nil
+	}, getPkg, getPkg)
+
+	// run the tests
+	// see (#30)
+
+	t.Run("unauthenticated request succeeds", func(t *testing.T) {
+		_, err := rem.Download(ctx, "/file.txt", &schemas.RequestContext{})
+		assert.NoError(t, err)
+	})
+	t.Run("authenticated request succeeds", func(t *testing.T) {
+		_, err := rem.Download(ctx, "/file.txt", &schemas.RequestContext{
+			PartitionID: "",
+			AuthOpts: httpclient.AuthOpts{
+				Mode:  httpclient.AuthAuthorization,
+				Token: "foobar",
+			},
+		})
+		assert.NoError(t, err)
+	})
 }

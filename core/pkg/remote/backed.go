@@ -246,6 +246,7 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 		_ = b.store.Put(ctx, uploadPath, tee)
 		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeNetworkA)
 		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeStorage)
+		log.V(2).Info("successfully uploaded data to cache", "Count", buf.Len())
 		return buf, nil
 	}
 	return r, nil
