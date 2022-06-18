@@ -37,7 +37,7 @@ import {
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {useTheme} from "@mui/material/styles";
-import {useHistory} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {useParams} from "react-router";
 import {formatDistanceToNow} from "date-fns";
@@ -363,7 +363,15 @@ const EditRemote: React.FC = (): JSX.Element => {
 					General
 				</FormLabel>
 				{!loading && readOnly && <Alert
-					severity="warning">
+					sx={{m: 1}}
+					severity="warning"
+					action={<Button
+						component={Link}
+						to="/help/remote-settings-readonly"
+						color="inherit"
+						size="small">
+						Help
+					</Button>}>
 					This Remote is read-only and cannot be modified.
 				</Alert>}
 				<ValidatedTextField

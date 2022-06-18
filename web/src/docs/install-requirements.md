@@ -16,7 +16,7 @@ Prism stores data in its database and artifacts in an object store.
 | [Minio](https://min.io/)             | S3   | Yes       |
 
 Prism currently only supports Amazon S3.
-This includes other provides that implement the S3 API (e.g. Minio).
+**This includes other providers that implement the S3 API** (e.g. Minio).
 
 The amount of data used by Prism depends on the size and types of artifacts that you intend on retrieving.
 Artifacts such as Maven packages are usually quite small, so you will likely only need a few Gigabytes.
@@ -38,9 +38,12 @@ Memory requirements depend on the expected workload. Safe starting values for ea
 
 1. If you are using a lot of Helm charts, you should increase the memory available to the Batch service.
 
-Keep in mind that services can also be scaled horizontally.
+Keep in mind that services can also be scaled horizontally and should be to ensure Prism is highly-available.
 
 ### Database
 
 Prism only supports PostgreSQL (though YMMV with other PostgreSQL-compliant databases such as CockroachDB). 
 Prism stores a lot of metadata, so allocate at least 10Gib to avoid storage issues down the line.
+
+Latency matters, so make sure that the database is nearby (e.g. within the same Cloud region or datacenter).
+

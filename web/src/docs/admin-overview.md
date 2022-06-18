@@ -23,3 +23,4 @@ Learn how to install, configure, update and look after your Prism deployment.
 * [Firewall rules](remote-settings-firewall): restrict when Prism should communicate with Remotes.
 * [Authentication](remote-settings-auth): control how Prism should authenticate with Remotes.
 * [Transport](remote-settings-transport): control how Prism should communicate with Remotes.
+* [Read-only remotes](remote-settings-readonly)

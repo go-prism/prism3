@@ -19,7 +19,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {Alert, Button, CircularProgress, FormGroup, FormLabel, List, Theme} from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {useTheme} from "@mui/material/styles";
-import {useHistory} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import {useParams} from "react-router";
 import {ErrorBoundary} from "react-error-boundary";
@@ -188,8 +188,16 @@ const EditRefract: React.FC = (): JSX.Element => {
 						General
 				</FormLabel>
 				{!loading && readOnly && <Alert
-					severity="warning">
-						This Refraction is read-only and cannot be modified.
+					sx={{m: 1}}
+					severity="warning"
+					action={<Button
+						component={Link}
+						to="/help/remote-settings-readonly"
+						color="inherit"
+						size="small">
+						Help
+					</Button>}>
+					This Refraction is read-only and cannot be modified.
 				</Alert>}
 				<ValidatedTextField
 					data={name}

@@ -29,4 +29,4 @@ Welcome to the Prism documentation.
 
 ### Helm
 
-* TODO
+* [Using Helm](framework-helm) with Prism
