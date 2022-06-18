@@ -20,13 +20,16 @@ import {
 	Alert,
 	Box,
 	Button,
-	FormControlLabel,
+	FormControl,
 	FormGroup,
 	FormLabel,
-	Radio,
-	RadioGroup,
+	InputLabel,
+	Link as MuiLink,
+	MenuItem,
+	Select,
+	SelectChangeEvent,
 	Theme,
-	Typography,
+	Typography
 } from "@mui/material";
 import {makeStyles} from "tss-react/mui";
 import {useTheme} from "@mui/material/styles";
@@ -35,7 +38,7 @@ import {Code, ValidatedData, ValidatedTextField} from "jmp-coreui";
 import StandardLayout from "../../layout/StandardLayout";
 import {DataIsValid} from "../../../utils/data";
 import {getGraphErrorMessage} from "../../../selectors/getErrorMessage";
-import {REMOTE_ARCHETYPES} from "../../../config/constants";
+import {ARCHETYPE_SAMPLES, REMOTE_ARCHETYPES} from "../../../config/constants";
 import {Archetype, TransportSecurity, useCreateRemoteMutation} from "../../../generated/graphql";
 import Flexbox from "../../widgets/Flexbox";
 import InlineBadge from "../../../components/feedback/InlineBadge";
@@ -97,8 +100,8 @@ const CreateRemote: React.FC = (): JSX.Element => {
 	const [name, setName] = useState<ValidatedData>(initialName);
 	const [transport, setTransport] = useState<TransportSecurity | null>(null);
 
-	const handleArchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-		setArch((e.target as HTMLInputElement).value as Archetype);
+	const handleArchChange = (e: SelectChangeEvent): void => {
+		setArch(e.target.value as Archetype);
 	};
 
 	const handleCreate = (): void => {
@@ -145,6 +148,29 @@ const CreateRemote: React.FC = (): JSX.Element => {
 							size: "small"
 						}}
 					/>
+					<FormControl
+						className={classes.formItem}>
+						<InputLabel>
+							Archetype
+						</InputLabel>
+						<Select
+							label="Archetype"
+							size="small"
+							value={arch || Archetype.Generic}
+							onChange={handleArchChange}>
+							{REMOTE_ARCHETYPES.map(a => <MenuItem
+								key={a.name}
+								value={a.value}>
+								<Flexbox inline>
+									{a.name}
+									{!a.stable && <InlineBadge
+										colour={theme.palette.info.main}>
+										Preview
+									</InlineBadge>}
+								</Flexbox>
+							</MenuItem>)}
+						</Select>
+					</FormControl>
 					<ValidatedTextField
 						data={url}
 						setData={setURL}
@@ -158,35 +184,20 @@ const CreateRemote: React.FC = (): JSX.Element => {
 							size: "small"
 						}}
 					/>
+					<Flexbox>
+						<Box sx={{flexGrow: 1}}/>
+						<Typography
+							variant="caption">
+							<MuiLink
+								href="#"
+								onClick={() => setURL(s => ({...s, value: ARCHETYPE_SAMPLES[arch] || ""}))}>
+								Insert sample URL
+							</MuiLink>
+						</Typography>
+					</Flexbox>
 					<TransportOpts
 						onSelect={setTransport}
 					/>
-					<FormLabel
-						className={classes.formItem}
-						component="legend">
-						Archetype
-					</FormLabel>
-					<RadioGroup
-						className={classes.formItem}
-						aria-label="archetype"
-						name="archetype"
-						value={arch}
-						onChange={handleArchChange}>
-						{REMOTE_ARCHETYPES.map(a => <FormControlLabel
-							key={a.name}
-							control={<Radio
-								color="primary"
-							/>}
-							label={<Flexbox inline>
-								{a.name}
-								{!a.stable && <InlineBadge
-									colour={theme.palette.info.main}>
-									Preview
-								</InlineBadge>}
-							</Flexbox>}
-							value={a.value}
-						/>)}
-					</RadioGroup>
 					{error != null && <Alert
 						severity="error">
 						Failed to create Remote.

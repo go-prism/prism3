@@ -16,6 +16,7 @@
  */
 
 import {Archetype} from "../generated/graphql";
+import {SimpleMap} from "../domain";
 
 
 export const REMOTE_ARCHETYPES: {name: string, value: Archetype, stable: boolean}[] = [
@@ -27,6 +28,16 @@ export const REMOTE_ARCHETYPES: {name: string, value: Archetype, stable: boolean
 	{name: "Debian", value: Archetype.Debian, stable: false},
 	{name: "PyPI", value: Archetype.Pip, stable: true}
 ];
+
+export const ARCHETYPE_SAMPLES: SimpleMap<string> = {
+	[Archetype.Generic]: "https://github.com",
+	[Archetype.Alpine]: "https://alpine.global.ssl.fastly.net/alpine",
+	[Archetype.Debian]: "https://deb.debian.org/debian",
+	[Archetype.Helm]: "https://charts.bitnami.com/bitnami",
+	[Archetype.Maven]: "https://repo1.maven.org/maven2",
+	[Archetype.Npm]: "https://registry.npmjs.org",
+	[Archetype.Pip]: "https://pypi.org/simple"
+};
 
 export const PREF_DARK_THEME = "dark-theme";
 export const PREF_FMT_DATE_ABS = "fmt-date-abs";

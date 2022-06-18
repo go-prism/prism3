@@ -27,7 +27,7 @@ import InlineError from "../../alert/InlineError";
 import {BrowserProps} from "./Browser";
 import ObjectInfo from "./ObjectInfo";
 
-const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
+const BrowserList: React.FC<BrowserProps> = ({data, error, loading}): JSX.Element => {
 	const theme = useTheme();
 	const [hide, setHide] = useState<GridColumnVisibilityModel>({
 		"id": false,
@@ -100,6 +100,7 @@ const BrowserList: React.FC<BrowserProps> = ({data, error}): JSX.Element => {
 			onColumnVisibilityModelChange={model => setHide(() => model)}
 			components={{ErrorOverlay: errorOverlay}}
 			componentsProps={{errorOverlay: {error: error}}}
+			loading={loading}
 			error={error}
 			autoPageSize
 			columns={columns}

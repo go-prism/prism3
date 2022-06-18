@@ -15,9 +15,10 @@
  *
  */
 
-import {Alert, CircularProgress, List, ListItem, ListItemText, MenuItem, Select} from "@mui/material";
+import {Alert, List, ListItem, ListItemText, MenuItem, Select} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useTheme} from "@mui/material/styles";
+import {ListItemSkeleton} from "jmp-coreui";
 import {getGraphErrorMessage} from "../../../../selectors/getErrorMessage";
 import {TransportSecurity, useListTransportsQuery} from "../../../../generated/graphql";
 
@@ -42,7 +43,7 @@ const TransportOpts: React.FC<Props> = ({onSelect, disabled}): JSX.Element => {
 	}, [data?.listTransports]);
 
 	if (loading)
-		return <CircularProgress/>;
+		return <ListItemSkeleton/>;
 
 	if (error != null) {
 		return <Alert
