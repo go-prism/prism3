@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -61,6 +62,9 @@ import (
 	"os"
 	"time"
 )
+
+//go:embed grpc.json
+var grpcConfig string
 
 type environment struct {
 	Port int `envconfig:"PORT" default:"8080"`
@@ -184,7 +188,11 @@ func main() {
 	})
 
 	log.V(1).Info("establishing connection to RBAC", "Url", e.Plugin.RbacURL)
-	conn, err := grpc.Dial(e.Plugin.RbacURL, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()), grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()))
+	conn, err := grpc.Dial(e.Plugin.RbacURL,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+		grpc.WithDefaultServiceConfig(grpcConfig))
 	if err != nil {
 		log.Error(err, "failed to dial RBAC")
 		os.Exit(1)
