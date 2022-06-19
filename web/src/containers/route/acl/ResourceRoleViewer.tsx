@@ -18,12 +18,13 @@
 import React, {ReactNode} from "react";
 import {Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
-import {mdiDeleteOutline} from "@mdi/js";
-import {GenericIconButton} from "jmp-coreui";
+import {Help} from "tabler-icons-react";
+import {Link} from "react-router-dom";
 import InlineError from "../../alert/InlineError";
 import InlineNotFound from "../../widgets/InlineNotFound";
 import {parseUsername} from "../../../utils/parse";
 import {RoleBinding, useGetUsersQuery} from "../../../generated/graphql";
+import Flexbox from "../../widgets/Flexbox";
 
 interface Props {
 	type: string;
@@ -73,7 +74,19 @@ const ResourceRoleViewer: React.FC<Props> = ({type, id}): JSX.Element => {
 			<TableHead>
 				<TableRow>
 					<TableCell>Subject</TableCell>
-					<TableCell align="right">Verbs</TableCell>
+					<TableCell align="right">
+						<Link
+							to="/help/configure-rbac">
+							<Flexbox inline>
+								Verbs
+								<Help
+									style={{marginLeft: 8}}
+									size={18}
+									color={theme.palette.primary.main}
+								/>
+							</Flexbox>
+						</Link>
+					</TableCell>
 				</TableRow>
 			</TableHead>
 			<TableBody>
@@ -95,11 +108,11 @@ const ResourceRoleViewer: React.FC<Props> = ({type, id}): JSX.Element => {
 					</TableCell>
 					<TableCell align="right">
 						{r.verb}
-						<GenericIconButton
-							title="Delete"
-							icon={mdiDeleteOutline}
-							colour={theme.palette.error.main}
-						/>
+						{/*<GenericIconButton*/}
+						{/*	title="Delete"*/}
+						{/*	icon={mdiDeleteOutline}*/}
+						{/*	colour={theme.palette.error.main}*/}
+						{/*/>*/}
 					</TableCell>
 				</TableRow>)}
 			</TableBody>
