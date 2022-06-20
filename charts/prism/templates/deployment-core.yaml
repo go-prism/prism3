@@ -153,7 +153,7 @@ spec:
               value: /healthz
             - name: PORT
               value: "8081"
-            - name: OIDC_ISSUER
+            - name: OIDC_ISSUER_URL
               value: {{ .Values.oidc.issuer }}
             - name: OIDC_REDIRECT_URL
               value: "{{ .Values.url }}/auth/callback"
