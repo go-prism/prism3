@@ -94,10 +94,6 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "prism.coreName" . }}
-              prefix: PRISM_
-            - secretRef:
-                name: {{ include "prism.coreName" . }}
-              prefix: AWS_
           volumeMounts:
             - mountPath: /tmp
               name: tmp
