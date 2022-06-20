@@ -16,6 +16,7 @@ require (
 	github.com/djcass44/go-utils/otel v0.1.5
 	github.com/djcass44/go-utils/utilities v0.1.1
 	github.com/felixge/httpsnoop v1.0.3
+	github.com/fergusstrange/embedded-postgres v1.17.0
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v1.2.3
@@ -153,6 +154,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/twmb/murmur3 v1.1.6 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
+	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
 	go.opentelemetry.io/contrib v0.20.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.7.0 // indirect

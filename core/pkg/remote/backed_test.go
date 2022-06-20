@@ -41,14 +41,25 @@ var getPkg = func(ctx context.Context, file string) (string, error) {
 func TestBackedRemote_Exists(t *testing.T) {
 	ctx := logr.NewContext(context.TODO(), testr.NewWithOptions(t, testr.Options{Verbosity: 10}))
 	rem := NewBackedRemote(ctx, &model.Remote{
-		URI:      "https://mirror.aarnet.edu.au/pub/alpine",
-		Security: &model.RemoteSecurity{},
+		URI: "https://mirror.aarnet.edu.au/pub/alpine",
+		Security: &model.RemoteSecurity{
+			Blocked: []string{"^/?(super-secret).+"},
+		},
 	}, storage.NewNoOp(), &quota.NoopObserver{}, func(ctx context.Context, path, remote string) error {
 		return nil
 	}, getPkg, getPkg)
-	uri, err := rem.Exists(ctx, "v3.14/main/x86_64/APKINDEX.tar.gz", &schemas.RequestContext{})
-	assert.NoError(t, err)
-	assert.EqualValues(t, "https://mirror.aarnet.edu.au/pub/alpine/v3.14/main/x86_64/APKINDEX.tar.gz", uri)
+
+	t.Run("normal file", func(t *testing.T) {
+		uri, err := rem.Exists(ctx, "v3.14/main/x86_64/APKINDEX.tar.gz", &schemas.RequestContext{})
+		assert.NoError(t, err)
+		assert.EqualValues(t, "https://mirror.aarnet.edu.au/pub/alpine/v3.14/main/x86_64/APKINDEX.tar.gz", uri)
+	})
+	// confirm that policy is respected
+	// see #44
+	t.Run("policy blocked file", func(t *testing.T) {
+		_, err := rem.Exists(ctx, "super-secret/secret.txt", &schemas.RequestContext{})
+		assert.Error(t, err)
+	})
 }
 
 //go:embed testdata/file.txt
