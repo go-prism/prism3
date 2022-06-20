@@ -54,7 +54,7 @@ func (r *BandwidthRepo) Create(ctx context.Context, resource string, usage int64
 		DoUpdates: clause.Assignments(map[string]interface{}{"usage": gorm.Expr("bandwidth_usages.usage + ?", usage)}),
 	}).Create(b).Error; err != nil {
 		log.Error(err, "failed to update bandwidth usage")
-		return err
+		return returnErr(err, "failed to update bandwidth usage")
 	}
 	return nil
 }
@@ -67,7 +67,7 @@ func (r *BandwidthRepo) Get(ctx context.Context, resource, date string) ([]*mode
 	var results []*model.BandwidthUsage
 	if err := r.db.WithContext(ctx).Where("resource = ? AND date = ?", resource, date).Find(&results).Error; err != nil {
 		log.Error(err, "failed to fetch bandwidth usage")
-		return nil, err
+		return nil, returnErr(err, "failed to fetch bandwidth usage")
 	}
 	return results, nil
 }

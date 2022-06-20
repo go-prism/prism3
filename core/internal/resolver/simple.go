@@ -19,9 +19,9 @@ package resolver
 
 import (
 	"context"
-	"errors"
 	"github.com/bluele/gcache"
 	"github.com/go-logr/logr"
+	"github.com/lpar/problem"
 	"gitlab.com/go-prism/prism3/core/internal/impl/helmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/npmapi"
 	"gitlab.com/go-prism/prism3/core/internal/impl/pypiapi"
@@ -33,6 +33,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
 	"io"
+	"net/http"
 	"time"
 )
 
@@ -92,7 +93,7 @@ func (r *Resolver) getRefraction(v any) (any, error) {
 	name, ok := v.(string)
 	if !ok {
 		log.V(1).Info("unable to build refraction as input was not a string")
-		return nil, errors.New("expected string")
+		return nil, problem.Errorf(http.StatusBadRequest, "expected string")
 	}
 	log = log.WithValues("Name", name)
 	log.V(1).Info("fetching refraction from database")

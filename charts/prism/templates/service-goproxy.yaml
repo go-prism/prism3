@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "prism.goproxyName" . }}
   labels:
-    {{- include "prism.goproxyLabels" . | nindent 4 }}
+    {{- include "prism.goproxySelectorLabels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:

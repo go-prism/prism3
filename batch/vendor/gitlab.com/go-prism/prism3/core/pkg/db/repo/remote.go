@@ -51,13 +51,13 @@ func (r *RemoteRepo) PatchRemote(ctx context.Context, id string, in *model.Patch
 	if err := r.db.WithContext(ctx).Preload("Security").Where("id = ?", id).First(&rem).Error; err != nil {
 		log.Error(err, "failed to fetch remote")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to fetch remote")
 	}
 	// block changes to Go archetypes
 	// since they must be managed by Prism
 	if rem.Archetype == model.ArchetypeGo {
 		log.Error(errs.ErrForbidden, "rejecting request to modify Go remote")
-		return nil, errs.ErrForbidden
+		return nil, returnErr(errs.ErrForbidden, "rejecting request to modify Go remote")
 	}
 	// update the remote
 	rem.Security.Allowed = in.Allowed
@@ -71,7 +71,7 @@ func (r *RemoteRepo) PatchRemote(ctx context.Context, id string, in *model.Patch
 	if err := r.db.WithContext(ctx).Save(&rem.Security).Error; err != nil {
 		log.Error(err, "failed to update remote security profile")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to update remote security profile")
 	}
 	return &rem, nil
 }
@@ -89,7 +89,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 	} else if err := r.db.WithContext(ctx).Where("id = ?", in.Transport).First(&transport).Error; err != nil {
 		log.Error(err, "failed to find transport")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to find transport")
 	}
 	log.V(2).Info("selected transport", "Transport", transport)
 	result := model.Remote{
@@ -107,7 +107,7 @@ func (r *RemoteRepo) CreateRemote(ctx context.Context, in *model.NewRemote) (*mo
 	if err := r.db.WithContext(ctx).Create(&result).Error; err != nil {
 		log.Error(err, "failed to create remote")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to create remote")
 	}
 	return &result, nil
 }
@@ -129,7 +129,7 @@ func (r *RemoteRepo) GetRemote(ctx context.Context, id string, sensitive bool) (
 	if err := tx.Where("id = ?", id).First(&result).Error; err != nil {
 		log.Error(err, "failed to get remote")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to get remote")
 	}
 	return &result, nil
 }
@@ -155,7 +155,7 @@ func (r *RemoteRepo) ListRemotes(ctx context.Context, arch model.Archetype, sens
 	if err := tx.WithContext(ctx).Find(&result).Error; err != nil {
 		log.Error(err, "failed to list remotes")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to list remotes")
 	}
 	return result, nil
 }
@@ -169,7 +169,7 @@ func (r *RemoteRepo) Count(ctx context.Context) (int64, error) {
 	if err := r.db.WithContext(ctx).Model(&model.Remote{}).Count(&result).Error; err != nil {
 		log.Error(err, "failed to count remotes")
 		sentry.CaptureException(err)
-		return 0, err
+		return 0, returnErr(err, "failed to count remotes")
 	}
 	return result, nil
 }

@@ -56,7 +56,7 @@ func (r *UserRepo) CreateCtx(ctx context.Context) (*model.StoredUser, error) {
 	if err := r.db.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(u).Error; err != nil {
 		log.Error(err, "failed to store user profile")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to store user profile")
 	}
 	return u, nil
 }
@@ -70,7 +70,7 @@ func (r *UserRepo) List(ctx context.Context) ([]*model.StoredUser, error) {
 	if err := r.db.WithContext(ctx).Find(&results).Error; err != nil {
 		log.Error(err, "failed to list users")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to list users")
 	}
 	return results, nil
 }
@@ -91,7 +91,7 @@ func (r *UserRepo) SetPreference(ctx context.Context, key, value string) error {
 	if err := r.db.WithContext(ctx).Model(&model.StoredUser{}).Where("id = ?", user.AsUsername()).Update("preferences", gorm.Expr("preferences::jsonb || ?", fmt.Sprintf(`{"%s": "%s"}`, key, value))).Error; err != nil {
 		log.Error(err, "failed to update preferences")
 		sentry.CaptureException(err)
-		return err
+		return returnErr(err, "failed to update preferences")
 	}
 	log.V(1).Info("successfully updated preference")
 	return nil
@@ -106,7 +106,7 @@ func (r *UserRepo) Count(ctx context.Context) (int64, error) {
 	if err := r.db.WithContext(ctx).Model(&model.StoredUser{}).Count(&result).Error; err != nil {
 		log.Error(err, "failed to count users")
 		sentry.CaptureException(err)
-		return 0, err
+		return 0, returnErr(err, "failed to count users")
 	}
 	return result, nil
 }

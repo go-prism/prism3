@@ -57,7 +57,7 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 	if err := tx.Error; err != nil {
 		log.Error(err, "failed to update artifact")
 		sentry.CaptureException(err)
-		return err
+		return returnErr(err, "failed to update artifact")
 	}
 	// if we changed something, don't bother
 	// creating a new entry
@@ -76,7 +76,7 @@ func (r *ArtifactRepo) CreateArtifact(ctx context.Context, path, remote string) 
 	if err := r.db.WithContext(ctx).Create(&result).Error; err != nil {
 		log.Error(err, "failed to create artifact")
 		sentry.CaptureException(err)
-		return err
+		return returnErr(err, "failed to create artifact")
 	}
 	return nil
 }
@@ -92,7 +92,7 @@ func (r *ArtifactRepo) ListArtifacts(ctx context.Context, remotes []string) ([]*
 	if err := r.db.WithContext(ctx).Where("remote_id = ANY(?::text[])", getAnyQuery(remotes)).Order("uri asc").Find(&result).Error; err != nil {
 		log.Error(err, "failed to list artifacts")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to list artifacts")
 	}
 	return result, nil
 }
@@ -106,7 +106,7 @@ func (r *ArtifactRepo) Count(ctx context.Context) (int64, error) {
 	if err := r.db.Model(&model.Artifact{}).Count(&result).Error; err != nil {
 		log.Error(err, "failed to count artifacts")
 		sentry.CaptureException(err)
-		return 0, err
+		return 0, returnErr(err, "failed to count artifacts")
 	}
 	return result, nil
 }
@@ -122,7 +122,7 @@ func (r *ArtifactRepo) CountArtifactsByRemote(ctx context.Context, remote string
 	if err := r.db.WithContext(ctx).Model(&model.Artifact{}).Where("remoteID = ?", remote).Count(&result).Error; err != nil {
 		log.Error(err, "failed to count artifacts")
 		sentry.CaptureException(err)
-		return 0, err
+		return 0, returnErr(err, "failed to count artifacts")
 	}
 	return result, nil
 }
@@ -136,7 +136,7 @@ func (r *ArtifactRepo) Downloads(ctx context.Context) (int64, error) {
 	if err := r.db.WithContext(ctx).Model(&model.Artifact{}).Select("COALESCE(SUM(downloads), 0)").Scan(&result).Error; err != nil {
 		log.Error(err, "failed to aggregate downloads")
 		sentry.CaptureException(err)
-		return 0, err
+		return 0, returnErr(err, "failed to aggregate downloads")
 	}
 	return result, nil
 }

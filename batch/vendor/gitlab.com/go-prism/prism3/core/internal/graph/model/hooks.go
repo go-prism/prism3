@@ -44,8 +44,6 @@ func (s *RemoteSecurity) AfterFind(tx *gorm.DB) error {
 func (s *RemoteSecurity) Zero() {
 	// strip sensitive information
 	s.DirectToken = ""
-	s.Allowed = []string{}
-	s.Blocked = []string{}
 }
 
 func (s *TransportSecurity) AfterFind(tx *gorm.DB) error {

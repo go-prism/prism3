@@ -246,6 +246,7 @@ func (b *BackedRemote) Download(ctx context.Context, path string, rctx *schemas.
 		_ = b.store.Put(ctx, uploadPath, tee)
 		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeNetworkA)
 		b.netObserver.Observe(fmt.Sprintf("remote::%s", b.rm.ID), int64(buf.Len()), model.BandwidthTypeStorage)
+		log.V(2).Info("successfully uploaded data to cache", "Count", buf.Len())
 		return buf, nil
 	}
 	return r, nil
@@ -265,6 +266,9 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.R
 			uploadPath = strings.TrimPrefix(uri.Path, "/")
 		}
 	}
+	// keep a copy of the path without any partition
+	// information, so we can update the database correctly (see #31)
+	normalPath := uploadPath
 	// create the cache partition by appending
 	// the hash of the token
 	if rctx.Mode != httpclient.AuthNone && rctx.Token != "" {
@@ -280,8 +284,8 @@ func (b *BackedRemote) getPath(ctx context.Context, path string, rctx *schemas.R
 		span.SetAttributes(attribute.String(attributeAuthPartitionHash, partId))
 		uploadPath = filepath.Join(uploadPath, partId)
 	}
-	log.V(1).Info("normalised path", "UploadPath", uploadPath)
-	return filepath.Join(b.rm.Name, uploadPath), uploadPath
+	log.V(1).Info("normalised path", "UploadPath", uploadPath, "NormalPath", normalPath)
+	return filepath.Join(b.rm.Name, uploadPath), normalPath
 }
 
 // hash returns the hex-encoded SHA256 sum of

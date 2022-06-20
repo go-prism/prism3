@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "prism.coreName" . }}
   labels:
-    {{- include "prism.coreLabels" . | nindent 4 }}
+    {{- include "prism.coreSelectorLabels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -11,5 +11,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: 8081
+      targetPort: web
+      name: metrics
+      protocol: TCP
   selector:
     {{- include "prism.coreSelectorLabels" . | nindent 4 }}

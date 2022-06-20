@@ -53,3 +53,5 @@ serviceAccount:
 tracing:
   enabled: true
   jaegerHost: https://grafana-tempo.example.org:16686
+serviceMonitor:
+  enabled: true

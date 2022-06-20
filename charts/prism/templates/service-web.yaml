@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ include "prism.webName" . }}
   labels:
-    {{- include "prism.webLabels" . | nindent 4 }}
+    {{- include "prism.webSelectorLabels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:

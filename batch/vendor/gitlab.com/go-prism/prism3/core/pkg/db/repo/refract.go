@@ -55,7 +55,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&ref).Error; err != nil {
 		log.Error(err, "failed to fetch refraction")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to fetch refraction")
 	}
 	// block changes to Go archetypes since
 	// they must be managed by Prism
@@ -68,7 +68,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	if err := r.db.WithContext(ctx).Omit("Security.DirectToken").Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
 		log.Error(err, "failed to retrieve remotes")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to retrieve remotes")
 	}
 	// update the refraction
 	ref.Name = in.Name
@@ -78,7 +78,7 @@ func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.
 	if err := r.db.WithContext(ctx).Save(&ref).Error; err != nil {
 		log.Error(err, "failed to update refraction")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to update refraction")
 	}
 	return &ref, nil
 }
@@ -89,7 +89,7 @@ func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract
 	if err := r.db.WithContext(ctx).Omit("Security.DirectToken").Where("id = ANY(?::uuid[])", getAnyQuery(in.Remotes)).Find(&remotes).Error; err != nil {
 		log.Error(err, "failed to retrieve remotes")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to retrieve remotes")
 	}
 	result := model.Refraction{
 		CreatedAt: time.Now().Unix(),
@@ -101,7 +101,7 @@ func (r *RefractRepo) CreateRefraction(ctx context.Context, in *model.NewRefract
 	if err := r.db.WithContext(ctx).Create(&result).Error; err != nil {
 		log.Error(err, "failed to create refraction")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to create refraction")
 	}
 	return &result, nil
 }
@@ -113,7 +113,7 @@ func (r *RefractRepo) GetRefractionByName(ctx context.Context, name string) (*mo
 	if err := r.db.WithContext(ctx).Preload("Remotes").Preload("Remotes.Security").Omit("Remotes.Security.DirectToken").Preload("Remotes.Transport").Where("name = ?", name).First(&result).Error; err != nil {
 		log.Error(err, "failed to get refraction")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to get refraction")
 	}
 	return &result, nil
 }
@@ -125,7 +125,7 @@ func (r *RefractRepo) GetRefraction(ctx context.Context, id string) (*model.Refr
 	if err := r.db.WithContext(ctx).Preload("Remotes").Omit("Remotes.Security.DirectToken").Where("id = ?", id).First(&result).Error; err != nil {
 		log.Error(err, "failed to get refraction")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to get refraction")
 	}
 	return &result, nil
 }
@@ -137,7 +137,7 @@ func (r *RefractRepo) ListNames(ctx context.Context) ([]*ResourceName, error) {
 	if err := r.db.WithContext(ctx).Model(&model.Refraction{}).Select("name").Find(&results).Error; err != nil {
 		log.Error(err, "failed to fetch refraction names")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to fetch refraction names")
 	}
 	resources := make([]*ResourceName, len(results))
 	for i := range results {
@@ -156,7 +156,7 @@ func (r *RefractRepo) ListRefractions(ctx context.Context) ([]*model.Refraction,
 	if err := r.db.WithContext(ctx).Preload("Remotes").Omit("Remotes.Security.DirectToken").Find(&result).Error; err != nil {
 		log.Error(err, "failed to list refractions")
 		sentry.CaptureException(err)
-		return nil, err
+		return nil, returnErr(err, "failed to list refractions")
 	}
 	return result, nil
 }
@@ -168,7 +168,7 @@ func (r *RefractRepo) Count(ctx context.Context) (int64, error) {
 	if err := r.db.WithContext(ctx).Model(&model.Refraction{}).Count(&result).Error; err != nil {
 		log.Error(err, "failed to count refractions")
 		sentry.CaptureException(err)
-		return 0, err
+		return 0, returnErr(err, "failed to count refractions")
 	}
 	return result, nil
 }

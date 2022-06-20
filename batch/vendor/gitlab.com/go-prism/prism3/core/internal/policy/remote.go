@@ -76,7 +76,8 @@ func (r *RegexEnforcer) CanReceive(ctx context.Context, path string) bool {
 	}
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canReceive", trace.WithAttributes(attributes...))
 	defer span.End()
-	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path)
+	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path, "Archetype", r.archetype)
+	log.V(1).Info("validating regex receiver policy")
 	if r.anyMatch(path, r.block) {
 		log.V(1).Info("blocked by blocklist")
 		metricReceive.Add(ctx, 1, append(attributes, attribute.Bool("allowed", false))...)
@@ -99,6 +100,7 @@ func (r *RegexEnforcer) CanCache(ctx context.Context, path string) bool {
 	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "policy_regex_canCache", trace.WithAttributes(attributes...))
 	defer span.End()
 	log := logr.FromContextOrDiscard(ctx).WithValues("Path", path, "Archetype", r.archetype)
+	log.V(1).Info("validating regex cache policy")
 	if r.archetype == "" {
 		log.V(1).Info("cannot cache data without an archetype")
 		metricCache.Add(ctx, 1, append(attributes, attribute.Bool("allowed", false))...)
