@@ -23,7 +23,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"runtime"
 	"runtime/debug"
 	"strings"
@@ -34,6 +33,7 @@ import (
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/generated"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/internal/permissions"
 	"gitlab.com/go-prism/prism3/core/pkg/db/notify"
 	"gitlab.com/go-prism/prism3/core/pkg/db/repo"
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
@@ -308,6 +308,14 @@ func (r *queryResolver) GetBandwidthUsage(ctx context.Context, resource string, 
 		return nil, err
 	}
 	return r.repos.BandwidthRepo.Get(ctx, resource, date)
+}
+
+func (r *queryResolver) GetTotalBandwidthUsage(ctx context.Context, resource string) ([]*model.BandwidthUsage, error) {
+	res, id, _ := strings.Cut(resource, "::")
+	if err := r.authz.CanI(ctx, repo.Resource(res), id, rbac.Verb_SUDO); err != nil {
+		return nil, err
+	}
+	return r.repos.BandwidthRepo.GetTotal(ctx, resource)
 }
 
 func (r *queryResolver) ListUsers(ctx context.Context) ([]*model.StoredUser, error) {

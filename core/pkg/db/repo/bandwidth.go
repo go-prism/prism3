@@ -71,3 +71,16 @@ func (r *BandwidthRepo) Get(ctx context.Context, resource, date string) ([]*mode
 	}
 	return results, nil
 }
+
+func (r *BandwidthRepo) GetTotal(ctx context.Context, resource string) ([]*model.BandwidthUsage, error) {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_bandwidth_getTotal")
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx)
+	log.V(1).Info("fetching total bandwidth usage")
+	var results []*model.BandwidthUsage
+	if err := r.db.WithContext(ctx).Select("SUM(usage) AS usage, type").Where("resource = ?", resource).Group("type").Find(&results).Error; err != nil {
+		log.Error(err, "failed to fetch total bandwidth usage")
+		return nil, returnErr(err, "failed to fetch total bandwidth usage")
+	}
+	return results, nil
+}

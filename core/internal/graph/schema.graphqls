@@ -169,6 +169,7 @@ type Query {
     getUsers(resource: String!): [RoleBinding!]!
 
     getBandwidthUsage(resource: String!, date: String!): [BandwidthUsage!]!
+    getTotalBandwidthUsage(resource: String!): [BandwidthUsage!]!
 
     listUsers: [StoredUser!]!
 

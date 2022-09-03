@@ -16,13 +16,12 @@
  */
 
 import {List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, Typography} from "@mui/material";
-import React from "react";
+import React, {useMemo} from "react";
 import {format} from "date-fns";
 import {CloudDownload, Database, Icon, LayersLinked, WorldDownload} from "tabler-icons-react";
 import {useTheme} from "@mui/material/styles";
-import {BandwidthType, useGetBandwidthQuery} from "../../../../generated/graphql";
+import {BandwidthType, useGetBandwidthQuery, useGetTotalBandwidthQuery} from "../../../../generated/graphql";
 import InlineError from "../../../alert/InlineError";
-import InlineNotFound from "../../../widgets/InlineNotFound";
 import {formatBytes} from "../../../../utils/format";
 
 interface Props {
@@ -34,7 +33,8 @@ const BandwidthOpts: React.FC<Props> = ({type, id}): JSX.Element => {
 	// hooks
 	const theme = useTheme();
 	const today = format(new Date(), "yyyyMM");
-	const {data, loading, error} = useGetBandwidthQuery({variables: {resource: `${type}::${id}`, date: today}});
+	const currentUsage = useGetBandwidthQuery({variables: {resource: `${type}::${id}`, date: today}});
+	const totalUsage = useGetTotalBandwidthQuery({variables: {resource: `${type}::${id}`}});
 
 	const getBandwidth = (t: string): [string, string, Icon, string] => {
 		switch (t) {
@@ -49,19 +49,31 @@ const BandwidthOpts: React.FC<Props> = ({type, id}): JSX.Element => {
 		}
 	}
 
-	if (error) {
-		return <InlineError error={error}/>
-	}
+	const data = useMemo(() => {
+		const d = new Map<BandwidthType, [number, number]>();
+		// initialise the data
+		d.set(BandwidthType.NetworkA, [0, 0]);
+		d.set(BandwidthType.NetworkB, [0, 0]);
+		d.set(BandwidthType.Storage, [0, 0]);
+		// collect the monthly stats
+		currentUsage.data?.getBandwidthUsage.forEach(v => d.set(v.type, [v.usage, 0]));
+		// fill in totals
+		totalUsage.data?.getTotalBandwidthUsage.forEach(v => {
+			const e = d.get(v.type)!;
+			d.set(v.type, [e[0], v.usage]);
+		});
+		return d;
+	}, [currentUsage.data, totalUsage.data]);
 
-	if (!loading && (data?.getBandwidthUsage.length || 0) === 0) {
-		return <InlineNotFound/>
+	if (currentUsage.error || totalUsage.error) {
+		return <InlineError error={currentUsage.error || totalUsage.error}/>
 	}
 
 	return <List>
-		{data && data.getBandwidthUsage.map(u => {
-			const [title, desc, icon, colour] = getBandwidth(u.type);
+		{[...data.entries()].map(([key, [current, total]]) => {
+			const [title, desc, icon, colour] = getBandwidth(key);
 			return <ListItem
-				key={u.id}>
+				key={key}>
 				<ListItemIcon>
 					{React.createElement(icon, {color: colour})}
 				</ListItemIcon>
@@ -73,7 +85,7 @@ const BandwidthOpts: React.FC<Props> = ({type, id}): JSX.Element => {
 				<ListItemSecondaryAction>
 					<Typography
 						color="textSecondary">
-						{formatBytes(u.usage)}
+						{formatBytes(current)}&nbsp;({formatBytes(total)})
 					</Typography>
 				</ListItemSecondaryAction>
 			</ListItem>

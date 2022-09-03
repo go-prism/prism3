@@ -95,22 +95,23 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetBandwidthUsage     func(childComplexity int, resource string, date string) int
-		GetCurrentUser        func(childComplexity int) int
-		GetOverview           func(childComplexity int) int
-		GetRefraction         func(childComplexity int, id string) int
-		GetRemote             func(childComplexity int, id string) int
-		GetRemoteOverview     func(childComplexity int, id string) int
-		GetRoleBindings       func(childComplexity int, user string) int
-		GetUsers              func(childComplexity int, resource string) int
-		ListArtifacts         func(childComplexity int, remote string) int
-		ListCombinedArtifacts func(childComplexity int, refract string) int
-		ListRefractions       func(childComplexity int) int
-		ListRemotes           func(childComplexity int, arch string) int
-		ListTransports        func(childComplexity int) int
-		ListUsers             func(childComplexity int) int
-		UserCan               func(childComplexity int, resource string, action model.Verb) int
-		UserHas               func(childComplexity int, role model.Role) int
+		GetBandwidthUsage      func(childComplexity int, resource string, date string) int
+		GetCurrentUser         func(childComplexity int) int
+		GetOverview            func(childComplexity int) int
+		GetRefraction          func(childComplexity int, id string) int
+		GetRemote              func(childComplexity int, id string) int
+		GetRemoteOverview      func(childComplexity int, id string) int
+		GetRoleBindings        func(childComplexity int, user string) int
+		GetTotalBandwidthUsage func(childComplexity int, resource string) int
+		GetUsers               func(childComplexity int, resource string) int
+		ListArtifacts          func(childComplexity int, remote string) int
+		ListCombinedArtifacts  func(childComplexity int, refract string) int
+		ListRefractions        func(childComplexity int) int
+		ListRemotes            func(childComplexity int, arch string) int
+		ListTransports         func(childComplexity int) int
+		ListUsers              func(childComplexity int) int
+		UserCan                func(childComplexity int, resource string, action model.Verb) int
+		UserHas                func(childComplexity int, role model.Role) int
 	}
 
 	Refraction struct {
@@ -211,6 +212,7 @@ type QueryResolver interface {
 	GetRoleBindings(ctx context.Context, user string) ([]*model.RoleBinding, error)
 	GetUsers(ctx context.Context, resource string) ([]*model.RoleBinding, error)
 	GetBandwidthUsage(ctx context.Context, resource string, date string) ([]*model.BandwidthUsage, error)
+	GetTotalBandwidthUsage(ctx context.Context, resource string) ([]*model.BandwidthUsage, error)
 	ListUsers(ctx context.Context) ([]*model.StoredUser, error)
 	GetCurrentUser(ctx context.Context) (*model.StoredUser, error)
 	UserCan(ctx context.Context, resource string, action model.Verb) (bool, error)
@@ -605,6 +607,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetRoleBindings(childComplexity, args["user"].(string)), true
+
+	case "Query.getTotalBandwidthUsage":
+		if e.complexity.Query.GetTotalBandwidthUsage == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTotalBandwidthUsage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTotalBandwidthUsage(childComplexity, args["resource"].(string)), true
 
 	case "Query.getUsers":
 		if e.complexity.Query.GetUsers == nil {
@@ -1273,6 +1287,7 @@ type Query {
     getUsers(resource: String!): [RoleBinding!]!
 
     getBandwidthUsage(resource: String!, date: String!): [BandwidthUsage!]!
+    getTotalBandwidthUsage(resource: String!): [BandwidthUsage!]!
 
     listUsers: [StoredUser!]!
 
@@ -1613,6 +1628,21 @@ func (ec *executionContext) field_Query_getRoleBindings_args(ctx context.Context
 		}
 	}
 	args["user"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTotalBandwidthUsage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["resource"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("resource"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["resource"] = arg0
 	return args, nil
 }
 
@@ -3543,6 +3573,48 @@ func (ec *executionContext) _Query_getBandwidthUsage(ctx context.Context, field 
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().GetBandwidthUsage(rctx, args["resource"].(string), args["date"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.BandwidthUsage)
+	fc.Result = res
+	return ec.marshalNBandwidthUsage2ᚕᚖgitlabᚗcomᚋgoᚑprismᚋprism3ᚋcoreᚋinternalᚋgraphᚋmodelᚐBandwidthUsageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getTotalBandwidthUsage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getTotalBandwidthUsage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTotalBandwidthUsage(rctx, args["resource"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7651,6 +7723,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getBandwidthUsage(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getTotalBandwidthUsage":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTotalBandwidthUsage(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

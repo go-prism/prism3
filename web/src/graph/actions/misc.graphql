@@ -8,3 +8,9 @@ query getBandwidth($resource: String!, $date: String!) {
         type
     }
 }
+query getTotalBandwidth($resource: String!) {
+    getTotalBandwidthUsage(resource: $resource) {
+        usage
+        type
+    }
+}

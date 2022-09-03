@@ -197,6 +197,7 @@ export type Query = {
   getRemote: Remote;
   getRemoteOverview: RemoteOverview;
   getRoleBindings: Array<RoleBinding>;
+  getTotalBandwidthUsage: Array<BandwidthUsage>;
   getUsers: Array<RoleBinding>;
   listArtifacts: Array<Artifact>;
   listCombinedArtifacts: Array<Artifact>;
@@ -232,6 +233,11 @@ export type QueryGetRemoteOverviewArgs = {
 
 export type QueryGetRoleBindingsArgs = {
   user: Scalars['String'];
+};
+
+
+export type QueryGetTotalBandwidthUsageArgs = {
+  resource: Scalars['String'];
 };
 
 
@@ -367,6 +373,13 @@ export type GetBandwidthQueryVariables = Exact<{
 
 
 export type GetBandwidthQuery = { __typename?: 'Query', getBandwidthUsage: Array<{ __typename?: 'BandwidthUsage', id: string, date: string, resource: string, usage: number, limit: number, type: BandwidthType }> };
+
+export type GetTotalBandwidthQueryVariables = Exact<{
+  resource: Scalars['String'];
+}>;
+
+
+export type GetTotalBandwidthQuery = { __typename?: 'Query', getTotalBandwidthUsage: Array<{ __typename?: 'BandwidthUsage', usage: number, type: BandwidthType }> };
 
 export type GetOverviewQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -575,6 +588,42 @@ export function useGetBandwidthLazyQuery(baseOptions?: Apollo.LazyQueryHookOptio
 export type GetBandwidthQueryHookResult = ReturnType<typeof useGetBandwidthQuery>;
 export type GetBandwidthLazyQueryHookResult = ReturnType<typeof useGetBandwidthLazyQuery>;
 export type GetBandwidthQueryResult = Apollo.QueryResult<GetBandwidthQuery, GetBandwidthQueryVariables>;
+export const GetTotalBandwidthDocument = gql`
+    query getTotalBandwidth($resource: String!) {
+  getTotalBandwidthUsage(resource: $resource) {
+    usage
+    type
+  }
+}
+    `;
+
+/**
+ * __useGetTotalBandwidthQuery__
+ *
+ * To run a query within a React component, call `useGetTotalBandwidthQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetTotalBandwidthQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetTotalBandwidthQuery({
+ *   variables: {
+ *      resource: // value for 'resource'
+ *   },
+ * });
+ */
+export function useGetTotalBandwidthQuery(baseOptions: Apollo.QueryHookOptions<GetTotalBandwidthQuery, GetTotalBandwidthQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetTotalBandwidthQuery, GetTotalBandwidthQueryVariables>(GetTotalBandwidthDocument, options);
+      }
+export function useGetTotalBandwidthLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetTotalBandwidthQuery, GetTotalBandwidthQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetTotalBandwidthQuery, GetTotalBandwidthQueryVariables>(GetTotalBandwidthDocument, options);
+        }
+export type GetTotalBandwidthQueryHookResult = ReturnType<typeof useGetTotalBandwidthQuery>;
+export type GetTotalBandwidthLazyQueryHookResult = ReturnType<typeof useGetTotalBandwidthLazyQuery>;
+export type GetTotalBandwidthQueryResult = Apollo.QueryResult<GetTotalBandwidthQuery, GetTotalBandwidthQueryVariables>;
 export const GetOverviewDocument = gql`
     query getOverview {
   getOverview {
