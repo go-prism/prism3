@@ -130,6 +130,8 @@ deploy:
         skipBuildDependencies: true
         upgradeOnChange: true
   kubectl:
-    manifests: ["deployments/k8s-*.yaml"]
+    manifests:
+      - deployments/k8s-ns.yaml
+      - "deployments/k8s-*.yaml"
     defaultNamespace: prism
   kubeContext: minikube

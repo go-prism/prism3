@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
 	title: {
 		fontFamily: "Manrope",
 		fontWeight: 500
+	},
+	text: {
+		marginRight: theme.spacing(8)
 	},
 	button: {
 		fontFamily: "Manrope",
@@ -79,6 +82,9 @@ const ExpandableListItem: React.FC<ExpandableListItemProps> = ({primary, seconda
 						color: "textPrimary"
 					}}
 					secondary={secondary}
+					secondaryTypographyProps={{
+						className: classes.text
+					}}
 				/>
 				<ListItemSecondaryAction>
 					{isSmallScreen ? <GenericIconButton

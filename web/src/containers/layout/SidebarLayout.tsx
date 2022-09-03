@@ -1,3 +1,20 @@
+/*
+ *    Copyright 2022 Django Cass
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 import {Box, Grid, GridSize} from "@mui/material";
 import React, {ReactNode} from "react";
 import {ErrorBoundary} from "react-error-boundary";
@@ -18,6 +35,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, sidebarWidth = DE
 	const location = useLocation();
 
 	const navHeight = location.pathname.startsWith("/artifacts/-/") ? 92 : 52;
+	const innerHeight = navHeight + 8;
 	const sidebarColour = theme.palette.mode === "light" ? theme.palette.grey["200"] : theme.palette.background.paper;
 
 	return (
@@ -36,14 +54,17 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({sidebar, sidebarWidth = DE
 				</ErrorBoundary>
 			</Grid>
 			<Grid
-				style={{margin: theme.spacing(2)}}
+				style={{marginLeft: theme.spacing(2), height: `calc(100vh - ${navHeight}px)`, padding: theme.spacing(1)}}
 				item
 				xs={9}
 				sm={8}
 				md={6}>
 				<ErrorBoundary
 					fallbackRender={p => <Error props={p}/>}>
-					{children}
+					<Box
+						style={{maxHeight: `calc(100vh - ${innerHeight}px)`, overflowY: "auto"}}>
+						{children}
+					</Box>
 				</ErrorBoundary>
 			</Grid>
 			<Grid

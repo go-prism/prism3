@@ -3,3 +3,7 @@ Makefile
 *.md
 node_modules/
 web/
+skaffold.yaml
+LICENSE
+.git*
+charts/

@@ -105,6 +105,8 @@ sidecars:
       - name: rbac
         mountPath: /var/run/config/rbac
         readOnly: true
+      - name: tmp
+        mountPath: /tmp
     livenessProbe:
       httpGet:
         path: /healthz
@@ -152,6 +154,9 @@ sidecars:
       - name: http
         containerPort: 8081
         protocol: TCP
+    volumeMounts:
+      - name: tmp
+        mountPath: /tmp
     livenessProbe:
       httpGet:
         path: /healthz
