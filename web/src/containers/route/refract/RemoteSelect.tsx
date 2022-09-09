@@ -1,5 +1,5 @@
 /*
- *    Copyright 2021 Django Cass
+ *    Copyright 2022 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -35,6 +35,10 @@ import {Archetype, Remote, useListRemotesLazyQuery} from "../../../generated/gra
 const useStyles = makeStyles()((theme: Theme) => ({
 	root: {
 		margin: "auto",
+	},
+	item: {
+		marginLeft: theme.spacing(1),
+		marginRight: theme.spacing(1)
 	},
 	paper: {
 		width: 200,
@@ -169,11 +173,20 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 	);
 
 	return (
-		<Grid container spacing={2} justifyContent="center" alignItems="center" className={classes.root}>
-			<Grid item>
+		<Grid
+			className={classes.root}
+			container
+			spacing={0}
+			justifyContent="center"
+			alignItems="center">
+			<Grid
+				className={classes.item}
+				item>
 				{customList(left)}
 			</Grid>
-			<Grid item>
+			<Grid
+				className={classes.item}
+				item>
 				<Grid container direction="column" alignItems="center">
 					<Button
 						variant="outlined"
@@ -213,7 +226,9 @@ const RemoteSelect: React.FC<RemoteSelectProps> = ({arch, setRemotes, defaultRem
 					</Button>
 				</Grid>
 			</Grid>
-			<Grid item>
+			<Grid
+				className={classes.item}
+				item>
 				{customList(right)}
 			</Grid>
 		</Grid>
