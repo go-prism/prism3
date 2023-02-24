@@ -1,0 +1,20 @@
+apiVersion: skaffold/v2beta28
+kind: Config
+metadata:
+  name: extras
+deploy:
+  helm:
+    releases:
+      - name: web-proxy
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/nginx-11.1.5.tgz
+        valuesFiles:
+          - deployments/web-proxy.yaml
+        namespace: prism
+        skipBuildDependencies: true
+        upgradeOnChange: true
+  kubectl:
+    manifests:
+      - deployments/k8s-ns.yaml
+      - "deployments/k8s-*.yaml"
+    defaultNamespace: prism
+  kubeContext: minikube

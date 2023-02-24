@@ -1,3 +1,0 @@
-This is a test file that only super special people should be able to access!
-
-It's used to test that cache partitioning is working as expected.

@@ -8,6 +8,9 @@ mutation createRefract($name: String!, $archetype: Archetype!, $remotes: [ID!]!)
         id
     }
 }
+mutation deleteRefract($id: ID!) {
+    deleteRefraction(id: $id)
+}
 query getRefraction($id: ID!) {
     getRefraction(id: $id) {
         id

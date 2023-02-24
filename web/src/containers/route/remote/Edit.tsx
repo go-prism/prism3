@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -49,11 +49,19 @@ import ExpandableListItem from "../../list/ExpandableListItem";
 import {MetadataChip} from "../../../config/types";
 import {IDParams} from "../settings";
 import {getRemoteIcon} from "../../../utils/remote";
-import {Archetype, AuthMode, useGetRemoteLazyQuery, usePatchRemoteMutation, Verb} from "../../../generated/graphql";
+import {
+	Archetype,
+	AuthMode,
+	useDeleteRemoteMutation,
+	useGetRemoteLazyQuery,
+	usePatchRemoteMutation,
+	Verb
+} from "../../../generated/graphql";
 import ResourceRoleViewer from "../acl/ResourceRoleViewer";
 import useCanRBAC from "../../../hooks/useRBAC";
 import {RESOURCE_REMOTE} from "../../../config/constants";
 import Error from "../../alert/Error";
+import DeleteResource from "../../../components/DeleteResource";
 import RestrictedHeaders from "./options/RestrictedHeaders";
 import FirewallRules from "./options/FirewallRules";
 import TransportOpts from "./options/TransportOpts";
@@ -115,9 +123,11 @@ const EditRemote: React.FC = (): JSX.Element => {
 	// global state
 	const [getRemote, getData] = useGetRemoteLazyQuery();
 	const [patchRemote, patchData] = usePatchRemoteMutation();
+	const [deleteRemote, deleteData] = useDeleteRemoteMutation();
 	const {data} = getData;
 	const loading = getData.loading || patchData.loading;
 	const canPatch = useCanRBAC({type: RESOURCE_REMOTE, id, verb: Verb.Update});
+	const canDelete = useCanRBAC({type: RESOURCE_REMOTE, id, verb: Verb.Delete});
 	const canSudo = useCanRBAC({type: RESOURCE_REMOTE, id, verb: Verb.Sudo});
 
 	// local state
@@ -299,6 +309,23 @@ const EditRemote: React.FC = (): JSX.Element => {
 					id={data.getRemote.id}
 				/>,
 				hidden: !canSudo
+			},
+			{
+				id: "delete",
+				primary: "Delete",
+				secondary: "Permanently remove this Remote and all cached data.",
+				children: <DeleteResource
+					onDelete={() => {
+						if (data == null)
+							return;
+						deleteRemote({variables: {id: data.getRemote.id}}).then(r => {
+							if (!r.errors) {
+								history.push("/remotes");
+							}
+						})
+					}}
+				/>,
+				hidden: !(canDelete || canSudo) || data?.getRemote.archetype === Archetype.Go
 			}
 		];
 		return items.filter(d => !d.hidden).map(d => <ExpandableListItem
@@ -424,12 +451,12 @@ const EditRemote: React.FC = (): JSX.Element => {
 				<List>
 					{getOptions()}
 				</List>
-				{patchData.error != null && <Alert
+				{(patchData.error || deleteData.error) != null && <Alert
 					severity="error">
-						Failed to update Remote.
+						Failed to complete action.
 					<br/>
 					<Code>
-						{getGraphErrorMessage(patchData.error)}
+						{getGraphErrorMessage(patchData.error || deleteData.error)}
 					</Code>
 				</Alert>}
 				<div

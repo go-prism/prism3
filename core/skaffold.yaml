@@ -1,0 +1,44 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: core
+build:
+  tagPolicy:
+    sha256: {}
+  artifacts:
+    - image: core
+      ko:
+        fromImage: harbor.dcas.dev/gcr.io/distroless/static:nonroot
+        main: ./cmd/core/
+        env:
+          - GOPROXY=https://prism.v2.dcas.dev/api/go
+        dependencies:
+          paths:
+            - cmd/core/
+            - internal/
+            - pkg/
+            - go.mod
+            - go.sum
+  local:
+    push: false
+deploy:
+  helm:
+    releases:
+      - name: postgresql
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/postgresql-11.1.17.tgz
+        valuesFiles:
+          - deployments/postgresql.yaml
+        namespace: prism
+        skipBuildDependencies: true
+        upgradeOnChange: true
+      - name: core3
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+        valuesFiles:
+          - deployments/core.yaml
+        setValueTemplates:
+          image.repository: "{{ .IMAGE_REPO_core }}"
+          image.tag: "{{ .IMAGE_TAG_core }}@{{ .IMAGE_DIGEST_core }}"
+        namespace: prism
+        skipBuildDependencies: true
+        upgradeOnChange: true
+  kubeContext: minikube

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,8 +24,11 @@ import (
 	"github.com/go-logr/logr"
 	"gitlab.com/go-prism/prism3/core/internal/errs"
 	"gitlab.com/go-prism/prism3/core/internal/graph/model"
+	"gitlab.com/go-prism/prism3/core/pkg/db"
 	"gitlab.com/go-prism/prism3/core/pkg/tracing"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -43,6 +46,30 @@ func getAnyQuery[T string | int | ~uint](vals []T) string {
 		items[i] = fmt.Sprintf(`"%v"`, vals[i])
 	}
 	return fmt.Sprintf("{%s}", strings.Join(items, ","))
+}
+
+func (r *RefractRepo) DeleteRefraction(ctx context.Context, id string) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_refract_deleteRefraction", trace.WithAttributes(
+		attribute.String("id", id),
+	))
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("ID", id)
+	log.Info("deleting refraction")
+
+	// block changes to Go archetypes since
+	// they must be managed by Prism
+	if id == db.GoRefraction {
+		log.Error(errs.ErrForbidden, "rejecting request to delete Go refraction")
+		return returnErr(errs.ErrForbidden, "reject request to delete Go refraction")
+	}
+
+	if err := r.db.WithContext(ctx).Delete(&model.Refraction{}, "id = ?", id).Error; err != nil {
+		log.Error(err, "failed to delete refraction")
+		sentry.CaptureException(err)
+		return returnErr(err, "failed to delete refraction")
+	}
+	log.Info("successfully deleted refraction")
+	return nil
 }
 
 func (r *RefractRepo) PatchRefraction(ctx context.Context, id string, in *model.PatchRefract) (*model.Refraction, error) {

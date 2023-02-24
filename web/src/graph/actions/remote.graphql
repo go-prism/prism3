@@ -8,6 +8,9 @@ mutation patchRemote($id: ID!, $transportID: ID!, $allowed: [String!]!, $blocked
         id
     }
 }
+mutation deleteRemote($id: ID!) {
+    deleteRemote(id: $id)
+}
 query getRemote($id: ID!) {
     getRemote(id: $id) {
         id

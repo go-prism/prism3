@@ -1,0 +1,41 @@
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: batch
+build:
+  artifacts:
+    - image: batch
+      ko:
+        fromImage: harbor.dcas.dev/gcr.io/distroless/static:nonroot
+        main: ./cmd/batch/
+        env:
+          - GOPROXY=https://prism.v2.dcas.dev/api/go
+        dependencies:
+          paths:
+            - cmd/batch/
+            - internal/
+            - go.mod
+            - go.sum
+  local:
+    push: false
+deploy:
+  helm:
+    releases:
+      - name: redis
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/redis-16.8.2.tgz
+        valuesFiles:
+          - deployments/redis.yaml
+        namespace: prism
+        skipBuildDependencies: true
+        upgradeOnChange: true
+      - name: batch3
+        remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+        valuesFiles:
+          - deployments/batch.yaml
+        setValueTemplates:
+          image.repository: "{{ .IMAGE_REPO_batch }}"
+          image.tag: "{{ .IMAGE_TAG_batch }}@{{ .IMAGE_DIGEST_batch }}"
+        namespace: prism
+        skipBuildDependencies: true
+        upgradeOnChange: true
+  kubeContext: minikube

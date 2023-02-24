@@ -76,7 +76,10 @@ func (r *mutationResolver) DeleteRemote(ctx context.Context, id string) (bool, e
 	if err := r.authz.CanI(ctx, repo.ResourceRemote, id, rbac.Verb_DELETE); err != nil {
 		return false, err
 	}
-	panic(fmt.Errorf("not implemented"))
+	if err := r.repos.RemoteRepo.DeleteRemote(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *mutationResolver) CreateRefraction(ctx context.Context, input model.NewRefract) (*model.Refraction, error) {
@@ -102,7 +105,10 @@ func (r *mutationResolver) DeleteRefraction(ctx context.Context, id string) (boo
 	if err := r.authz.CanI(ctx, repo.ResourceRefraction, id, rbac.Verb_DELETE); err != nil {
 		return false, err
 	}
-	panic(fmt.Errorf("not implemented"))
+	if err := r.repos.RefractRepo.DeleteRefraction(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *mutationResolver) CreateRoleBinding(ctx context.Context, input model.NewRoleBinding) (*model.RoleBinding, error) {

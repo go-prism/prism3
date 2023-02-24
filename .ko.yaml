@@ -1,0 +1,1 @@
+defaultBaseImage: harbor.dcas.dev/gcr.io/distroless/static:nonroot

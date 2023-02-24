@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -37,6 +37,46 @@ func NewRemoteRepo(db *gorm.DB) *RemoteRepo {
 	return &RemoteRepo{
 		db: db,
 	}
+}
+
+func (r *RemoteRepo) DeleteRemote(ctx context.Context, id string) error {
+	ctx, span := otel.Tracer(tracing.DefaultTracerName).Start(ctx, "repo_remote_deleteRemote", trace.WithAttributes(
+		attribute.String("id", id),
+	))
+	defer span.End()
+	log := logr.FromContextOrDiscard(ctx).WithValues("ID", id)
+	log.Info("deleting remote")
+
+	// fetch the original remote
+	rem, err := r.GetRemote(ctx, id, true)
+	if err != nil {
+		log.Error(err, "failed to fetch original remote")
+		sentry.CaptureException(err)
+		return returnErr(err, "failed to fetch original remote")
+	}
+
+	// block changes to Go archetypes
+	// since they must be managed by Prism
+	if rem.Archetype == model.ArchetypeGo {
+		log.Error(errs.ErrForbidden, "rejecting request to modify Go remote")
+		return returnErr(errs.ErrForbidden, "rejecting request to modify Go remote")
+	}
+
+	// delete references to the remote from refractions
+	if err := r.db.WithContext(ctx).Model(&[]model.Refraction{}).Association("Remotes").Delete(rem); err != nil {
+		log.Error(err, "failed to delete associated remotes")
+		sentry.CaptureException(err)
+		return returnErr(err, "failed to delete associated remotes")
+	}
+
+	// delete the remote
+	if err := r.db.WithContext(ctx).Delete(rem).Error; err != nil {
+		log.Error(err, "failed to delete remote")
+		sentry.CaptureException(err)
+		return returnErr(err, "failed to delete remote")
+	}
+	log.Info("successfully deleted remote")
+	return nil
 }
 
 func (r *RemoteRepo) PatchRemote(ctx context.Context, id string, in *model.PatchRemote) (*model.Remote, error) {

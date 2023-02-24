@@ -1,0 +1,35 @@
+---
+apiVersion: skaffold/v3
+kind: Config
+metadata:
+  name: goproxy
+build:
+  artifacts:
+  - image: goproxy
+    ko:
+      fromImage: harbor.dcas.dev/registry.gitlab.com/av1o/base-images/go-git:1.20
+      main: ./cmd/goproxy/
+      env:
+        - GOPROXY=https://prism.v2.dcas.dev/api/go
+      dependencies:
+        paths:
+          - cmd/goproxy/
+          - internal/
+          - go.mod
+          - go.sum
+  local:
+    push: false
+deploy:
+  helm:
+    releases:
+    - name: goproxy3
+      remoteChart: https://prism.v2.dcas.dev/api/v1/helm/-/auto-deploy-app-0.15.3.tgz
+      valuesFiles:
+      - deployments/goproxy.yaml
+      setValueTemplates:
+        image.repository: "{{ .IMAGE_REPO_goproxy }}"
+        image.tag: "{{ .IMAGE_TAG_goproxy }}@{{ .IMAGE_DIGEST_goproxy }}"
+      namespace: prism
+      skipBuildDependencies: true
+      upgradeOnChange: true
+  kubeContext: minikube

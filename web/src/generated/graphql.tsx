@@ -472,6 +472,13 @@ export type CreateRefractMutationVariables = Exact<{
 
 export type CreateRefractMutation = { __typename?: 'Mutation', createRefraction: { __typename?: 'Refraction', id: string } };
 
+export type DeleteRefractMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteRefractMutation = { __typename?: 'Mutation', deleteRefraction: boolean };
+
 export type GetRefractionQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -512,6 +519,13 @@ export type PatchRemoteMutationVariables = Exact<{
 
 
 export type PatchRemoteMutation = { __typename?: 'Mutation', patchRemote: { __typename?: 'Remote', id: string } };
+
+export type DeleteRemoteMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteRemoteMutation = { __typename?: 'Mutation', deleteRemote: boolean };
 
 export type GetRemoteQueryVariables = Exact<{
   id: Scalars['ID'];
@@ -1102,6 +1116,37 @@ export function useCreateRefractMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateRefractMutationHookResult = ReturnType<typeof useCreateRefractMutation>;
 export type CreateRefractMutationResult = Apollo.MutationResult<CreateRefractMutation>;
 export type CreateRefractMutationOptions = Apollo.BaseMutationOptions<CreateRefractMutation, CreateRefractMutationVariables>;
+export const DeleteRefractDocument = gql`
+    mutation deleteRefract($id: ID!) {
+  deleteRefraction(id: $id)
+}
+    `;
+export type DeleteRefractMutationFn = Apollo.MutationFunction<DeleteRefractMutation, DeleteRefractMutationVariables>;
+
+/**
+ * __useDeleteRefractMutation__
+ *
+ * To run a mutation, you first call `useDeleteRefractMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteRefractMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteRefractMutation, { data, loading, error }] = useDeleteRefractMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteRefractMutation(baseOptions?: Apollo.MutationHookOptions<DeleteRefractMutation, DeleteRefractMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteRefractMutation, DeleteRefractMutationVariables>(DeleteRefractDocument, options);
+      }
+export type DeleteRefractMutationHookResult = ReturnType<typeof useDeleteRefractMutation>;
+export type DeleteRefractMutationResult = Apollo.MutationResult<DeleteRefractMutation>;
+export type DeleteRefractMutationOptions = Apollo.BaseMutationOptions<DeleteRefractMutation, DeleteRefractMutationVariables>;
 export const GetRefractionDocument = gql`
     query getRefraction($id: ID!) {
   getRefraction(id: $id) {
@@ -1299,6 +1344,37 @@ export function usePatchRemoteMutation(baseOptions?: Apollo.MutationHookOptions<
 export type PatchRemoteMutationHookResult = ReturnType<typeof usePatchRemoteMutation>;
 export type PatchRemoteMutationResult = Apollo.MutationResult<PatchRemoteMutation>;
 export type PatchRemoteMutationOptions = Apollo.BaseMutationOptions<PatchRemoteMutation, PatchRemoteMutationVariables>;
+export const DeleteRemoteDocument = gql`
+    mutation deleteRemote($id: ID!) {
+  deleteRemote(id: $id)
+}
+    `;
+export type DeleteRemoteMutationFn = Apollo.MutationFunction<DeleteRemoteMutation, DeleteRemoteMutationVariables>;
+
+/**
+ * __useDeleteRemoteMutation__
+ *
+ * To run a mutation, you first call `useDeleteRemoteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteRemoteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteRemoteMutation, { data, loading, error }] = useDeleteRemoteMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteRemoteMutation(baseOptions?: Apollo.MutationHookOptions<DeleteRemoteMutation, DeleteRemoteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteRemoteMutation, DeleteRemoteMutationVariables>(DeleteRemoteDocument, options);
+      }
+export type DeleteRemoteMutationHookResult = ReturnType<typeof useDeleteRemoteMutation>;
+export type DeleteRemoteMutationResult = Apollo.MutationResult<DeleteRemoteMutation>;
+export type DeleteRemoteMutationOptions = Apollo.BaseMutationOptions<DeleteRemoteMutation, DeleteRemoteMutationVariables>;
 export const GetRemoteDocument = gql`
     query getRemote($id: ID!) {
   getRemote(id: $id) {
