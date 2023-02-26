@@ -123,7 +123,9 @@ const BrowserToolbar: React.FC<Props> = ({id, onToggleLayout}): JSX.Element => {
 			<Popper
 				open={open}
 				anchorEl={anchorRef.current}
-				transition>
+				transition
+				onResize={() => {}}
+				onResizeCapture={() => {}}>
 				{({TransitionProps, placement}) => (<Grow
 					{...TransitionProps}
 					style={{transformOrigin: placement === "bottom" ? "center top" : "center bottom"}}>
