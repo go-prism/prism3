@@ -33,9 +33,11 @@ service:
 ingress:
   enabled: false
 livenessProbe:
-  path: "/healthz"
+  path: "/livez"
+  port: 8081
 readinessProbe:
-  path: "/healthz"
+  path: "/readyz"
+  port: 8081
 volumes:
   - name: tmp
     mountPath: /tmp

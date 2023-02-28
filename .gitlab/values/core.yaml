@@ -30,7 +30,7 @@ hpa:
   maxReplicas: 3
 service:
   externalPort: 8080
-  internalPort: 8081
+  internalPort: 8083
 ingress:
   enabled: true
   className: cap10
@@ -46,11 +46,11 @@ prometheus:
   serviceMonitor:
     enabled: true
 livenessProbe:
-  path: "/healthz"
-  port: 8080
+  path: "/livez"
+  port: 8081
 readinessProbe:
-  path: "/healthz"
-  port: 8080
+  path: "/readyz"
+  port: 8081
 volumes:
   - name: tmp
     mountPath: /tmp
@@ -75,7 +75,7 @@ sidecars:
       - name: PROXY_PROBE_PATH
         value: "/healthz"
       - name: PORT
-        value: "8081"
+        value: "8083"
       - name: ENABLE_METRICS
         value: "false"
     envFrom:
@@ -83,7 +83,7 @@ sidecars:
           name: prod-core-99-secret
     ports:
       - name: http
-        containerPort: 8081
+        containerPort: 8083
         protocol: TCP
     volumeMounts:
       - mountPath: /tmp
@@ -91,11 +91,11 @@ sidecars:
     livenessProbe:
       httpGet:
         path: /healthz
-        port: 8081
+        port: 8083
     readinessProbe:
       httpGet:
         path: /healthz
-        port: 8081
+        port: 8083
     securityContext:
       runAsNonRoot: true
       runAsGroup: 1001
@@ -161,7 +161,7 @@ networkPolicy:
         app.kubernetes.io/part-of: prism
     ingress:
       - ports:
-          - port: 8081
+          - port: 8083
       - from:
           - namespaceSelector:
               matchLabels:
