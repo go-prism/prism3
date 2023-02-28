@@ -41,6 +41,9 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+            - name: probes
+              containerPort: 8081
+              protocol: TCP
           env:
             - name: KUBERNETES_NAMESPACE
               valueFrom:
@@ -99,16 +102,16 @@ spec:
               name: tmp
           livenessProbe:
             httpGet:
-              path: /healthz
-              port: http
+              path: /livez
+              port: probes
             timeoutSeconds: 1
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 5
           readinessProbe:
             httpGet:
-              path: /healthz
-              port: http
+              path: /readyz
+              port: probes
             timeoutSeconds: 2
             periodSeconds: 5
             successThreshold: 1
