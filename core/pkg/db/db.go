@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,12 +30,11 @@ import (
 	"gitlab.com/go-prism/prism3/core/pkg/schemas"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/plugin/dbresolver"
 	"time"
 )
 import "gorm.io/driver/postgres"
 
-func NewDatabase(ctx context.Context, dsn string, replicas ...string) (*Database, error) {
+func NewDatabase(ctx context.Context, dsn string) (*Database, error) {
 	log := logr.FromContextOrDiscard(ctx).WithName("database")
 	// configure primary
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -48,27 +47,10 @@ func NewDatabase(ctx context.Context, dsn string, replicas ...string) (*Database
 		return nil, err
 	}
 	log.V(1).Info("database options", "SkipDefaultTransaction", database.SkipDefaultTransaction)
-	// configure read-replicas
-	var r []gorm.Dialector
-	for i := range replicas {
-		if replicas[i] == "" {
-			log.V(2).Info("skipping empty replica DSN")
-			continue
-		}
-		log.V(2).Info("creating new replica", "DSN", replicas[i])
-		r = append(r, postgres.Open(replicas[i]))
-	}
 	log.V(1).Info("enabling plugins")
 	if err := database.Use(otelgorm.NewPlugin()); err != nil {
 		sentry.CaptureException(err)
 		log.Error(err, "failed to enable SQL OpenTracing plugin")
-	}
-	if err := database.Use(dbresolver.Register(dbresolver.Config{
-		Replicas: r,
-		Policy:   dbresolver.RandomPolicy{},
-	})); err != nil {
-		sentry.CaptureException(err)
-		log.Error(err, "failed to establish database replica connections")
 	}
 	log.Info("established database connection")
 	return &Database{

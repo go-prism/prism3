@@ -11,8 +11,8 @@ env:
   PRISM_S3_BUCKET: prism
   PRISM_LOG_LEVEL: "3"
   PRISM_PUBLIC_URL: https://prism3.devel
-  AWS_ACCESS_KEY_ID: username
-  AWS_SECRET_ACCESS_KEY: password
+  AWS_ACCESS_KEY_ID: usernameusername
+  AWS_SECRET_ACCESS_KEY: passwordpassword
   OTEL_EXPORTER_JAEGER_ENDPOINT: http://tempo.grafana.svc.cluster.local:14268/api/traces
 security:
   podContext:

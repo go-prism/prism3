@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ func (g *Gateway) ServePyPi(w http.ResponseWriter, r *http.Request) {
 	log := logr.FromContextOrDiscard(ctx).WithValues("Bucket", bucket, "Package", pkg)
 	log.V(2).Info("serving on pypi gateway")
 	req := g.pool.Get().(*resolver.Request)
-	req.New(bucket, pkg)
+	req.New(bucket, pkg, r.Method)
 	defer g.pool.Put(req)
 
 	// collect metrics

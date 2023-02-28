@@ -19,8 +19,8 @@ env:
   PRISM_REDIS_PASSWORD: password
   PRISM_OTEL_SAMPLE_RATE: "1"
   PRISM_OTEL_ENABLED: "true"
-  AWS_ACCESS_KEY_ID: username
-  AWS_SECRET_ACCESS_KEY: password
+  AWS_ACCESS_KEY_ID: usernameusername
+  AWS_SECRET_ACCESS_KEY: passwordpassword
   HELM_CACHE_HOME: /tmp
   HELM_CONFIG_HOME: /tmp
   HELM_DATA_HOME: /tmp
@@ -44,7 +44,7 @@ hpa:
   enabled: false
 service:
   externalPort: 8080
-  internalPort: 8081
+  internalPort: 8083
   url: https://prism3.devel
 ingress:
   enabled: true
@@ -65,11 +65,11 @@ ingress:
 prometheus:
   metrics: false
 livenessProbe:
-  path: "/healthz"
-  port: 8080
+  path: "/livez"
+  port: 8081
 readinessProbe:
-  path: "/healthz"
-  port: 8080
+  path: "/readyz"
+  port: 8081
 volumes:
   - name: tmp
     mountPath: /tmp
@@ -140,7 +140,7 @@ sidecars:
       - name: PROXY_PROBE_PATH
         value: "/healthz"
       - name: PORT
-        value: "8081"
+        value: "8083"
       - name: BASE_URL
         value: "https://prism3.devel"
       - name: OIDC_COOKIE_SAME_SITE
@@ -152,7 +152,7 @@ sidecars:
           name: oidc
     ports:
       - name: http
-        containerPort: 8081
+        containerPort: 8083
         protocol: TCP
     volumeMounts:
       - name: tmp
@@ -160,11 +160,11 @@ sidecars:
     livenessProbe:
       httpGet:
         path: /healthz
-        port: 8081
+        port: 8083
     readinessProbe:
       httpGet:
         path: /healthz
-        port: 8081
+        port: 8083
     securityContext:
       runAsNonRoot: true
       runAsGroup: 1001

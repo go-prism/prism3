@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 		attribute.String("bucket", bucket),
 		attribute.String("url", r.URL.String()),
 		attribute.String("type", "generic"),
+		attribute.String("method", r.Method),
 	}
 	span.SetAttributes(attributes...)
 	log := logr.FromContextOrDiscard(ctx).WithValues("Bucket", bucket)
@@ -59,7 +60,7 @@ func (g *Gateway) ServeHTTPGeneric(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := g.pool.Get().(*resolver.Request)
-	req.New(bucket, path)
+	req.New(bucket, path, r.Method)
 	defer g.pool.Put(req)
 
 	// collect metrics

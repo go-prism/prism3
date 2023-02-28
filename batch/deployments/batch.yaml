@@ -15,8 +15,8 @@ env:
   PRISM_PUBLIC_URL: https://prism3.devel
   PRISM_REDIS_ADDR: redis-master:6379
   PRISM_REDIS_PASSWORD: password
-  AWS_ACCESS_KEY_ID: username
-  AWS_SECRET_ACCESS_KEY: password
+  AWS_ACCESS_KEY_ID: usernameusername
+  AWS_SECRET_ACCESS_KEY: passwordpassword
   OTEL_EXPORTER_JAEGER_ENDPOINT: http://tempo.grafana.svc.cluster.local:14268/api/traces
 security:
   podContext:

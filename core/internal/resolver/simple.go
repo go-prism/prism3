@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package resolver
 
 import (
+	"bytes"
 	"context"
 	"github.com/bluele/gcache"
 	"github.com/go-logr/logr"
@@ -37,9 +38,10 @@ import (
 	"time"
 )
 
-func (r *Request) New(bucket, path string) {
+func (r *Request) New(bucket, path, method string) {
 	r.bucket = bucket
 	r.path = path
+	r.method = method
 }
 
 func NewResolver(ctx context.Context, repos *repo.Repos, store storage.Reader, publicURL string) *Resolver {
@@ -84,7 +86,16 @@ func (r *Resolver) Resolve(ctx context.Context, req *Request, rctx *schemas.Requ
 		span.RecordError(err)
 		return nil, err
 	}
-	return ref.(*refract.BackedRefraction).Download(ctx, req.path, rctx)
+	// if we received a HEAD request, just check if
+	// the resource exists
+	br := ref.(*refract.BackedRefraction)
+	if req.method == http.MethodHead {
+		if _, err := br.Exists(ctx, req.path, rctx); err != nil {
+			return nil, err
+		}
+		return bytes.NewBuffer(nil), nil
+	}
+	return br.Download(ctx, req.path, rctx)
 }
 
 func (r *Resolver) getRefraction(v any) (any, error) {
