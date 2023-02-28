@@ -1,13 +1,14 @@
 variables:
   PROJECT_PATH: "goproxy"
   HELM_UPGRADE_VALUES_FILE: ".gitlab/values/goproxy.yaml"
-  CNB_SIGN_ENABLED: "false"
   CODE_INTELLIGENCE_DISABLED: "true"
   CODE_QUALITY_DISABLED: "true"
+  BUILD_DISABLED: "true"
+  KO_DEFAULTBASEIMAGE: harbor.dcas.dev/registry.gitlab.com/av1o/base-images/go-git:1.20
 
 container-scanning:
   needs:
-    - job: build golang
+    - job: build
 
 production:
   resource_group: prod-goproxy
@@ -16,9 +17,23 @@ production:
     kubernetes:
       namespace: prism
   needs:
-    - job: build golang
+    - job: build
     - job: container-scanning
       optional: true
 
+build:
+  extends: .build-ko
+  image: harbor.dcas.dev/registry.gitlab.com/av1o/base-images/go-git:1.20
+  dependencies: []
+  rules:
+    - if: '$CI_OPEN_MERGE_REQUESTS != null && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_TAG == null && $CI_COMMIT_BRANCH == null && $CI_OPEN_MERGE_REQUESTS == null'
+      when: never
+    - if: '$CODE_QUALITY_DISABLED'
+      when: never
+    - when: on_success
+
 include:
-  - remote: 'https://gitlab.dcas.dev/open-source/gitlab-ci-templates/-/raw/master/auto/Auto-GoMod.gitlab-ci.yml'
+  - remote: https://gitlab.dcas.dev/open-source/gitlab-ci-templates/-/raw/master/auto/Auto-GoMod.gitlab-ci.yml
+  - remote: https://raw.githubusercontent.com/vkp-app/vkp/main/.gitlab/ci/ko.gitlab-ci.yml
