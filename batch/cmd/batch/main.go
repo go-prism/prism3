@@ -1,5 +1,5 @@
 /*
- *    Copyright 2022 Django Cass
+ *    Copyright 2023 Django Cass
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -45,8 +45,7 @@ type environment struct {
 		Level int `split_words:"true"`
 	}
 	DB struct {
-		DSN        string `split_words:"true" required:"true"`
-		DSNReplica string `split_words:"true"`
+		DSN string `split_words:"true" required:"true"`
 	}
 	S3  storage.S3Options
 	Dev struct {
@@ -82,7 +81,7 @@ func main() {
 	}
 
 	// configure database
-	database, err := db.NewDatabase(ctx, e.DB.DSN, e.DB.DSNReplica)
+	database, err := db.NewDatabase(ctx, e.DB.DSN)
 	if err != nil {
 		log.Error(err, "failed to setup database layer")
 		os.Exit(1)
