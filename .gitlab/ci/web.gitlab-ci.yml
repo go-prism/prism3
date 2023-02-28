@@ -10,6 +10,7 @@ variables:
   BP_STATIC_ENV: ".env"
   REPLICAS: 2
   CODE_INTELLIGENCE_DISABLED: "true"
+  CODE_QUALITY_DISABLED: "true"
 
 container-scanning:
   needs:

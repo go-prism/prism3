@@ -1,3 +1,7 @@
+stages:
+  - verify
+  - test
+
 core:
   trigger:
     strategy: depend
@@ -57,3 +61,6 @@ web:
         - .gitlab/ci/web.gitlab-ci.yml
         - .gitlab/values/web.yaml
         - .gitlab-ci.yml
+
+include:
+  - remote: https://gitlab.com/av1o/gitlab-ci-templates/-/raw/master/verify/Semgrep-Quality.gitlab-ci.yml

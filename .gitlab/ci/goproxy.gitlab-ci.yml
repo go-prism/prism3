@@ -3,6 +3,7 @@ variables:
   HELM_UPGRADE_VALUES_FILE: ".gitlab/values/goproxy.yaml"
   CNB_SIGN_ENABLED: "false"
   CODE_INTELLIGENCE_DISABLED: "true"
+  CODE_QUALITY_DISABLED: "true"
 
 container-scanning:
   needs:

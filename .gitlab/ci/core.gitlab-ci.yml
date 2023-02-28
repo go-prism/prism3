@@ -4,6 +4,7 @@ variables:
   PROJECT_PATH: "core"
   HELM_UPGRADE_VALUES_FILE: ".gitlab/values/core.yaml"
   CODE_INTELLIGENCE_DISABLED: "true"
+  CODE_QUALITY_DISABLED: "true"
 
 container-scanning:
   needs:
