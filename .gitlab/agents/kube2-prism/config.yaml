@@ -1,3 +1,5 @@
 user_access:
+  access_as:
+    agent: {}
   groups:
     - id: prism
